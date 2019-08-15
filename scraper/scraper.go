@@ -45,12 +45,14 @@ func (s *Scraper) Run() {
 	for {
 		m, err := s.qReader.FetchMessage(context.Background())
 		if err != nil {
+			fmt.Println(err)
 			break
 		}
 
 		userName := string(m.Value)
 		followInfo, err := ScrapeUserFollowGraph(userName)
 		if err != nil {
+			fmt.Println(err)
 			break
 		}
 		serializedFollowInfo, err := json.Marshal(followInfo)
