@@ -38,5 +38,13 @@ services:
       - 8000:8000
     command: dgraph-ratel
 
+  kafka:
+    image: spotify/kafka
+    ports:
+      - 2181:2181
+      - 9092:9092
+    environment:
+      ADVERTISED_HOST: localhost
+      ADVERTISED_PORT: 9092
 volumes:
   dgraph:

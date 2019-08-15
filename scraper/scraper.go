@@ -1,13 +1,76 @@
-package main
+package scraper
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/alexmorten/instascraper/models"
-
 	"github.com/gocolly/colly"
+	"github.com/segmentio/kafka-go"
 )
+
+// Scraper represents the scraper containing all clients it uses
+type Scraper struct {
+	qReader *kafka.Reader
+	qWriter *kafka.Writer
+}
+
+// New returns an initilized scraper
+func New() *Scraper {
+	s := &Scraper{}
+	s.qReader = kafka.NewReader(kafka.ReaderConfig{
+		Brokers:        []string{"localhost:9092"},
+		GroupID:        "user_follow_graph_scraper",
+		Topic:          "user_names",
+		MinBytes:       10e3, // 10KB
+		MaxBytes:       10e6, // 10MB
+		CommitInterval: time.Second,
+	})
+	s.qWriter = kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{"localhost:9092"},
+		Topic:    "user_follow_infos",
+		Balancer: &kafka.LeastBytes{},
+		Async:    true,
+	})
+	return s
+}
+
+// Run the scraper
+func (s *Scraper) Run() {
+	defer s.close()
+
+	for {
+		m, err := s.qReader.FetchMessage(context.Background())
+		if err != nil {
+			break
+		}
+
+		userName := string(m.Value)
+		followInfo, err := ScrapeUserFollowGraph(userName)
+		if err != nil {
+			break
+		}
+		serializedFollowInfo, err := json.Marshal(followInfo)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		err = s.qWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedFollowInfo})
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		s.qReader.CommitMessages(context.Background(), m)
+	}
+}
+
+func (s *Scraper) close() {
+	s.qReader.Close()
+	s.qWriter.Close()
+}
 
 //ScrapeUserFollowGraph returns the follow information for a userName
 func ScrapeUserFollowGraph(userName string) (*models.UserFollowInfo, error) {
@@ -53,7 +116,7 @@ func getUserNamesIn(url string) ([]string, error) {
 	})
 
 	c.OnScraped(func(r *colly.Response) {
-		// fmt.Println("Finished", r.Request.URL)
+		fmt.Println("Finished", r.Request.URL)
 	})
 
 	err := c.Visit(url)

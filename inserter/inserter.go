@@ -1,20 +1,77 @@
-package main
+package inserter
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/dgraph-io/dgo"
 	"github.com/dgraph-io/dgo/protos/api"
 
 	"github.com/alexmorten/instascraper/models"
 	"github.com/alexmorten/instascraper/utils"
+	"github.com/segmentio/kafka-go"
 )
+
+// Inserter represents the scraper containing all clients it uses
+type Inserter struct {
+	qReader *kafka.Reader
+	qWriter *kafka.Writer
+}
+
+// New returns an initilized scraper
+func New() *Inserter {
+	s := &Inserter{}
+	s.qReader = kafka.NewReader(kafka.ReaderConfig{
+		Brokers:        []string{"localhost:9092"},
+		GroupID:        "user_follow_inserter",
+		Topic:          "user_follow_infos",
+		MinBytes:       10e3, // 10KB
+		MaxBytes:       10e6, // 10MB
+		CommitInterval: time.Second,
+	})
+	s.qWriter = kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{"localhost:9092"},
+		Topic:    "user_names",
+		Balancer: &kafka.LeastBytes{},
+		Async:    true,
+	})
+	return s
+}
+
+// Run the inserter
+func (i *Inserter) Run() {
+	defer i.close()
+	fmt.Println("starting inserter")
+	for {
+		m, err := i.qReader.FetchMessage(context.Background())
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		info := &models.UserFollowInfo{}
+		err = json.Unmarshal(m.Value, info)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		fmt.Println("inserting: ", info.UserName)
+		i.InsertUserFollowInfo(info)
+		fmt.Println("inserted: ", info.UserName)
+		i.qReader.CommitMessages(context.Background(), m)
+		fmt.Println("commited: ", info.UserName)
+	}
+}
+
+func (i *Inserter) close() {
+	i.qReader.Close()
+	i.qWriter.Close()
+}
 
 // InsertUserFollowInfo inserts the user follow info into dgraph, while writting userNames that don't exist in the graph yet
 // into the specified kafka topic
-func InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
+func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	for _, follower := range followInfo.Followers {
 		p := &models.User{
 			Name: follower,
@@ -23,7 +80,7 @@ func InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 			},
 		}
 
-		insertUser(p)
+		i.insertUser(p)
 	}
 
 	for _, followings := range followInfo.Followings {
@@ -34,7 +91,7 @@ func InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 			},
 		}
 
-		insertUser(p)
+		i.insertUser(p)
 	}
 
 	p := &models.User{
@@ -53,7 +110,7 @@ func InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 		})
 	}
 
-	insertUser(p)
+	i.insertUser(p)
 }
 
 func handleErr(err error) {
@@ -62,21 +119,21 @@ func handleErr(err error) {
 	}
 }
 
-func insertUser(p *models.User) {
+func (i *Inserter) insertUser(p *models.User) {
 	dg, conn := utils.GetDGraphClient()
 	defer conn.Close()
 
 	uid, created := getOrCreateUIDForUser(dg, p.Name)
-	handleCreatedUser(p.Name, uid, created)
+	i.handleCreatedUser(p.Name, uid, created)
 	p.UID = uid
 	for _, followed := range p.Followings {
 		uid, created := getOrCreateUIDForUser(dg, followed.Name)
-		handleCreatedUser(followed.Name, uid, created)
+		i.handleCreatedUser(followed.Name, uid, created)
 		followed.UID = uid
 	}
 	for _, following := range p.Followers {
 		uid, created := getOrCreateUIDForUser(dg, following.Name)
-		handleCreatedUser(following.Name, uid, created)
+		i.handleCreatedUser(following.Name, uid, created)
 		following.UID = uid
 	}
 
@@ -91,16 +148,17 @@ func insertUser(p *models.User) {
 
 	ctx := context.Background()
 	mu.SetJson = pb
-	assigned, err := dg.NewTxn().Mutate(ctx, mu)
+	_, err = dg.NewTxn().Mutate(ctx, mu)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(assigned)
 }
 
-func handleCreatedUser(userName, uid string, created bool) {
+func (i *Inserter) handleCreatedUser(userName, uid string, created bool) {
 	if created {
-		fmt.Println("encountered new user:", userName, "(", uid, ")")
+		i.qWriter.WriteMessages(context.Background(), kafka.Message{
+			Value: []byte(userName),
+		})
 	}
 }
 
@@ -115,7 +173,6 @@ func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created boo
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(resp.GetJson()))
 	type queryResult struct {
 		Me []*models.User `json:"me"`
 	}
@@ -124,12 +181,9 @@ func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created boo
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(result)
 	if len(result.Me) > 0 {
-		fmt.Println("returned id")
 		return result.Me[0].UID, false
 	}
-	fmt.Println("created id")
 	mu := &api.Mutation{
 		CommitNow: true,
 	}
