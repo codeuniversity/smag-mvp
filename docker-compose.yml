@@ -38,13 +38,21 @@ services:
       - 8000:8000
     command: dgraph-ratel
 
-  kafka:
-    image: spotify/kafka
+  zookeeper:
+    image: "wurstmeister/zookeeper"
     ports:
-      - 2181:2181
-      - 9092:9092
+      - "2181:2181"
+  kafka:
+    image: "wurstmeister/kafka:0.10.2.0"
+    ports:
+      - "9092:9092"
+    depends_on:
+      - "zookeeper"
     environment:
-      ADVERTISED_HOST: localhost
-      ADVERTISED_PORT: 9092
+      KAFKA_CREATE_TOPICS: "user_names:4:1,user_follow_infos:4:1"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_HOST_NAME: "localhost"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
 volumes:
   dgraph:
