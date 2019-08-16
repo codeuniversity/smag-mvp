@@ -16,8 +16,11 @@ import (
 
 // Inserter represents the scraper containing all clients it uses
 type Inserter struct {
-	qReader *kafka.Reader
-	qWriter *kafka.Writer
+	qReader     *kafka.Reader
+	qWriter     *kafka.Writer
+	stopChan    chan struct{}
+	stoppedChan chan struct{}
+	closedChan  chan struct{}
 }
 
 // New returns an initilized scraper
@@ -37,14 +40,20 @@ func New() *Inserter {
 		Balancer: &kafka.LeastBytes{},
 		Async:    true,
 	})
+	s.stopChan = make(chan struct{}, 1)
+	s.stoppedChan = make(chan struct{}, 1)
+	s.closedChan = make(chan struct{}, 1)
 	return s
 }
 
 // Run the inserter
 func (i *Inserter) Run() {
-	defer i.close()
+	defer func() {
+		i.stoppedChan <- struct{}{}
+	}()
+
 	fmt.Println("starting inserter")
-	for {
+	for len(i.stopChan) == 0 {
 		m, err := i.qReader.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
@@ -64,9 +73,26 @@ func (i *Inserter) Run() {
 	}
 }
 
-func (i *Inserter) close() {
+// Close the inserter
+func (i *Inserter) Close() {
+	i.stopChan <- struct{}{}
+	t := time.NewTimer(time.Second * 3)
+	select {
+	case <-t.C:
+		break
+	case <-i.stoppedChan:
+		t.Stop()
+		break
+	}
+
 	i.qReader.Close()
 	i.qWriter.Close()
+	i.closedChan <- struct{}{}
+}
+
+// WaitUntilClosed waits until the Close func call of the inserter is finished
+func (i *Inserter) WaitUntilClosed() {
+	<-i.closedChan
 }
 
 // InsertUserFollowInfo inserts the user follow info into dgraph, while writting userNames that don't exist in the graph yet
@@ -106,11 +132,11 @@ func (i *Inserter) insertUser(p *models.User) {
 	dg, conn := utils.GetDGraphClient()
 	defer conn.Close()
 
-	uid, created := getOrCreateUIDForUser(dg, p.Name)
+	uid, created := getOrCreateUIDForUserWithRetries(dg, p.Name)
 	i.handleCreatedUser(p.Name, uid, created)
 	p.UID = uid
 	for _, followed := range p.Follows {
-		uid, created := getOrCreateUIDForUser(dg, followed.Name)
+		uid, created := getOrCreateUIDForUserWithRetries(dg, followed.Name)
 		i.handleCreatedUser(followed.Name, uid, created)
 		followed.UID = uid
 	}
@@ -123,10 +149,13 @@ func (i *Inserter) insertUser(p *models.User) {
 	if err != nil {
 		panic(err)
 	}
-
-	ctx := context.Background()
 	mu.SetJson = pb
-	_, err = dg.NewTxn().Mutate(ctx, mu)
+
+	err = utils.WithRetries(5, func() error {
+		ctx := context.Background()
+		_, err = dg.NewTxn().Mutate(ctx, mu)
+		return err
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -140,7 +169,7 @@ func (i *Inserter) handleCreatedUser(userName, uid string, created bool) {
 	}
 }
 
-func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created bool) {
+func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created bool, err error) {
 	q := `query Me($name: string){
 		me(func: eq(name, $name)){
 			uid
@@ -149,7 +178,7 @@ func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created boo
 	ctx := context.Background()
 	resp, err := dg.NewReadOnlyTxn().QueryWithVars(ctx, q, map[string]string{"$name": name})
 	if err != nil {
-		panic(err)
+		return "", false, err
 	}
 	type queryResult struct {
 		Me []*models.User `json:"me"`
@@ -157,10 +186,10 @@ func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created boo
 	result := &queryResult{}
 	err = json.Unmarshal(resp.GetJson(), result)
 	if err != nil {
-		panic(err)
+		return "", false, err
 	}
 	if len(result.Me) > 0 {
-		return result.Me[0].UID, false
+		return result.Me[0].UID, false, nil
 	}
 	mu := &api.Mutation{
 		CommitNow: true,
@@ -168,16 +197,28 @@ func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created boo
 	p := &models.User{Name: name}
 	pb, err := json.Marshal(p)
 	if err != nil {
-		panic(err)
+		return "", false, err
 	}
 
 	ctx = context.Background()
 	mu.SetJson = pb
 	assigned, err := dg.NewTxn().Mutate(ctx, mu)
 	if err != nil {
-		panic(err)
+		return "", false, err
 	}
 
 	// Assigned uids for nodes which were created would be returned in the assigned.Uids map.
-	return assigned.Uids["blank-0"], true
+	return assigned.Uids["blank-0"], true, nil
+}
+
+func getOrCreateUIDForUserWithRetries(dg *dgo.Dgraph, name string) (uid string, created bool) {
+	err := utils.WithRetries(5, func() error {
+		var err error
+		uid, created, err = getOrCreateUIDForUser(dg, name)
+		return err
+	})
+	if err != nil {
+		panic(err)
+	}
+	return
 }
