@@ -75,18 +75,7 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	for _, follower := range followInfo.Followers {
 		p := &models.User{
 			Name: follower,
-			Followings: []*models.User{
-				{Name: followInfo.UserName},
-			},
-		}
-
-		i.insertUser(p)
-	}
-
-	for _, followings := range followInfo.Followings {
-		p := &models.User{
-			Name: followings,
-			Followers: []*models.User{
+			Follows: []*models.User{
 				{Name: followInfo.UserName},
 			},
 		}
@@ -99,14 +88,8 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	}
 
 	for _, following := range followInfo.Followings {
-		p.Followings = append(p.Followings, &models.User{
+		p.Follows = append(p.Follows, &models.User{
 			Name: following,
-		})
-	}
-
-	for _, follower := range followInfo.Followers {
-		p.Followers = append(p.Followers, &models.User{
-			Name: follower,
 		})
 	}
 
@@ -126,15 +109,10 @@ func (i *Inserter) insertUser(p *models.User) {
 	uid, created := getOrCreateUIDForUser(dg, p.Name)
 	i.handleCreatedUser(p.Name, uid, created)
 	p.UID = uid
-	for _, followed := range p.Followings {
+	for _, followed := range p.Follows {
 		uid, created := getOrCreateUIDForUser(dg, followed.Name)
 		i.handleCreatedUser(followed.Name, uid, created)
 		followed.UID = uid
-	}
-	for _, following := range p.Followers {
-		uid, created := getOrCreateUIDForUser(dg, following.Name)
-		i.handleCreatedUser(following.Name, uid, created)
-		following.UID = uid
 	}
 
 	mu := &api.Mutation{

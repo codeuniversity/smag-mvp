@@ -9,8 +9,7 @@ type UserFollowInfo struct {
 
 // User is the struct containing all user fields, used for serializing users to dgraph
 type User struct {
-	UID        string  `json:"uid,omitempty"`
-	Name       string  `json:"name,omitempty"`
-	Followers  []*User `json:"follows,omitempty"`
-	Followings []*User `json:"followed,omitempty"`
+	UID     string  `json:"uid,omitempty"`
+	Name    string  `json:"name,omitempty"`
+	Follows []*User `json:"follows,omitempty"`
 }

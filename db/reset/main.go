@@ -28,7 +28,9 @@ func prepareDB() {
 
 	op = &api.Operation{}
 	op.Schema = `
-	name: string @index(exact) @upsert .`
+	name: string @index(exact) @upsert .
+	follows: uid @count @reverse .
+	`
 
 	ctx = context.Background()
 	handleErr(dg.Alter(ctx, op))
