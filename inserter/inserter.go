@@ -111,6 +111,9 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 
 	p := &models.User{
 		Name:      followInfo.UserName,
+		RealName:  followInfo.RealName,
+		AvatarURL: followInfo.AvatarURL,
+		Bio:       followInfo.Bio,
 		CrawledAt: followInfo.CrawlTs,
 	}
 

@@ -29,8 +29,10 @@ func prepareDB() {
 	op = &api.Operation{}
 	op.Schema = `
 	name: string @index(exact) @upsert .
+	real_name: string @index(fulltext, term) .
 	follows: uid @count @reverse .
 	crawled_at: int .
+	bio: string @index(fulltext, term) .
 	`
 
 	ctx = context.Background()

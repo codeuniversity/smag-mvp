@@ -41,7 +41,7 @@ func New() *Scraper {
 // Run the scraper
 func (s *Scraper) Run() {
 	defer s.close()
-
+	fmt.Println("starting scraper")
 	for {
 		m, err := s.qReader.FetchMessage(context.Background())
 		if err != nil {
@@ -78,31 +78,40 @@ func (s *Scraper) close() {
 func ScrapeUserFollowGraph(userName string) (*models.UserFollowInfo, error) {
 	u := &models.UserFollowInfo{UserName: userName}
 
-	followers, err := getUserNamesIn(fmt.Sprintf("http://picdeer.com/%s/followers", userName))
+	followerInfo, err := getUserInfoIn(fmt.Sprintf("http://picdeer.com/%s/followers", userName))
 	if err != nil {
 		return nil, err
 	}
-	u.Followers = followers
-	followings, err := getUserNamesIn(fmt.Sprintf("http://picdeer.com/%s/followings", userName))
+	u.Followers = followerInfo.listedUserNames
+	followingsInfo, err := getUserInfoIn(fmt.Sprintf("http://picdeer.com/%s/followings", userName))
 	if err != nil {
 		return nil, err
 	}
-	u.Followings = followings
+	u.RealName = followingsInfo.realName
+	u.AvatarURL = followingsInfo.avatarURL
+	u.Bio = followingsInfo.bio
+	u.Followings = followingsInfo.listedUserNames
 	u.CrawlTs = int(time.Now().Unix())
 	return u, nil
 }
 
-func getUserNamesIn(url string) ([]string, error) {
-	userNames := []string{}
+type scrapedInfo struct {
+	listedUserNames []string
+	avatarURL       string
+	realName        string
+	bio             string
+}
+
+func getUserInfoIn(url string) (info *scrapedInfo, err error) {
+	info = new(scrapedInfo)
 
 	c := colly.NewCollector()
-
 	c.OnRequest(func(r *colly.Request) {
 		// fmt.Println("Visiting", r.URL)
 	})
 
 	c.OnError(func(_ *colly.Response, err error) {
-		// log.Println("Something went wrong:", err)
+		fmt.Println("Something went wrong:", err)
 	})
 
 	c.OnResponse(func(r *colly.Response) {
@@ -114,20 +123,32 @@ func getUserNamesIn(url string) ([]string, error) {
 		parts := strings.Split(url, "/")
 		if len(parts) >= 2 {
 			name := parts[len(parts)-1]
-			userNames = append(userNames, name)
+			info.listedUserNames = append(info.listedUserNames, name)
 		}
+	})
+
+	c.OnHTML(".profile-header img.p-avatar", func(e *colly.HTMLElement) {
+		info.avatarURL = e.Attr("src")
+	})
+
+	c.OnHTML(".profile-header h1.p-h1 a", func(e *colly.HTMLElement) {
+		info.realName = e.Text
+	})
+
+	c.OnHTML(".profile-header p.p-bio", func(e *colly.HTMLElement) {
+		info.bio = e.Text
 	})
 
 	c.OnScraped(func(r *colly.Response) {
 		fmt.Println("Finished", r.Request.URL)
 	})
 
-	err := c.Visit(url)
+	err = c.Visit(url)
 	if err != nil {
 		return nil, err
 	}
 
-	return userNames, nil
+	return
 }
 
 func handleErr(err error) {
