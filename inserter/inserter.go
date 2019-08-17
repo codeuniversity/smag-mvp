@@ -110,7 +110,8 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	}
 
 	p := &models.User{
-		Name: followInfo.UserName,
+		Name:      followInfo.UserName,
+		CrawledAt: followInfo.CrawlTs,
 	}
 
 	for _, following := range followInfo.Followings {

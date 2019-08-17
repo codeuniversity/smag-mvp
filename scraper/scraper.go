@@ -88,6 +88,7 @@ func ScrapeUserFollowGraph(userName string) (*models.UserFollowInfo, error) {
 		return nil, err
 	}
 	u.Followings = followings
+	u.CrawlTs = int(time.Now().Unix())
 	return u, nil
 }
 

@@ -30,6 +30,7 @@ func prepareDB() {
 	op.Schema = `
 	name: string @index(exact) @upsert .
 	follows: uid @count @reverse .
+	crawled_at: int .
 	`
 
 	ctx = context.Background()
