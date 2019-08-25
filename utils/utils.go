@@ -14,8 +14,8 @@ import (
 
 //GetDGraphClient retuns an intialized dgrapg client and a connection that should be closed once the client is discarded.
 // panics if dgraog can not be connected to
-func GetDGraphClient() (*dgo.Dgraph, *grpc.ClientConn) {
-	conn, err := grpc.Dial("127.0.0.1:9080", grpc.WithInsecure())
+func GetDGraphClient(dgraphAddress string) (*dgo.Dgraph, *grpc.ClientConn) {
+	conn, err := grpc.Dial(dgraphAddress, grpc.WithInsecure())
 	if err != nil {
 		panic("While trying to dial gRPC")
 	}

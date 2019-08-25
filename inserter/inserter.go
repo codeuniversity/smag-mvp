@@ -12,38 +12,44 @@ import (
 	"github.com/alexmorten/instascraper/models"
 	"github.com/alexmorten/instascraper/utils"
 	"github.com/segmentio/kafka-go"
+	"google.golang.org/grpc"
 )
 
 // Inserter represents the scraper containing all clients it uses
 type Inserter struct {
 	qReader     *kafka.Reader
 	qWriter     *kafka.Writer
+	dgClient    *dgo.Dgraph
+	dgConn      *grpc.ClientConn
 	stopChan    chan struct{}
 	stoppedChan chan struct{}
 	closedChan  chan struct{}
 }
 
 // New returns an initilized scraper
-func New() *Inserter {
-	s := &Inserter{}
-	s.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{"localhost:9092"},
+func New(kafkaAddress, dgraphAddress string) *Inserter {
+	i := &Inserter{}
+	i.qReader = kafka.NewReader(kafka.ReaderConfig{
+		Brokers:        []string{kafkaAddress},
 		GroupID:        "user_follow_inserter",
 		Topic:          "user_follow_infos",
 		MinBytes:       10e3, // 10KB
 		MaxBytes:       10e6, // 10MB
 		CommitInterval: time.Second,
 	})
-	s.qWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{"localhost:9092"},
+	i.qWriter = kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{kafkaAddress},
 		Topic:    "user_names",
 		Balancer: &kafka.LeastBytes{},
 		Async:    true,
 	})
-	s.stopChan = make(chan struct{}, 1)
-	s.stoppedChan = make(chan struct{}, 1)
-	s.closedChan = make(chan struct{}, 1)
-	return s
+	dg, conn := utils.GetDGraphClient(dgraphAddress)
+	i.dgClient = dg
+	i.dgConn = conn
+	i.stopChan = make(chan struct{}, 1)
+	i.stoppedChan = make(chan struct{}, 1)
+	i.closedChan = make(chan struct{}, 1)
+	return i
 }
 
 // Run the inserter
@@ -67,7 +73,6 @@ func (i *Inserter) Run() {
 		}
 		fmt.Println("inserting: ", info.UserName)
 		i.InsertUserFollowInfo(info)
-		fmt.Println("inserted: ", info.UserName)
 		i.qReader.CommitMessages(context.Background(), m)
 		fmt.Println("commited: ", info.UserName)
 	}
@@ -84,7 +89,7 @@ func (i *Inserter) Close() {
 		t.Stop()
 		break
 	}
-
+	i.dgConn.Close()
 	i.qReader.Close()
 	i.qWriter.Close()
 	i.closedChan <- struct{}{}
@@ -98,17 +103,6 @@ func (i *Inserter) WaitUntilClosed() {
 // InsertUserFollowInfo inserts the user follow info into dgraph, while writting userNames that don't exist in the graph yet
 // into the specified kafka topic
 func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
-	for _, follower := range followInfo.Followers {
-		p := &models.User{
-			Name: follower,
-			Follows: []*models.User{
-				{Name: followInfo.UserName},
-			},
-		}
-
-		i.insertUser(p)
-	}
-
 	p := &models.User{
 		Name:      followInfo.UserName,
 		RealName:  followInfo.RealName,
@@ -133,14 +127,11 @@ func handleErr(err error) {
 }
 
 func (i *Inserter) insertUser(p *models.User) {
-	dg, conn := utils.GetDGraphClient()
-	defer conn.Close()
-
-	uid, created := getOrCreateUIDForUserWithRetries(dg, p.Name)
+	uid, created := getOrCreateUIDForUserWithRetries(i.dgClient, p.Name)
 	i.handleCreatedUser(p.Name, uid, created)
 	p.UID = uid
 	for _, followed := range p.Follows {
-		uid, created := getOrCreateUIDForUserWithRetries(dg, followed.Name)
+		uid, created := getOrCreateUIDForUserWithRetries(i.dgClient, followed.Name)
 		i.handleCreatedUser(followed.Name, uid, created)
 		followed.UID = uid
 	}
@@ -157,7 +148,7 @@ func (i *Inserter) insertUser(p *models.User) {
 
 	err = utils.WithRetries(5, func() error {
 		ctx := context.Background()
-		_, err = dg.NewTxn().Mutate(ctx, mu)
+		_, err = i.dgClient.NewTxn().Mutate(ctx, mu)
 		return err
 	})
 	if err != nil {
