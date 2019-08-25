@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/alexmorten/instascraper/models"
+	"github.com/alexmorten/instascraper/utils"
 	"github.com/gocolly/colly"
 	"github.com/segmentio/kafka-go"
 )
@@ -17,6 +18,9 @@ type Scraper struct {
 	nameQReader *kafka.Reader
 	infoQWriter *kafka.Writer
 	errQWriter  *kafka.Writer
+	stopChan    chan struct{}
+	stoppedChan chan struct{}
+	closedChan  chan struct{}
 }
 
 // New returns an initilized scraper
@@ -40,15 +44,21 @@ func New(kafkaAddress string) *Scraper {
 		Balancer: &kafka.LeastBytes{},
 		Async:    false,
 	})
+	s.stopChan = make(chan struct{}, 1)
+	s.stoppedChan = make(chan struct{}, 1)
+	s.closedChan = make(chan struct{}, 1)
 	return s
 }
 
 // Run the scraper
 func (s *Scraper) Run() {
-	defer s.close()
+	defer func() {
+		s.stoppedChan <- struct{}{}
+	}()
+
 	fmt.Println("starting scraper")
-	for {
-		m, err := s.qReader.FetchMessage(context.Background())
+	for len(s.stopChan) == 0 {
+		m, err := s.nameQReader.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -58,45 +68,78 @@ func (s *Scraper) Run() {
 		followInfo, err := ScrapeUserFollowGraph(userName)
 		if err != nil {
 			fmt.Println(err)
-			break
+			errMessage := &models.ScrapeError{
+				Name:  userName,
+				Error: err.Error(),
+			}
+			serializedErr, err := json.Marshal(errMessage)
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+			s.nameQReader.CommitMessages(context.Background(), m)
+			continue
 		}
 		serializedFollowInfo, err := json.Marshal(followInfo)
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		err = s.qWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedFollowInfo})
+		err = s.infoQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedFollowInfo})
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		s.qReader.CommitMessages(context.Background(), m)
+		s.nameQReader.CommitMessages(context.Background(), m)
 	}
 }
 
-func (s *Scraper) close() {
-	s.qReader.Close()
-	s.qWriter.Close()
+// Close the scraper
+func (s *Scraper) Close() {
+	s.stopChan <- struct{}{}
+	t := time.NewTimer(time.Second * 3)
+	select {
+	case <-t.C:
+		break
+	case <-s.stoppedChan:
+		t.Stop()
+		break
+	}
+
+	s.nameQReader.Close()
+	s.infoQWriter.Close()
+	s.errQWriter.Close()
+	s.closedChan <- struct{}{}
+}
+
+// WaitUntilClosed waits until the Close func call of the inserter is finished
+func (s *Scraper) WaitUntilClosed() {
+	<-s.closedChan
 }
 
 //ScrapeUserFollowGraph returns the follow information for a userName
 func ScrapeUserFollowGraph(userName string) (*models.UserFollowInfo, error) {
 	u := &models.UserFollowInfo{UserName: userName}
 
-	followerInfo, err := getUserInfoIn(fmt.Sprintf("http://picdeer.com/%s/followers", userName))
+	err := utils.WithRetries(5, func() error {
+		followingsInfo, err := getUserInfoIn(fmt.Sprintf("http://picdeer.com/%s/followings", userName))
+		if err != nil {
+			return err
+		}
+
+		u.RealName = followingsInfo.realName
+		u.AvatarURL = followingsInfo.avatarURL
+		u.Bio = followingsInfo.bio
+		u.Followings = followingsInfo.listedUserNames
+		u.CrawlTs = int(time.Now().Unix())
+		return nil
+	})
+
 	if err != nil {
 		return nil, err
 	}
-	u.Followers = followerInfo.listedUserNames
-	followingsInfo, err := getUserInfoIn(fmt.Sprintf("http://picdeer.com/%s/followings", userName))
-	if err != nil {
-		return nil, err
-	}
-	u.RealName = followingsInfo.realName
-	u.AvatarURL = followingsInfo.avatarURL
-	u.Bio = followingsInfo.bio
-	u.Followings = followingsInfo.listedUserNames
-	u.CrawlTs = int(time.Now().Unix())
+
 	return u, nil
 }
 
@@ -115,8 +158,8 @@ func getUserInfoIn(url string) (info *scrapedInfo, err error) {
 		// fmt.Println("Visiting", r.URL)
 	})
 
-	c.OnError(func(_ *colly.Response, err error) {
-		fmt.Println("Something went wrong:", err)
+	c.OnError(func(c *colly.Response, err error) {
+		fmt.Println("Something went wrong:", err, " code: ", c.StatusCode)
 	})
 
 	c.OnResponse(func(r *colly.Response) {
