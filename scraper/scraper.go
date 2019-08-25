@@ -14,26 +14,31 @@ import (
 
 // Scraper represents the scraper containing all clients it uses
 type Scraper struct {
-	qReader *kafka.Reader
-	qWriter *kafka.Writer
+	nameQReader *kafka.Reader
+	infoQWriter *kafka.Writer
+	errQWriter  *kafka.Writer
 }
 
 // New returns an initilized scraper
-func New() *Scraper {
+func New(kafkaAddress string) *Scraper {
 	s := &Scraper{}
-	s.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{"localhost:9092"},
+	s.nameQReader = kafka.NewReader(kafka.ReaderConfig{
+		Brokers:        []string{kafkaAddress},
 		GroupID:        "user_follow_graph_scraper",
 		Topic:          "user_names",
-		MinBytes:       10e3, // 10KB
-		MaxBytes:       10e6, // 10MB
 		CommitInterval: time.Second,
 	})
-	s.qWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{"localhost:9092"},
+	s.infoQWriter = kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{kafkaAddress},
 		Topic:    "user_follow_infos",
 		Balancer: &kafka.LeastBytes{},
 		Async:    true,
+	})
+	s.errQWriter = kafka.NewWriter(kafka.WriterConfig{
+		Brokers:  []string{kafkaAddress},
+		Topic:    "user_scrape_errors",
+		Balancer: &kafka.LeastBytes{},
+		Async:    false,
 	})
 	return s
 }
