@@ -2,9 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/dgraph-io/dgo"
@@ -37,16 +34,4 @@ func WithRetries(times int, f func() error) error {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return err
-}
-
-// CloseOnSignal calls the closeFunc on the os signals SIGINT and SIGTERM
-func CloseOnSignal(closeFunc func()) {
-	go func() {
-		signals := make(chan os.Signal, 1)
-		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
-		sig := <-signals
-		fmt.Println("Received Signal:", sig)
-
-		closeFunc()
-	}()
 }

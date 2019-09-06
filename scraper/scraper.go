@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/alexmorten/instascraper/models"
+	"github.com/alexmorten/instascraper/service"
 	"github.com/alexmorten/instascraper/utils"
+
 	"github.com/gocolly/colly"
 	"github.com/segmentio/kafka-go"
 )
@@ -18,9 +20,7 @@ type Scraper struct {
 	nameQReader *kafka.Reader
 	infoQWriter *kafka.Writer
 	errQWriter  *kafka.Writer
-	stopChan    chan struct{}
-	stoppedChan chan struct{}
-	closedChan  chan struct{}
+	*service.Executor
 }
 
 // New returns an initilized scraper
@@ -44,20 +44,19 @@ func New(kafkaAddress string) *Scraper {
 		Balancer: &kafka.LeastBytes{},
 		Async:    false,
 	})
-	s.stopChan = make(chan struct{}, 1)
-	s.stoppedChan = make(chan struct{}, 1)
-	s.closedChan = make(chan struct{}, 1)
+	s.Executor = service.New()
 	return s
 }
 
 // Run the scraper
 func (s *Scraper) Run() {
 	defer func() {
-		s.stoppedChan <- struct{}{}
+		s.MarkAsStopped()
 	}()
 
 	fmt.Println("starting scraper")
-	for len(s.stopChan) == 0 {
+	for s.IsRunning() {
+		fmt.Println("fetching")
 		m, err := s.nameQReader.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
@@ -97,25 +96,14 @@ func (s *Scraper) Run() {
 
 // Close the scraper
 func (s *Scraper) Close() {
-	s.stopChan <- struct{}{}
-	t := time.NewTimer(time.Second * 3)
-	select {
-	case <-t.C:
-		break
-	case <-s.stoppedChan:
-		t.Stop()
-		break
-	}
+	s.Stop()
+	s.WaitUntilStopped(time.Second * 3)
 
 	s.nameQReader.Close()
 	s.infoQWriter.Close()
 	s.errQWriter.Close()
-	s.closedChan <- struct{}{}
-}
 
-// WaitUntilClosed waits until the Close func call of the inserter is finished
-func (s *Scraper) WaitUntilClosed() {
-	<-s.closedChan
+	s.MarkAsClosed()
 }
 
 //ScrapeUserFollowGraph returns the follow information for a userName

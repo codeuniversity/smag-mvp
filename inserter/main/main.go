@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/alexmorten/instascraper/inserter"
-	"github.com/alexmorten/instascraper/utils"
+	"github.com/alexmorten/instascraper/service"
 )
 
 func main() {
@@ -18,7 +18,7 @@ func main() {
 	}
 	i := inserter.New(kafkaAddress, dgraphAddress)
 
-	utils.CloseOnSignal(i.Close)
+	service.CloseOnSignal(i)
 	go i.Run()
 
 	i.WaitUntilClosed()

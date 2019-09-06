@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/alexmorten/instascraper/scraper"
-	"github.com/alexmorten/instascraper/utils"
+	"github.com/alexmorten/instascraper/service"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 		kafkaAddress = "localhost:9092"
 	}
 	s := scraper.New(kafkaAddress)
-	utils.CloseOnSignal(s.Close)
+	service.CloseOnSignal(s)
 	go s.Run()
 
 	s.WaitUntilClosed()

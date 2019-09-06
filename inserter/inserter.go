@@ -10,20 +10,20 @@ import (
 	"github.com/dgraph-io/dgo/protos/api"
 
 	"github.com/alexmorten/instascraper/models"
+	"github.com/alexmorten/instascraper/service"
 	"github.com/alexmorten/instascraper/utils"
+
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 )
 
 // Inserter represents the scraper containing all clients it uses
 type Inserter struct {
-	qReader     *kafka.Reader
-	qWriter     *kafka.Writer
-	dgClient    *dgo.Dgraph
-	dgConn      *grpc.ClientConn
-	stopChan    chan struct{}
-	stoppedChan chan struct{}
-	closedChan  chan struct{}
+	qReader  *kafka.Reader
+	qWriter  *kafka.Writer
+	dgClient *dgo.Dgraph
+	dgConn   *grpc.ClientConn
+	*service.Executor
 }
 
 // New returns an initilized scraper
@@ -46,20 +46,18 @@ func New(kafkaAddress, dgraphAddress string) *Inserter {
 	dg, conn := utils.GetDGraphClient(dgraphAddress)
 	i.dgClient = dg
 	i.dgConn = conn
-	i.stopChan = make(chan struct{}, 1)
-	i.stoppedChan = make(chan struct{}, 1)
-	i.closedChan = make(chan struct{}, 1)
+	i.Executor = service.New()
 	return i
 }
 
 // Run the inserter
 func (i *Inserter) Run() {
 	defer func() {
-		i.stoppedChan <- struct{}{}
+		i.MarkAsStopped()
 	}()
 
 	fmt.Println("starting inserter")
-	for len(i.stopChan) == 0 {
+	for i.IsRunning() {
 		m, err := i.qReader.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
@@ -80,24 +78,14 @@ func (i *Inserter) Run() {
 
 // Close the inserter
 func (i *Inserter) Close() {
-	i.stopChan <- struct{}{}
-	t := time.NewTimer(time.Second * 3)
-	select {
-	case <-t.C:
-		break
-	case <-i.stoppedChan:
-		t.Stop()
-		break
-	}
+	i.Stop()
+	i.WaitUntilStopped(time.Second * 3)
+
 	i.dgConn.Close()
 	i.qReader.Close()
 	i.qWriter.Close()
-	i.closedChan <- struct{}{}
-}
 
-// WaitUntilClosed waits until the Close func call of the inserter is finished
-func (i *Inserter) WaitUntilClosed() {
-	<-i.closedChan
+	i.MarkAsClosed()
 }
 
 // InsertUserFollowInfo inserts the user follow info into dgraph, while writting userNames that don't exist in the graph yet
