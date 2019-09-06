@@ -2,7 +2,8 @@
 
 ## Requirements
 
-Requires at least go 1.11 with the env var `GO111MODULEs=on`
+- At least go 1.11 with the env var `GO111MODULEs=on`
+- `docker` and `docker-compose` are available and up-to-date
 
 ## Running the scraper
 
