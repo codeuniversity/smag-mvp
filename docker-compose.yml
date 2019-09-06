@@ -49,7 +49,7 @@ services:
     depends_on:
       - "zookeeper"
     environment:
-      KAFKA_CREATE_TOPICS: "user_names:4:1,user_follow_infos:4:1"
+      KAFKA_CREATE_TOPICS: "user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_ADVERTISED_HOST_NAME: "localhost"
     volumes:
