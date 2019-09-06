@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"context"
 
 	"github.com/alexmorten/instascraper/utils"
@@ -18,7 +19,11 @@ func handleErr(err error) {
 }
 
 func prepareDB() {
-	dg, conn := utils.GetDGraphClient()
+	dgraphAddress := os.Getenv("DGRAPH_ADDRESS")
+	if dgraphAddress == "" {
+		dgraphAddress = "127.0.0.1:9080"
+	}
+	dg, conn := utils.GetDGraphClient(dgraphAddress)
 	defer conn.Close()
 
 	op := &api.Operation{DropAll: true}
