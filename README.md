@@ -11,11 +11,14 @@ In different terminal windows:
 
 1. Start `kafka` and `dgraph` with `docker-compose up`
 1. Run the scraper with `go run scraper/main/main.go`
-1. Run the inserter with `go run inserter/main/main.go`
+1. Run the dgraph inserter with `go run dgraph-inserter/main/main.go`
+1. Run the postgres inserter with `go run postgres-inserter/main/main.go`
 
 If this is your first time running this:
 
 1. Set the schema for DGraph with `go run db/reset/main.go`
+1. install [migrate](https://github.com/golang-migrate/migrate) with `brew install golang-migrate` (on mac)
+1. run the migrations with `migrate -database 'postgres://postgres:password@localhost:5432/instascraper?sslmode=disable' -path db/migrations up`
 1. Choose a user_name as a starting point and run `go run cli/main/main.go <user_name>`
 
 ## Building docker images
@@ -24,6 +27,10 @@ If this is your first time running this:
 
 `docker build -t instascraper_scraper -f scraper/Dockerfile .`
 
-### Inserter
+### Dgraph Inserter
 
-`docker build -t instascraper_inserter -f inserter/Dockerfile .`
+`docker build -t instascraper_dgraph_inserter -f dgraph-inserter/Dockerfile .`
+
+### Postgres Inserter
+
+`docker build -t instascraper_postgres_inserter -f postgres-inserter/Dockerfile .`

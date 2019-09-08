@@ -54,5 +54,10 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: "localhost"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  postgres:
+    image: postgres:11.5
+    ports:
+      - 5432:5432
+
 volumes:
   dgraph:

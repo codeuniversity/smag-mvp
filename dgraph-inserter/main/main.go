@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/alexmorten/instascraper/inserter"
+	"github.com/alexmorten/instascraper/dgraph-inserter"
 	"github.com/alexmorten/instascraper/service"
 )
 
