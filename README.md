@@ -18,6 +18,7 @@ If this is your first time running this:
 
 1. Set the schema for DGraph with `go run db/reset/main.go`
 1. install [migrate](https://github.com/golang-migrate/migrate) with `brew install golang-migrate` (on mac)
+1. create the database in postgres with `psql -h localhost -U postgres -w -c "create database instascraper;"`
 1. run the migrations with `migrate -database 'postgres://postgres:password@localhost:5432/instascraper?sslmode=disable' -path db/migrations up`
 1. Choose a user_name as a starting point and run `go run cli/main/main.go <user_name>`
 
