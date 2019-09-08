@@ -30,7 +30,7 @@ func New(kafkaAddress, dgraphAddress string) *Inserter {
 	i := &Inserter{}
 	i.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_follow_inserter",
+		GroupID:        "user_postgres_inserter",
 		Topic:          "user_follow_infos",
 		MinBytes:       10e3, // 10KB
 		MaxBytes:       10e6, // 10MB
@@ -117,9 +117,9 @@ func handleErr(err error) {
 }
 
 func (i *Inserter) insertUser(p *models.User) {
-
 	_, err := i.db.Exec(`INSERT INTO users(user_name,real_name, bio, avatar_url, crawl_ts)
-	VALUES($1,$2,$3,$4,$5) ON CONFLICT (user_name) DO UPDATE SET user_name = $1, real_name = $2, bio = $3, avatar_url = $4, crawl_ts = $5`, p.Name, p.RealName, p.Bio, p.AvatarURL, p.CrawledAt)
+	VALUES($1,$2,$3,$4,$5) ON CONFLICT (user_name) DO UPDATE SET user_name = $1, real_name = $2, bio = $3, avatar_url = $4, crawl_ts = $5`,
+		p.Name, p.RealName, p.Bio, p.AvatarURL, p.CrawledAt)
 	handleErr(err)
 	var userID int
 	i.db.QueryRow("SELECT id from users where user_name = $1", p.Name).Scan(&userID)
@@ -138,7 +138,6 @@ func (i *Inserter) insertUser(p *models.User) {
 		_, err = i.db.Exec(`INSERT INTO follows(from_id, to_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, userID, followedID)
 		handleErr(err)
 	}
-
 }
 
 func (i *Inserter) handleCreatedUser(userName string) {
