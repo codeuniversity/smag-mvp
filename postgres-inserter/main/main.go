@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/alexmorten/instascraper/postgres-inserter"
+	inserter "github.com/alexmorten/instascraper/postgres-inserter"
 	"github.com/alexmorten/instascraper/service"
 )
 
@@ -12,11 +12,11 @@ func main() {
 	if kafkaAddress == "" {
 		kafkaAddress = "127.0.0.1:9092"
 	}
-	dgraphAddress := os.Getenv("DGRAPH_ADDRESS")
-	if dgraphAddress == "" {
-		dgraphAddress = "127.0.0.1:9080"
+	postgresHost := os.Getenv("POSTGRES_HOST")
+	if postgresHost == "" {
+		postgresHost = "127.0.0.1"
 	}
-	i := inserter.New(kafkaAddress, dgraphAddress)
+	i := inserter.New(kafkaAddress, postgresHost)
 
 	service.CloseOnSignal(i)
 	go i.Run()

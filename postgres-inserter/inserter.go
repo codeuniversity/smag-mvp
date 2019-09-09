@@ -26,7 +26,7 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, dgraphAddress string) *Inserter {
+func New(kafkaAddress, postgresHost string) *Inserter {
 	i := &Inserter{}
 	i.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
@@ -42,7 +42,7 @@ func New(kafkaAddress, dgraphAddress string) *Inserter {
 		Balancer: &kafka.LeastBytes{},
 		Async:    true,
 	})
-	db, err := sql.Open("postgres", "user=postgres dbname=instascraper sslmode=disable")
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
 	if err != nil {
 		panic(err)
 	}
