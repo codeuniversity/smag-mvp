@@ -1,42 +1,42 @@
 version: "3.2"
 services:
-  zero:
-    image: dgraph/dgraph:v1.0.17
-    volumes:
-      - type: volume
-        source: dgraph
-        target: /dgraph
-        volume:
-          nocopy: true
-    ports:
-      - 5080:5080
-      - 6080:6080
-    restart: on-failure
-    command: dgraph zero --my=zero:5080
-  server:
-    image: dgraph/dgraph:v1.0.17
-    volumes:
-      - type: volume
-        source: dgraph
-        target: /dgraph
-        volume:
-          nocopy: true
-    ports:
-      - 8080:8080
-      - 9080:9080
-    restart: on-failure
-    command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080
-  ratel:
-    image: dgraph/dgraph:v1.0.17
-    volumes:
-      - type: volume
-        source: dgraph
-        target: /dgraph
-        volume:
-          nocopy: true
-    ports:
-      - 8000:8000
-    command: dgraph-ratel
+  # zero:
+  #   image: dgraph/dgraph:v1.0.17
+  #   volumes:
+  #     - type: volume
+  #       source: dgraph
+  #       target: /dgraph
+  #       volume:
+  #         nocopy: true
+  #   ports:
+  #     - 5080:5080
+  #     - 6080:6080
+  #   restart: on-failure
+  #   command: dgraph zero --my=zero:5080
+  # server:
+  #   image: dgraph/dgraph:v1.0.17
+  #   volumes:
+  #     - type: volume
+  #       source: dgraph
+  #       target: /dgraph
+  #       volume:
+  #         nocopy: true
+  #   ports:
+  #     - 8080:8080
+  #     - 9080:9080
+  #   restart: on-failure
+  #   command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080
+  # ratel:
+  #   image: dgraph/dgraph:v1.0.17
+  #   volumes:
+  #     - type: volume
+  #       source: dgraph
+  #       target: /dgraph
+  #       volume:
+  #         nocopy: true
+  #   ports:
+  #     - 8000:8000
+  #   command: dgraph-ratel
 
   zookeeper:
     image: "wurstmeister/zookeeper"
@@ -62,6 +62,6 @@ services:
       - "7687:7687"
     environment: 
       NEO4J_HOME: "/var/lib/neo4j"
-      NEO4J_AUTH: none
+#      NEO4J_AUTH: none
 volumes:
   dgraph:
