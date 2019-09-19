@@ -101,34 +101,42 @@ func (i *Inserter) insertUser(user *models.User) {
 
 	const (
 		createUserOrAddDetails = `
-		MERGE (u:User {name: {name}})
-		SET u.realName={realName}, u.AvatarURL={avatarUrl}
+			MERGE (u:User {name: {name}})
+			SET u.realName={realName},u.Bio={bio}, u.AvatarURL={avatarUrl}, u.crawledTS={crawled}
 		`
 		addRelationsshipAndCreateUserIfNotExisting = `
-		MATCH (u1:User {name: {name1}})
-		MERGE (u2:User{name: {name2}})
-		MERGE (u1)-[:follows]->(u2)
+			MATCH (u1:User {name: {name1}})
+			MERGE (u2:User{name: {name2}})
+			MERGE (u1)-[:follows]->(u2)
 		`
 	)
 
-	_, err := i.conn.ExecNeo(createUserOrAddDetails, map[string]interface{}{"name": user.Name, "realName": user.RealName, "avatarUrl": user.AvatarURL})
+	_, err := i.conn.ExecNeo(createUserOrAddDetails, map[string]interface{}{"name": user.Name, "realName": user.RealName, "avatarUrl": user.AvatarURL, "bio": user.Bio, "crawled": user.CrawledAt})
 	if err != nil {
 		panic(err)
 	}
 
 	// setting relationship to followings
 	for _, followed := range user.Follows {
-		_, err := i.conn.ExecNeo(addRelationsshipAndCreateUserIfNotExisting, map[string]interface{}{"name1": user.Name, "name2": followed.Name})
+		result, err := i.conn.ExecNeo(addRelationsshipAndCreateUserIfNotExisting, map[string]interface{}{"name1": user.Name, "name2": followed.Name})
 		if err != nil {
 			panic(err)
 		}
-
-		i.qWriter.WriteMessages(context.Background(), kafka.Message{
-			Value: []byte(followed.Name),
-		})
-
+		i.handleCreatedUser(result, followed.Name)
 	}
 
+}
+
+// Checks if followed user is already in the Queue
+func (i *Inserter) handleCreatedUser(result bolt.Result, username string) {
+	// Username gets added to Queue only if it just got created
+	// rowCount == 2 -> User (only username) and relationship created
+	// rowCount == 1 -> relationship created
+	if rowsCount, _ := result.RowsAffected(); rowsCount == 2 {
+		i.qWriter.WriteMessages(context.Background(), kafka.Message{
+			Value: []byte(username),
+		})
+	}
 }
 
 // Close the inserter
