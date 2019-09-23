@@ -144,9 +144,9 @@ func (i *Inserter) initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress st
 		panic(err)
 	}
 
-	_, errb := con.ExecNeo("CREATE CONSTRAINT ON (U:User) ASSERT U.name IS UNIQUE", nil)
-	if errb != nil {
-		panic(errb)
+	_, err = con.ExecNeo("CREATE CONSTRAINT ON (U:User) ASSERT U.name IS UNIQUE", nil)
+	if err != nil {
+		panic(err)
 	}
 
 	i.conn = con
