@@ -98,14 +98,14 @@ workflows:
     jobs:
       - tests
       - scraper-image:
-        requires:
-          - tests
-    - postgres-inserter-image:
-      requires:
-        - tests
-    - neo4j-inserter-image:
-      requires:
-        - tests
-    - dgraph-inserter-image:
-      requires:
-        - tests
+          requires:
+            - tests
+      - postgres-inserter-image:
+          requires:
+            - tests
+      - neo4j-inserter-image:
+          requires:
+            - tests
+      - dgraph-inserter-image:
+          requires:
+            - tests
