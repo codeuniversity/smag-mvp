@@ -38,7 +38,4 @@ workflows:
   workflow:
     jobs:
       - tests
-      - scraper-image:
-          filters:
-            branches:
-              only: master
+      - scraper-image
