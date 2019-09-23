@@ -13,10 +13,21 @@ func main() {
 		kafkaAddress = "127.0.0.1:9092"
 	}
 	neo4jAddress := os.Getenv("NEO4J_ADDRESS")
+	neo4jUsername := os.Getenv("NEO4J_USERNAME")
+	neo4jPassword := os.Getenv("NEO4J_PASSWORD")
+
 	if neo4jAddress == "" {
-		neo4jAddress = "bolt://neo4j:123456@127.0.0.1:7687"
+		neo4jAddress = "127.0.0.1:7687"
 	}
-	i := inserter.New(kafkaAddress, neo4jAddress)
+
+	if neo4jUsername == "" {
+		neo4jUsername = "neo4j"
+	}
+
+	if neo4jPassword == "" {
+		neo4jPassword = "123456"
+	}
+	i := inserter.New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword)
 
 	service.CloseOnSignal(i)
 	go i.Run()

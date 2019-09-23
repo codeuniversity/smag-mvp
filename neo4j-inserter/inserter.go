@@ -23,7 +23,7 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, neo4jAddress string) *Inserter {
+func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string) *Inserter {
 	i := &Inserter{}
 	i.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
@@ -40,7 +40,8 @@ func New(kafkaAddress, neo4jAddress string) *Inserter {
 		Async:    true,
 	})
 	driver := bolt.NewDriver()
-	con, err := driver.OpenNeo(neo4jAddress)
+	address := "bolt://" + neo4jUsername + neo4jPassword + "@" + neo4jAddress
+	con, err := driver.OpenNeo(address)
 	if err != nil {
 		panic(err)
 	}
