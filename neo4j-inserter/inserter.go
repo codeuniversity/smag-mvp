@@ -42,6 +42,7 @@ func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string) *Inser
 	driver := bolt.NewDriver()
 	address := "bolt://" + neo4jUsername + ":" + neo4jPassword + "@" + neo4jAddress
 	con, err := driver.OpenNeo(address)
+	con.QueryNeo("CREATE CONSTRAINT ON (U:User) ASSERT U.name IS UINIQUE", nil)
 	if err != nil {
 		panic(err)
 	}
