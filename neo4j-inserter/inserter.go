@@ -138,7 +138,7 @@ func (i *Inserter) handleCreatedUser(result bolt.Result, username string) {
 // sets connection and constraints for neo4j
 func (i *Inserter) initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress string) {
 	driver := bolt.NewDriver()
-	address := "bolt://" + neo4jUsername + ":" + neo4jPassword + "@" + neo4jAddress
+	address := fmt.Sprintf("bolt://%s:%s@%s", neo4jUsername, neo4jPassword, neo4jAddress)
 	con, err := driver.OpenNeo(address)
 	if err != nil {
 		panic(err)
