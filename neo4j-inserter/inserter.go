@@ -17,7 +17,6 @@ import (
 type Inserter struct {
 	qReader *kafka.Reader
 	qWriter *kafka.Writer
-	driver  bolt.Driver
 	conn    bolt.Conn
 	//result  neo4j.Result
 	*service.Executor
