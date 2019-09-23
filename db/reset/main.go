@@ -4,7 +4,7 @@ import (
 	"os"
 	"context"
 
-	"github.com/alexmorten/instascraper/utils"
+	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/dgraph-io/dgo/protos/api"
 )
 

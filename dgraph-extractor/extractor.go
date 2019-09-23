@@ -8,9 +8,9 @@ import (
 
 	"github.com/dgraph-io/dgo"
 
-	"github.com/alexmorten/instascraper/models"
-	"github.com/alexmorten/instascraper/service"
-	"github.com/alexmorten/instascraper/utils"
+	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"

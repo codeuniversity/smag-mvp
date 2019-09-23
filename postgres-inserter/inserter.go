@@ -10,8 +10,8 @@ import (
 	// necessary for sql :pointup:
 	_ "github.com/lib/pq"
 
-	"github.com/alexmorten/instascraper/models"
-	"github.com/alexmorten/instascraper/service"
+	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/service"
 
 	"github.com/segmentio/kafka-go"
 )

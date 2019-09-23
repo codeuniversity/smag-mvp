@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/alexmorten/instascraper/models"
-	"github.com/alexmorten/instascraper/service"
-	"github.com/alexmorten/instascraper/utils"
+	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 
 	"github.com/gocolly/colly"
 	"github.com/segmentio/kafka-go"

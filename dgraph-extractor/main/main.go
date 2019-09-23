@@ -4,8 +4,8 @@ import (
 	"os"
 	"strconv"
 
-	extractor "github.com/alexmorten/instascraper/dgraph-extractor"
-	"github.com/alexmorten/instascraper/service"
+	extractor "github.com/codeuniversity/smag-mvp/dgraph-extractor"
+	"github.com/codeuniversity/smag-mvp/service"
 )
 
 func main() {

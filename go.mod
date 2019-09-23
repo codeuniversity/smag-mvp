@@ -1,4 +1,4 @@
-module github.com/alexmorten/instascraper
+module github.com/codeuniversity/smag-mvp
 
 go 1.12
 
