@@ -1,32 +1,18 @@
 package main
 
 import (
-	"os"
-
 	inserter "github.com/codeuniversity/smag-mvp/neo4j-inserter"
 	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 )
 
 func main() {
-	kafkaAddress := os.Getenv("KAFKA_ADDRESS")
-	if kafkaAddress == "" {
-		kafkaAddress = "127.0.0.1:9092"
-	}
-	neo4jAddress := os.Getenv("NEO4J_ADDRESS")
-	neo4jUsername := os.Getenv("NEO4J_USERNAME")
-	neo4jPassword := os.Getenv("NEO4J_PASSWORD")
 
-	if neo4jAddress == "" {
-		neo4jAddress = "127.0.0.1:7687"
-	}
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	neo4jAddress := utils.GetStringFromEnvWithDefault("NEO4J_ADDRESS", "127.0.0.1:7687")
+	neo4jUsername := utils.GetStringFromEnvWithDefault("NEO4J_USERNAME", "neo4j")
+	neo4jPassword := utils.GetStringFromEnvWithDefault("NEO4J_PASSWORD", "123456")
 
-	if neo4jUsername == "" {
-		neo4jUsername = "neo4j"
-	}
-
-	if neo4jPassword == "" {
-		neo4jPassword = "123456"
-	}
 	i := inserter.New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword)
 
 	service.CloseOnSignal(i)
