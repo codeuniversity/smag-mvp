@@ -31,7 +31,7 @@ func New(kafkaAddress, dgraphAddress string) *Inserter {
 	i := &Inserter{}
 	i.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_follow_inserter",
+		GroupID:        "user_dgraph_inserter",
 		Topic:          "user_follow_infos",
 		MinBytes:       10e3, // 10KB
 		MaxBytes:       10e6, // 10MB
