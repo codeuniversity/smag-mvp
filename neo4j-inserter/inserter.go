@@ -41,11 +41,9 @@ func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string) *Inser
 	})
 	driver := bolt.NewDriver()
 	address := "bolt://" + neo4jUsername + ":" + neo4jPassword + "@" + neo4jAddress
-
 	con, err := driver.OpenNeo(address)
 	if err != nil {
 		panic(err)
-
 	}
 	i.conn = con
 	i.Executor = service.New()
@@ -103,7 +101,7 @@ func (i *Inserter) insertUser(user *models.User) {
 
 	const (
 		createUserOrAddDetails = `
-			MERGE CONSTRAINT ON (u:User {name: {name}})  IS UNIQUE
+			MERGE (u:User {name: {name}})
 			SET u.realName={realName},u.Bio={bio}, u.AvatarURL={avatarUrl}, u.crawledTS={crawled}
 		`
 		addRelationsshipAndCreateUserIfNotExisting = `
