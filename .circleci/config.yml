@@ -1,0 +1,46 @@
+version: 2.1
+
+executors:
+  job-runner:
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+
+jobs:
+  tests:
+    executor: job-runner
+
+    steps:
+      - checkout
+
+      # specify any bash command here prefixed with `run: `
+      - run: go get -v -t -d ./...
+      - run: go test -v ./...
+  scraper-image:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -t $IMAGE_NAME -f scraper/Dockerfile .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
+            docker push $IMAGE_NAME:latest
+            docker push $IMAGE_NAME:$IMAGE_TAG
+workflows:
+  version: 2
+  workflow:
+    jobs:
+      - tests
+      - scraper-image:
+          filters:
+            branches:
+              only: master
