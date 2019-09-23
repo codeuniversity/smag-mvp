@@ -39,14 +39,9 @@ func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string) *Inser
 		Balancer: &kafka.LeastBytes{},
 		Async:    true,
 	})
-	driver := bolt.NewDriver()
-	address := "bolt://" + neo4jUsername + ":" + neo4jPassword + "@" + neo4jAddress
-	con, err := driver.OpenNeo(address)
-	con.QueryNeo("CREATE CONSTRAINT ON (U:User) ASSERT U.name IS UINIQUE", nil)
-	if err != nil {
-		panic(err)
-	}
-	i.conn = con
+
+	i.initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress)
+
 	i.Executor = service.New()
 	return i
 }
@@ -138,6 +133,24 @@ func (i *Inserter) handleCreatedUser(result bolt.Result, username string) {
 			Value: []byte(username),
 		})
 	}
+}
+
+// sets connection and constraints for neo4j
+func (i *Inserter) initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress string) {
+	driver := bolt.NewDriver()
+	address := "bolt://" + neo4jUsername + ":" + neo4jPassword + "@" + neo4jAddress
+	con, err := driver.OpenNeo(address)
+	if err != nil {
+		panic(err)
+	}
+
+	_, errb := con.ExecNeo("CREATE CONSTRAINT ON (U:User) ASSERT U.name IS UNIQUE", nil)
+	if errb != nil {
+		panic(errb)
+	}
+
+	i.conn = con
+
 }
 
 // Close the inserter
