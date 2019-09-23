@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	inserter "github.com/alexmorten/instascraper/inserter-neo4j"
-	"github.com/alexmorten/instascraper/service"
+	inserter "github.com/codeuniversity/smag-mvp/neo4j-inserter"
+	"github.com/codeuniversity/smag-mvp/service"
 )
 
 func main() {

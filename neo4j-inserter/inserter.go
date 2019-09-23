@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alexmorten/instascraper/models"
-	"github.com/alexmorten/instascraper/service"
+	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/service"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 
 	"github.com/segmentio/kafka-go"
