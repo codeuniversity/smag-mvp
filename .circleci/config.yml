@@ -100,12 +100,24 @@ workflows:
       - scraper-image:
           requires:
             - tests
+          filters:
+            branches:
+              only: master
       - postgres-inserter-image:
           requires:
             - tests
+          filters:
+            branches:
+              only: master
       - neo4j-inserter-image:
           requires:
             - tests
+          filters:
+            branches:
+              only: master
       - dgraph-inserter-image:
           requires:
             - tests
+          filters:
+            branches:
+              only: master
