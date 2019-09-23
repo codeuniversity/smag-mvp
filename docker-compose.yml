@@ -63,5 +63,10 @@ services:
     environment: 
       NEO4J_HOME: "/var/lib/neo4j"
 #      NEO4J_AUTH: none
+  postgres:
+    image: postgres:11.5
+    ports:
+      - 5432:5432
+
 volumes:
   dgraph:
