@@ -2,8 +2,9 @@ package main
 
 import (
 	"os"
+	"strconv"
 
-	"github.com/codeuniversity/smag-mvp/dgraph-inserter"
+	extractor "github.com/codeuniversity/smag-mvp/dgraph-extractor"
 	"github.com/codeuniversity/smag-mvp/service"
 )
 
@@ -16,7 +17,16 @@ func main() {
 	if dgraphAddress == "" {
 		dgraphAddress = "127.0.0.1:9080"
 	}
-	i := inserter.New(kafkaAddress, dgraphAddress)
+
+	startID := os.Getenv("START_ID")
+	if startID == "" {
+		startID = "1"
+	}
+	startIDInt, err := strconv.ParseInt(startID, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	i := extractor.New(kafkaAddress, dgraphAddress, int(startIDInt))
 
 	service.CloseOnSignal(i)
 	go i.Run()

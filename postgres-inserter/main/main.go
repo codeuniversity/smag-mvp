@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	inserter "github.com/alexmorten/instascraper/postgres-inserter"
-	"github.com/alexmorten/instascraper/service"
+	inserter "github.com/codeuniversity/smag-mvp/postgres-inserter"
+	"github.com/codeuniversity/smag-mvp/service"
 )
 
 func main() {

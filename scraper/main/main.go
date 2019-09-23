@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
-	"github.com/alexmorten/instascraper/scraper"
-	"github.com/alexmorten/instascraper/service"
+	"github.com/codeuniversity/smag-mvp/scraper"
+	"github.com/codeuniversity/smag-mvp/service"
 )
 
 func main() {
