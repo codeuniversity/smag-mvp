@@ -12,6 +12,7 @@ In different terminal windows:
 1. Start `kafka` and `dgraph` with `docker-compose up`
 1. Run the scraper with `go run scraper/main/main.go`
 1. Run the dgraph inserter with `go run dgraph-inserter/main/main.go`
+1. Run the neo4j inserter with `go run neo4j-inserter/main/main.go`
 1. Run the postgres inserter with `go run postgres-inserter/main/main.go`
 
 If this is your first time running this:
@@ -31,6 +32,10 @@ If this is your first time running this:
 ### Dgraph Inserter
 
 `docker build -t instascraper_dgraph_inserter -f dgraph-inserter/Dockerfile .`
+
+### neo4j Inserter
+
+`docker build -t instascraper_neo4j_inserter -f neo4j-inserter/Dockerfile .`
 
 ### Postgres Inserter
 
