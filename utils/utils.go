@@ -37,7 +37,7 @@ func WithRetries(times int, f func() error) error {
 	return err
 }
 
-//GetStringFromEnvWithDefault xreturns default Value if OS Enviroment Variable is not set
+//GetStringFromEnvWithDefault returns default Value if OS Enviroment Variable is not set
 func GetStringFromEnvWithDefault(enVarName, defaultValue string) string {
 	envValue := os.Getenv(enVarName)
 	if envValue == "" {
