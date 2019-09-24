@@ -1,17 +1,14 @@
 package main
 
 import (
-	"os"
-
 	"github.com/codeuniversity/smag-mvp/scraper"
 	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 )
 
 func main() {
-	kafkaAddress := os.Getenv("KAFKA_ADDRESS")
-	if kafkaAddress == "" {
-		kafkaAddress = "localhost:9092"
-	}
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+
 	s := scraper.New(kafkaAddress)
 	service.CloseOnSignal(s)
 	go s.Run()

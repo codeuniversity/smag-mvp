@@ -17,18 +17,17 @@ import (
 type Inserter struct {
 	qReader *kafka.Reader
 	qWriter *kafka.Writer
-	driver  bolt.Driver
 	conn    bolt.Conn
 	//result  neo4j.Result
 	*service.Executor
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, neo4jAddress string) *Inserter {
+func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string) *Inserter {
 	i := &Inserter{}
 	i.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_follow_inserter",
+		GroupID:        "user_neo4j_inserter",
 		Topic:          "user_follow_infos",
 		MinBytes:       10e3, // 10KB
 		MaxBytes:       10e6, // 10MB
@@ -40,12 +39,9 @@ func New(kafkaAddress, neo4jAddress string) *Inserter {
 		Balancer: &kafka.LeastBytes{},
 		Async:    true,
 	})
-	driver := bolt.NewDriver()
-	con, err := driver.OpenNeo(neo4jAddress)
-	if err != nil {
-		panic(err)
-	}
-	i.conn = con
+
+	i.initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress)
+
 	i.Executor = service.New()
 	return i
 }
@@ -137,6 +133,24 @@ func (i *Inserter) handleCreatedUser(result bolt.Result, username string) {
 			Value: []byte(username),
 		})
 	}
+}
+
+// sets connection and constraints for neo4j
+func (i *Inserter) initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress string) {
+	driver := bolt.NewDriver()
+	address := fmt.Sprintf("bolt://%s:%s@%s", neo4jUsername, neo4jPassword, neo4jAddress)
+	con, err := driver.OpenNeo(address)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = con.ExecNeo("CREATE CONSTRAINT ON (U:User) ASSERT U.name IS UNIQUE", nil)
+	if err != nil {
+		panic(err)
+	}
+
+	i.conn = con
+
 }
 
 // Close the inserter

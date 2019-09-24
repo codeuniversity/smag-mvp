@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/dgraph-io/dgo"
@@ -34,4 +35,14 @@ func WithRetries(times int, f func() error) error {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return err
+}
+
+//GetStringFromEnvWithDefault returns default Value if OS Enviroment Variable is not set
+func GetStringFromEnvWithDefault(enVarName, defaultValue string) string {
+	envValue := os.Getenv(enVarName)
+	if envValue == "" {
+		return defaultValue
+	}
+
+	return envValue
 }
