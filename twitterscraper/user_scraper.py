@@ -43,4 +43,4 @@ class UserScraper:
         return c
 
     def to_json(self) -> str:
-        return json.dumps(self.user.__dict__)
+        return json.dumps(self.user.__dict__).encode("utf-8")
