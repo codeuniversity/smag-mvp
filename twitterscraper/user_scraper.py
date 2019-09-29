@@ -9,8 +9,8 @@ class UserScraper:
 
     def scrape(self) -> twint.user.user:
         user = self.scrape_user()
-        user.followers_list = self.scrape_followers()
-        user.following_list = self.scrape_following()
+        user.followers_list = self.scrape_follows_list(twint.run.Followers)
+        user.following_list = self.scrape_follows_list(twint.run.Following)
 
         return user
 
@@ -19,15 +19,8 @@ class UserScraper:
         user = twint.output.users_list.pop()
         return user
 
-    def scrape_followers(self) -> list:
-        twint.run.Followers(self.conf)
-
-        ret = twint.output.follows_list
-        twint.output.follows_list = []
-        return ret
-
-    def scrape_following(self) -> list:
-        twint.run.Following(self.conf)
+    def scrape_follows_list(self, func) -> list:
+        func(self.conf)
 
         ret = twint.output.follows_list
         twint.output.follows_list = []
