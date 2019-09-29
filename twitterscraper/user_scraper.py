@@ -1,5 +1,3 @@
-import json
-
 import twint
 
 
@@ -14,7 +12,6 @@ class UserScraper:
         user.followers_list = self.scrape_followers()
         user.following_list = self.scrape_following()
 
-        self.user = user
         return user
 
     def scrape_user(self) -> twint.user.user:
@@ -41,6 +38,3 @@ class UserScraper:
         c.Username = self.user_name
         c.Store_object = True
         return c
-
-    def to_json(self) -> str:
-        return json.dumps(self.user.__dict__).encode("utf-8")
