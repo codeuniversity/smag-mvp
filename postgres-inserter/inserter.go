@@ -44,7 +44,7 @@ func New(kafkaAddress, postgresHost, postgresPassword string) *Inserter {
 	})
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
-		connectionString += " password=" + postgresPassword
+		connectionString += " " + "password=" + postgresPassword
 	}
 
 	db, err := sql.Open("postgres", connectionString)
