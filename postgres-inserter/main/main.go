@@ -10,12 +10,13 @@ func main() {
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	rTopic := utils.MustGetStringFromEnv("KAFKA_RTOPIC")
 	wTopic := utils.MustGetStringFromEnv("KAFKA_WTOPIC")
+	userDiscovery := utils.GetBoolFromEnvWithDefault("USER_DISCOVERY", false)
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 	postgresHost := utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1")
 	postgresPassword := utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", "")
 
-	i := inserter.New(kafkaAddress, postgresHost, postgresPassword, groupID, rTopic, wTopic)
+	i := inserter.New(kafkaAddress, postgresHost, postgresPassword, groupID, rTopic, wTopic, userDiscovery)
 
 	service.CloseOnSignal(i)
 	go i.Run()
