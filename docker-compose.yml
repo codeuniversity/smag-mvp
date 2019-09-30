@@ -49,4 +49,4 @@ services:
         environment:
             KAFKA_HOST_PORT: "kafka:9092"
             SEED_NAME: "urhengula5"
-            SLEEP_SECONDS: "5"
+            SLEEP_SECONDS: "10"
