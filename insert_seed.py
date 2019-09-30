@@ -15,6 +15,10 @@ if __name__ == "__main__":
 
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
+    wait = int(os.getenv("SLEEP_SECONDS", "5"))
+    logging.info(f"sleep for {wait} seconds")
+    sleep(wait)
+
     producer = KafkaProducer(
         bootstrap_servers=kafka_host_port,
         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
@@ -22,7 +26,6 @@ if __name__ == "__main__":
         reconnect_backoff_max_ms=5000,
     )
 
-    wait = int(os.getenv("SLEEP_SECONDS", "5"))
     logging.info(f"sleep for {wait} seconds")
     sleep(wait)
 
