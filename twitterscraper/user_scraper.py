@@ -30,4 +30,5 @@ class UserScraper:
         c = twint.Config()
         c.Username = self.user_name
         c.Store_object = True
+        c.Hide_output = True
         return c
