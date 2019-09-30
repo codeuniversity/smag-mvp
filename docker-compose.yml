@@ -2,10 +2,9 @@ version: "3.7"
 
 services:
     user_scraper:
-        build:
-            context: .
-            dockerfile: ./user_scraper.Dockerfile
+        build: .
         image: "smag-twitter_scraper"
+        command: ["user_scraper.py"]
         depends_on:
             - "kafka"
         environment:
