@@ -6,6 +6,8 @@ from kafka import KafkaProducer, KafkaConsumer
 
 class ScraperManager:
 
+    name = "scraper_manager"
+
     def __init__(
         self,
         insert_topic: str,
@@ -77,7 +79,7 @@ class ScraperManager:
     def produce(self, msg) -> None:
         topic = self.insert_topic
         logging.info(
-            f"Send scraped {msg.username} to kafka/{topic}"
+            f"{self.name} sends msg (from {msg.username}) to kafka/{topic}"
         )
         msg_dict = getattr(msg, "__dict__", msg)
         self.producer.send(topic, msg_dict)

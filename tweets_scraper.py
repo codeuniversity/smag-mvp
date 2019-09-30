@@ -6,7 +6,9 @@ from twitterscraper.scraper_manager import ScraperManager
 from twitterscraper.utils import get_conf
 
 
-class Scraper(ScraperManager):
+class TweetsScraper(ScraperManager):
+    name = "tweets_scraper"
+
     @staticmethod
     def scrape(user_name: str):
         logging.info(f"scrape tweets of user {user_name}")
@@ -33,9 +35,9 @@ if __name__ == "__main__":
     fetch_topic = os.getenv("KAFKA_FETCH_TOPIC", "user_names")
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
-    scraper_manager = Scraper(
+    tweets_scraper = TweetsScraper(
         insert_topic=insert_topic,
         fetch_topic=fetch_topic,
         kafka_host_port=kafka_host_port,
     )
-    scraper_manager.consume_scrape_produce()
+    tweets_scraper.consume_scrape_produce()

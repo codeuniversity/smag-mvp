@@ -29,7 +29,9 @@ def scrape_follows_list(func, conf: twint.Config) -> list:
     return ret
 
 
-class Scraper(ScraperManager):
+class UserScraper(ScraperManager):
+    name = "user_scraper"
+
     @staticmethod
     def scrape(user_name: str):
         logging.info(f"scrape user {user_name}")
@@ -50,9 +52,9 @@ if __name__ == "__main__":
     fetch_topic = os.getenv("KAFKA_FETCH_TOPIC", "user_names")
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
-    scraper_manager = Scraper(
+    user_scraper = UserScraper(
         insert_topic=insert_topic,
         fetch_topic=fetch_topic,
         kafka_host_port=kafka_host_port,
     )
-    scraper_manager.consume_scrape_produce()
+    user_scraper.consume_scrape_produce()
