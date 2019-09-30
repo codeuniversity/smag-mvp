@@ -3,27 +3,24 @@ import logging
 
 from kafka import KafkaProducer, KafkaConsumer, TopicPartition
 
-from .user_scraper import UserScraper
-
 
 class ScraperManager:
 
     def __init__(
         self,
+        insert_topic: str,
+        fetch_topic: str,
         kafka_host_port: str = "localhost:9092",
-        new_user_topic: str = "user_names",
-        scraped_user_topic: str = "users_scraped",
     ):
-        self.user_consumer = KafkaConsumer(
-            new_user_topic,
+        self.consumer = KafkaConsumer(
+            fetch_topic,
             bootstrap_servers=kafka_host_port,
         )
         self.producer = KafkaProducer(
             bootstrap_servers=kafka_host_port,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),
         )
-        self.new_user_topic = new_user_topic
-        self.scraped_user_topic = scraped_user_topic
+        self.insert_topic = insert_topic
 
     def consume_scrape_produce(self):
         try:
@@ -36,11 +33,11 @@ class ScraperManager:
             self.producer.flush()
             raise
 
-    def _consume_scrape_produce(self):
+    def _consume_scrape_produce(self) -> None:
         """
-        Consumes new user_names from kafka,
-        scrapes these with twint,
-        and produces/sends scraped users and unknown users to kafka
+        Consumes from kafka,
+        scrapes via twint,
+        and produces/sends scraped msges to kafka
         """
         new_users = self.consume()
         logging.info(f"New users received: {new_users}")
@@ -50,7 +47,7 @@ class ScraperManager:
 
     def consume(self, blocking: bool = True) -> dict:
         timeout_ms = float("inf") if blocking is True else 0
-        partition_dict = self.user_consumer.poll(
+        partition_dict = self.consumer.poll(
             timeout_ms=timeout_ms,
             max_records=1,
         )
@@ -62,25 +59,27 @@ class ScraperManager:
         return ret
 
     def scrape_and_produce(self, user_name: str) -> None:
-        user = self.scrape(user_name)
-        self.produce(user)
+        msg = self.scrape(user_name)
+        if type(msg) is list:
+            for m in msg:
+                self.produce(m)
+        else:
+            self.produce(msg)
 
     def scrape(self, user_name: str):
-        logging.info(f"scrape user {user_name}")
-        user_scraper = UserScraper(user_name)
-        user = user_scraper.scrape()
-        return user
-
-    def produce(self, user) -> None:
-        self.send_scraped_user(user)
-
-    def send_scraped_user(self, user) -> None:
-        topic = self.scraped_user_topic
-        logging.info(
-            f"Send scraped user {user.username} to kafka/{topic}"
+        """This method will be implemented by the user to scrape either user-profile or tweets"""
+        raise NotImplementedError(
+            "You need to implement a scrape(user_name: str) method, "
+            "which returns an object to be written to kafka."
         )
-        user_dict = user.__dict__
-        self.producer.send(topic, user_dict)
+
+    def produce(self, msg) -> None:
+        topic = self.insert_topic
+        logging.info(
+            f"Send scraped {msg.username} to kafka/{topic}"
+        )
+        msg_dict = getattr(msg, "__dict__", msg)
+        self.producer.send(topic, msg_dict)
 
 
 if __name__ == "__main__":
@@ -90,5 +89,17 @@ if __name__ == "__main__":
         level=logging.INFO,
     )
 
-    scraper_manager = ScraperManager()
+    from .user_scraper import UserScraper
+
+    class Scraper(ScraperManager):
+        def scrape(self, user_name: str):
+            logging.info(f"scrape user {user_name}")
+            user_scraper = UserScraper(user_name)
+            user = user_scraper.scrape()
+            return user
+
+    scraper_manager = Scraper(
+        insert_topic="users_scraped",
+        fetch_topic="user_names",
+    )
     scraper_manager.consume_scrape_produce()
