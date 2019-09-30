@@ -65,6 +65,7 @@ class ScraperManager:
                 self.produce(m)
         else:
             self.produce(msg)
+        logging.info("done sending")
 
     def scrape(self, user_name: str):
         """This method will be implemented by the user to scrape either user-profile or tweets"""
