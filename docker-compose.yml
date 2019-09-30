@@ -29,3 +29,14 @@ services:
             KAFKA_ADVERTISED_HOST_NAME: "kafka"
         volumes:
             - "/var/run/docker.sock:/var/run/docker.sock"
+    kafka-seed:
+        build:
+            context: .
+            dockerfile: ./insert_seed.Dockerfile
+        image: "smag-insert_seed"
+        depends_on:
+            - "kafka"
+        environment:
+            KAFKA_HOST_PORT: "kafka:9092"
+            SEED_NAME: "urhengula5"
+            SLEEP_SECONDS: "5"
