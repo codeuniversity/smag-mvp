@@ -4,7 +4,7 @@ services:
     user_scraper:
         build: .
         image: "smag-twitter_scraper"
-        command: ["user_scraper.py"]
+        command: ["-m", "twitterscraper.user_scraper"]
         depends_on:
             - "kafka"
         environment:
@@ -15,7 +15,7 @@ services:
     tweets_scraper:
         build: .
         image: "smag-twitter_scraper"
-        command: ["tweets_scraper.py"]
+        command: ["-m", "twitterscraper.tweets_scraper"]
         depends_on:
             - "kafka"
         environment:

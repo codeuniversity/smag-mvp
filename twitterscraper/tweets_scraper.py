@@ -2,8 +2,8 @@ import logging
 
 import twint
 
-from twitterscraper.scraper_manager import ScraperManager
-from twitterscraper.utils import get_conf
+from .scraper_manager import ScraperManager
+from .utils import get_conf
 
 
 class TweetsScraper(ScraperManager):
