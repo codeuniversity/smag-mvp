@@ -81,26 +81,3 @@ class ScraperManager:
         )
         msg_dict = getattr(msg, "__dict__", msg)
         self.producer.send(topic, msg_dict)
-
-
-if __name__ == "__main__":
-    logging.basicConfig(
-        format="%(asctime)s.%(msecs)03d - %(module)s - %(levelname)s - %(message)s",
-        datefmt="%H:%M:%S",
-        level=logging.INFO,
-    )
-
-    from .user_scraper import UserScraper
-
-    class Scraper(ScraperManager):
-        def scrape(self, user_name: str):
-            logging.info(f"scrape user {user_name}")
-            user_scraper = UserScraper(user_name)
-            user = user_scraper.scrape()
-            return user
-
-    scraper_manager = Scraper(
-        insert_topic="users_scraped",
-        fetch_topic="user_names",
-    )
-    scraper_manager.consume_scrape_produce()
