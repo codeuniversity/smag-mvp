@@ -3,3 +3,5 @@
 docker-compose.yml
 *.Dockerfile
 README.md
+__pycache__/
+*.pyc
