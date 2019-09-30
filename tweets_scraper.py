@@ -10,8 +10,13 @@ class Scraper(ScraperManager):
     @staticmethod
     def scrape(user_name: str):
         logging.info(f"scrape tweets of user {user_name}")
+
+        tweets = []
+
         c = get_conf(user_name)
-        tweets: list = twint.run.Search(c)
+        c.Store_object_tweets_list = tweets
+
+        twint.run.Search(c)
         return tweets
 
 
@@ -27,9 +32,6 @@ if __name__ == "__main__":
     insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "users_scraped")
     fetch_topic = os.getenv("KAFKA_FETCH_TOPIC", "user_names")
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
-
-    logging.info(
-        f"# ENV VARS\n{insert_topic}\n{fetch_topic}\n{kafka_host_port}")
 
     scraper_manager = Scraper(
         insert_topic=insert_topic,
