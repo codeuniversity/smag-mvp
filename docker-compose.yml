@@ -21,7 +21,7 @@ services:
         environment:
             KAFKA_HOST_PORT: "kafka:9092"
             KAFKA_FETCH_TOPIC: "user_names"
-            KAFKA_INSERT_TOPIC: "users_scraped"
+            KAFKA_INSERT_TOPIC: "tweets_scaped"
 
     zookeeper:
         image: "wurstmeister/zookeeper:latest"
