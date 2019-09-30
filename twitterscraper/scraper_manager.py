@@ -1,7 +1,7 @@
 import json
 import logging
 
-from kafka import KafkaProducer, KafkaConsumer, TopicPartition
+from kafka import KafkaProducer, KafkaConsumer
 
 
 class ScraperManager:
