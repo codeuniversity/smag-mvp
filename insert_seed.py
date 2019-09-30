@@ -1,28 +1,22 @@
-import json
-import logging
-import sys
-
-from kafka import KafkaProducer
-
 if __name__ == "__main__":
+    import json
+    import logging
+    import os
+
+    from kafka import KafkaProducer
+
     logging.basicConfig(
         format="%(asctime)s.%(msecs)03d - %(module)s - %(levelname)s - %(message)s",
         datefmt="%H:%M:%S",
         level=logging.INFO,
     )
 
-    argv = sys.argv
-    if len(argv) != 3:
-        logging.error(
-            "Wrong number of arguments.\nUsage: python insert_seed.py <kafka host:port> <seed_name>"
-        )
-
-    kafka_host_port = argv[1]
+    kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
     producer = KafkaProducer(
         bootstrap_servers=kafka_host_port,
         value_serializer=lambda v: json.dumps(v).encode('utf-8'),
     )
 
-    seed_name = argv[2]
+    seed_name = os.getenv("SEED_NAME", "urhengula5")
     producer.send("user_names", seed_name)
     producer.flush()
