@@ -12,6 +12,17 @@ services:
             KAFKA_FETCH_TOPIC: "user_names"
             KAFKA_INSERT_TOPIC: "users_scraped"
 
+    tweets_scraper:
+        build: .
+        image: "smag-twitter_scraper"
+        command: ["tweets_scraper.py"]
+        depends_on:
+            - "kafka"
+        environment:
+            KAFKA_HOST_PORT: "kafka:9092"
+            KAFKA_FETCH_TOPIC: "user_names"
+            KAFKA_INSERT_TOPIC: "users_scraped"
+
     zookeeper:
         image: "wurstmeister/zookeeper:latest"
         ports:
@@ -23,7 +34,7 @@ services:
         depends_on:
             - "zookeeper"
         environment:
-            KAFKA_CREATE_TOPICS: "user_names:4:1,users_scraped:4:1,posts_scraped:4:1"
+            KAFKA_CREATE_TOPICS: "user_names:4:1,users_scraped:4:1,tweets_scraped:4:1"
             KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
             KAFKA_ADVERTISED_HOST_NAME: "kafka"
         volumes:
