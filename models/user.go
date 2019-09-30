@@ -22,8 +22,19 @@ type User struct {
 	CrawledAt int     `json:"crawled_at,omitempty"`
 }
 
+type RenewingAddresses struct {
+	InstanceId string   `json:"instanceId"`
+	LocalIps   []string `json:"localIps"`
+}
+
 // ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
 type ScrapeError struct {
 	Name  string `json:"name,omitempty"`
 	Error string `json:"error,omitempty"`
+}
+
+// ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
+type AwsServiceError struct {
+	InstanceId string `json:"name,omitempty"`
+	Error      string `json:"error,omitempty"`
 }
