@@ -44,9 +44,9 @@ class ScraperManager:
         """
         new_users = self.consume()
         logging.info(f"New users received: {new_users}")
+
         for user_name in new_users:
-            user = self.scrape(user_name)
-            self.produce(user)
+            self.scrape_and_produce(user_name)
 
     def consume(self, blocking: bool = True) -> dict:
         timeout_ms = float("inf") if blocking is True else 0
@@ -61,13 +61,17 @@ class ScraperManager:
             ret.extend(names)
         return ret
 
+    def scrape_and_produce(self, user_name: str) -> None:
+        user = self.scrape(user_name)
+        self.produce(user)
+
     def scrape(self, user_name: str):
         logging.info(f"scrape user {user_name}")
         user_scraper = UserScraper(user_name)
         user = user_scraper.scrape()
         return user
 
-    def produce(self, user):
+    def produce(self, user) -> None:
         self.send_scraped_user(user)
         self.send_new_users(user)
 
