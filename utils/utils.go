@@ -46,3 +46,13 @@ func GetStringFromEnvWithDefault(enVarName, defaultValue string) string {
 
 	return envValue
 }
+
+//MustGetStringFromEnv panics if OS Enviroment Variable is not set
+func MustGetStringFromEnv(enVarName string) string {
+	envValue := os.Getenv(enVarName)
+	if envValue == "" {
+		panic(fmt.Sprintf("%s must not be empty", enVarName))
+	}
+
+	return envValue
+}
