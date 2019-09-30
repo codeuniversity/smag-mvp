@@ -73,7 +73,6 @@ class ScraperManager:
 
     def produce(self, user) -> None:
         self.send_scraped_user(user)
-        self.send_new_users(user)
 
     def send_scraped_user(self, user) -> None:
         topic = self.scraped_user_topic
@@ -82,17 +81,6 @@ class ScraperManager:
         )
         user_dict = user.__dict__
         self.producer.send(topic, user_dict)
-
-    def send_new_users(self, user) -> None:
-        followers_list = user.followers_list
-        following_list = user.following_list
-
-        ls = set(followers_list + following_list)
-        topic = self.new_user_topic
-        for user_name in ls:
-            # TODO: check if username is already in topic
-            logging.info(f"Send new user {user_name} to kafka/{topic}")
-            self.producer.send(topic, user_name)
 
 
 if __name__ == "__main__":
