@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/codeuniversity/smag-mvp/utils"
+
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
@@ -23,20 +25,20 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword, groupID, rTopic, wTopic string, userDiscovery bool) *Inserter {
+func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string, kConfig *utils.KafkaConsumerConfig) *Inserter {
 	i := &Inserter{}
 	i.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
-		GroupID:        groupID, //"user_neo4j_inserter",
-		Topic:          rTopic,  //"user_follow_infos",
-		MinBytes:       10e3,    // 10KB
-		MaxBytes:       10e6,    // 10MB
+		GroupID:        kConfig.GroupID, //"user_neo4j_inserter",
+		Topic:          kConfig.RTopic,  //"user_follow_infos",
+		MinBytes:       10e3,            // 10KB
+		MaxBytes:       10e6,            // 10MB
 		CommitInterval: time.Second,
 	})
-	if userDiscovery {
+	if kConfig.IsUserDiscovery {
 		i.qWriter = kafka.NewWriter(kafka.WriterConfig{
 			Brokers:  []string{kafkaAddress},
-			Topic:    wTopic, //"user_names",
+			Topic:    kConfig.WTopic, //"user_names",
 			Balancer: &kafka.LeastBytes{},
 			Async:    true,
 		})

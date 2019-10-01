@@ -26,24 +26,11 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, postgresHost, postgresPassword, groupID, rTopic, wTopic string, userDiscovery bool) *Inserter {
+func New(kafkaAddress, postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
-	i.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        groupID, //"user_postgres_inserter",
-		Topic:          rTopic,  //"user_follow_infos",
-		MinBytes:       10e3,    // 10KB
-		MaxBytes:       10e6,    // 10MB
-		CommitInterval: time.Second,
-	})
-	if userDiscovery {
-		i.qWriter = kafka.NewWriter(kafka.WriterConfig{
-			Brokers:  []string{kafkaAddress},
-			Topic:    wTopic, //"user_names",
-			Balancer: &kafka.LeastBytes{},
-			Async:    true,
-		})
-	}
+	i.qReader = qReader
+	i.qWriter = qWriter
+
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
 		connectionString += " " + "password=" + postgresPassword

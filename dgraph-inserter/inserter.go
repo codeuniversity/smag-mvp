@@ -27,20 +27,20 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, dgraphAddress, groupID, rTopic, wTopic string, userDiscovery bool) *Inserter {
+func New(kafkaAddress, dgraphAddress string, kConfig *utils.KafkaConsumerConfig) *Inserter {
 	i := &Inserter{}
 	i.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
-		GroupID:        groupID, //"user_dgraph_inserter",
-		Topic:          rTopic,  //"user_follow_infos",
-		MinBytes:       10e3,    // 10KB
-		MaxBytes:       10e6,    // 10MB
+		GroupID:        kConfig.GroupID, //"user_dgraph_inserter",
+		Topic:          kConfig.RTopic,  //"user_follow_infos",
+		MinBytes:       10e3,            // 10KB
+		MaxBytes:       10e6,            // 10MB
 		CommitInterval: time.Second,
 	})
-	if userDiscovery {
+	if kConfig.IsUserDiscovery {
 		i.qWriter = kafka.NewWriter(kafka.WriterConfig{
 			Brokers:  []string{kafkaAddress},
-			Topic:    wTopic, //"user_names",
+			Topic:    kConfig.WTopic, //"user_names",
 			Balancer: &kafka.LeastBytes{},
 			Async:    true,
 		})
