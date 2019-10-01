@@ -1,18 +1,12 @@
-if __name__ == "__main__":
-    import json
-    import logging
-    import os
-    from time import sleep
+import json
+import logging
+import os
+from time import sleep
 
-    from kafka import KafkaProducer
-    from kafka.errors import NoBrokersAvailable
+from kafka import KafkaProducer
 
-    logging.basicConfig(
-        format="%(asctime)s.%(msecs)03d - %(module)s - %(levelname)s - %(message)s",
-        datefmt="%H:%M:%S",
-        level=logging.INFO,
-    )
 
+def main():
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
     wait = int(os.getenv("SLEEP_SECONDS", "5"))
@@ -32,3 +26,12 @@ if __name__ == "__main__":
     seed_name = os.getenv("SEED_NAME", "urhengula5")
     producer.send("user_names", seed_name)
     producer.flush()
+
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        format="%(asctime)s.%(msecs)03d - %(module)s - %(levelname)s - %(message)s",
+        datefmt="%H:%M:%S",
+        level=logging.INFO,
+    )
+    main()
