@@ -17,10 +17,14 @@ class ScraperManager:
         self.consumer = KafkaConsumer(
             fetch_topic,
             bootstrap_servers=kafka_host_port,
+            reconnect_backoff_ms=500,
+            reconnect_backoff_max_ms=10000,
         )
         self.producer = KafkaProducer(
             bootstrap_servers=kafka_host_port,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),
+            reconnect_backoff_ms=500,
+            reconnect_backoff_max_ms=10000,
         )
         self.insert_topic = insert_topic
 
