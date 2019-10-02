@@ -13,9 +13,11 @@ services:
     depends_on:
       - "zookeeper"
     environment:
-      KAFKA_CREATE_TOPICS: "user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1"
+      KAFKA_CREATE_TOPICS: >
+        user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1,
+        twitter-user_names:4:1,twitter-users_scraped:4:1,twitter-posts_scraped:4:1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_ADVERTISED_HOST_NAME: "localhost"
+      KAFKA_ADVERTISED_HOST_NAME: "kafka"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -31,6 +33,39 @@ services:
     image: postgres:11.5
     ports:
       - 5432:5432
+
+  # TWITTER SCRAPER
+  user_scraper:
+    build: "twitterscraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.user_scraper"]
+    depends_on:
+      - "kafka"
+    environment:
+      KAFKA_HOST_PORT: "kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter-user_names"
+      KAFKA_INSERT_TOPIC: "twitter-users_scraped"
+  tweets_scraper:
+    build: "twitterscraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.tweets_scraper"]
+    depends_on:
+      - "kafka"
+    environment:
+      KAFKA_HOST_PORT: "kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter-user_names"
+      KAFKA_INSERT_TOPIC: "twitter-tweets_scaped"
+  kafka-seed:
+    build: "twitterscraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.insert_seed"]
+    depends_on:
+      - "kafka"
+    environment:
+      KAFKA_HOST_PORT: "kafka:9092"
+      KAFKA_INSERT_TOPIC: "twitter-user_names"
+      SEED_NAME: "urhengula5"
+      SLEEP_SECONDS: "10"
 
 volumes:
   dgraph:
