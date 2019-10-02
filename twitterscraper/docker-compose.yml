@@ -47,5 +47,6 @@ services:
             - "kafka"
         environment:
             KAFKA_HOST_PORT: "kafka:9092"
+            KAFKA_INSERT_TOPIC: "twitter-user_names"
             SEED_NAME: "urhengula5"
             SLEEP_SECONDS: "10"

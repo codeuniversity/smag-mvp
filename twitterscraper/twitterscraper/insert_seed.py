@@ -24,7 +24,9 @@ def main():
     sleep(wait)
 
     seed_name = os.getenv("SEED_NAME", "urhengula5")
-    producer.send("user_names", seed_name)
+    insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "twitter-user_names")
+    logging.info(f"Send user_name {seed_name} to kafka/{insert_topic}")
+    producer.send(insert_topic, seed_name)
     producer.flush()
 
 
