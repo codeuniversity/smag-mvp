@@ -1,4 +1,4 @@
-package scraper
+package instagram_scraper
 
 import (
 	"context"

@@ -34,21 +34,30 @@ services:
     ports:
       - 5432:5432
 
+  # INSTAGRAM SCRAPER
+  instagram_scraper:
+    build: "instagram_scraper/"
+    image: "smag-instagram_scraper"
+    depends_on:
+      - "kafka"
+    environment:
+      KAFKA_ADDRESS: "kafka:9092"
+
   # TWITTER SCRAPER
-  user_scraper:
-    build: "twitterscraper/"
+  twitter_scraper-users:
+    build: "twitter_scraper/"
     image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.user_scraper"]
+    command: ["-m", "twitter_scraper.user_scraper"]
     depends_on:
       - "kafka"
     environment:
       KAFKA_HOST_PORT: "kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-users_scraped"
-  tweets_scraper:
-    build: "twitterscraper/"
+  twitter_scraper-tweets:
+    build: "twitter_scraper/"
     image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.tweets_scraper"]
+    command: ["-m", "twitter_scraper.tweets_scraper"]
     depends_on:
       - "kafka"
     environment:
@@ -56,9 +65,9 @@ services:
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-tweets_scaped"
   kafka-seed:
-    build: "twitterscraper/"
+    build: "twitter_scraper/"
     image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.insert_seed"]
+    command: ["-m", "twitter_scraper.insert_seed"]
     depends_on:
       - "kafka"
     environment:
