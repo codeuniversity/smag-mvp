@@ -1,0 +1,51 @@
+version: "3.7"
+
+services:
+    user_scraper:
+        build: .
+        image: "smag-twitter_scraper"
+        command: ["-m", "twitterscraper.user_scraper"]
+        depends_on:
+            - "kafka"
+        environment:
+            KAFKA_HOST_PORT: "kafka:9092"
+            KAFKA_FETCH_TOPIC: "user_names"
+            KAFKA_INSERT_TOPIC: "users_scraped"
+
+    tweets_scraper:
+        build: .
+        image: "smag-twitter_scraper"
+        command: ["-m", "twitterscraper.tweets_scraper"]
+        depends_on:
+            - "kafka"
+        environment:
+            KAFKA_HOST_PORT: "kafka:9092"
+            KAFKA_FETCH_TOPIC: "user_names"
+            KAFKA_INSERT_TOPIC: "tweets_scaped"
+
+    zookeeper:
+        image: "wurstmeister/zookeeper:latest"
+        ports:
+            - "2181:2181"
+    kafka:
+        image: "wurstmeister/kafka:2.11-1.1.1"
+        ports:
+            - "9092:9092"
+        depends_on:
+            - "zookeeper"
+        environment:
+            KAFKA_CREATE_TOPICS: "user_names:4:1,users_scraped:4:1,tweets_scraped:4:1"
+            KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+            KAFKA_ADVERTISED_HOST_NAME: "kafka"
+        volumes:
+            - "/var/run/docker.sock:/var/run/docker.sock"
+    kafka-seed:
+        build: .
+        image: "smag-twitter_scraper"
+        command: ["-m", "twitterscraper.insert_seed"]
+        depends_on:
+            - "kafka"
+        environment:
+            KAFKA_HOST_PORT: "kafka:9092"
+            SEED_NAME: "urhengula5"
+            SLEEP_SECONDS: "10"
