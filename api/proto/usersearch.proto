@@ -20,5 +20,5 @@ message UserSearchQuery {
 }
 
 service UserSearchService {
-    rpc SearchUser(UserSearchQuery) returns (UserSearchResponse);
+    rpc SearchUser(UserSearchQuery) returns (User);
 }
