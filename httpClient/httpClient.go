@@ -230,7 +230,7 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 }
 
 func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
-	switch _ := err.(type) {
+	switch t := err.(type) {
 	case *json.SyntaxError:
 		addresses, foundAddress := h.checkAvailableAddresses()
 
@@ -261,7 +261,7 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 			}
 		}
 	default:
-		fmt.Println("Found Wrong Json Type Error")
+		fmt.Println("Found Wrong Json Type Error ", t)
 		return false, err
 	}
 	fmt.Println("checkIfIPReachedTheLimit is not working!!!")

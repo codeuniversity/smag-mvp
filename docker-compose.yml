@@ -20,6 +20,3 @@ services:
     image: postgres:11.5
     ports:
       - 5432:5432
-
-volumes:
-  dgraph:
