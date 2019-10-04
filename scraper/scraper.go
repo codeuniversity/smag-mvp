@@ -24,26 +24,11 @@ type Scraper struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress string) *Scraper {
+func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *Scraper {
 	s := &Scraper{}
-	s.nameQReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_follow_graph_scraper",
-		Topic:          "user_names",
-		CommitInterval: time.Second,
-	})
-	s.infoQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "user_follow_infos",
-		Balancer: &kafka.LeastBytes{},
-		Async:    true,
-	})
-	s.errQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "user_scrape_errors",
-		Balancer: &kafka.LeastBytes{},
-		Async:    false,
-	})
+	s.nameQReader = nameQReader
+	s.infoQWriter = infoQWriter
+	s.errQWriter = errQWriter
 	s.Executor = service.New()
 	return s
 }

@@ -7,18 +7,23 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
+// ReaderConfig is an internal helper structure for creating
+// a new pre-configurated kafka-go Reader
 type ReaderConfig struct {
 	Address string
 	GroupID string
 	Topic   string
 }
 
+// WriterConfig is an internal helper structure for creating
+// a new pre-configurated kafka-go Writer
 type WriterConfig struct {
 	Address string
 	Topic   string
 	Async   bool
 }
 
+// NewReaderConfig creates a new ReaderConfig structure
 func NewReaderConfig(kafkaAddress, groupID, topic string) *ReaderConfig {
 	return &ReaderConfig{
 		Address: kafkaAddress,
@@ -27,6 +32,7 @@ func NewReaderConfig(kafkaAddress, groupID, topic string) *ReaderConfig {
 	}
 }
 
+// NewWriterConfig creates a new WriterConfig structure
 func NewWriterConfig(kafkaAddress, topic string, async bool) *WriterConfig {
 	return &WriterConfig{
 		Address: kafkaAddress,
@@ -35,6 +41,8 @@ func NewWriterConfig(kafkaAddress, topic string, async bool) *WriterConfig {
 	}
 }
 
+// NewReader creates a kafka-go Reader structure by using common
+// configuration and additionally applying the ReaderConfig on it
 func NewReader(c *ReaderConfig) *kafka.Reader {
 	return kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{c.Address},
@@ -46,6 +54,8 @@ func NewReader(c *ReaderConfig) *kafka.Reader {
 	})
 }
 
+// NewWriter creates a kafka-go Writer structure by using common
+// configurations and additionally applying the WriterConfig on it
 func NewWriter(c *WriterConfig) *kafka.Writer {
 	return kafka.NewWriter(kafka.WriterConfig{
 		Brokers:  []string{c.Address},
@@ -55,20 +65,44 @@ func NewWriter(c *WriterConfig) *kafka.Writer {
 	})
 }
 
+// GetInserterConfig is a convenience function for gathering the necessary
+// kafka configuration for all inserters
 func GetInserterConfig(isUserDiscovery bool) (*ReaderConfig, *WriterConfig) {
 	var readerConfig *ReaderConfig
 	var writerConfig *WriterConfig
 	var wTopic string
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_RTOPIC")
+	rTopic := utils.MustGetStringFromEnv("KAFKA_R_TOPIC")
 
 	if isUserDiscovery {
-		wTopic = utils.MustGetStringFromEnv("KAFKA_WTOPIC")
+		wTopic = utils.MustGetStringFromEnv("KAFKA_W_TOPIC")
 		writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
 	}
 
 	readerConfig = NewReaderConfig(kafkaAddress, groupID, rTopic)
 	return readerConfig, writerConfig
+}
+
+// GetScraperConfig is a convenience function for gathering the necessary
+// kafka configuration for all golang scrapers
+func GetScraperConfig() (*ReaderConfig, *WriterConfig, *WriterConfig) {
+	var nameReaderConfig *ReaderConfig
+	var infoWriterConfig *WriterConfig
+	var errWriterConfig *WriterConfig
+
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+
+	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
+	nameTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
+	infoTopic := utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
+	errTopic := utils.MustGetStringFromEnv("KAFKA_ERR_TOPIC")
+
+	nameReaderConfig = NewReaderConfig(kafkaAddress, groupID, nameTopic)
+	infoWriterConfig = NewWriterConfig(kafkaAddress, infoTopic, true)
+	errWriterConfig = NewWriterConfig(kafkaAddress, errTopic, false)
+
+	return nameReaderConfig, infoWriterConfig, errWriterConfig
 }
