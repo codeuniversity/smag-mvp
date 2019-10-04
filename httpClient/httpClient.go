@@ -105,11 +105,12 @@ func getLocalIpAddresses(count int) ([]string, error) {
 		}
 	}
 
-	if len(localAddresses) >= count {
+	if len(localAddresses) < count {
 		panic(fmt.Sprintf("Not Enough Local Ip Addresses, Requirement: %d \n", count))
 	}
 
-	return localAddresses[:count], nil
+	fmt.Println(localAddresses)
+	return localAddresses[:(count - 1)], nil
 }
 
 func (h *HttpClient) getClient(localIp string) (*http.Client, error) {
