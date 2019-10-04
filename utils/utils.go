@@ -59,12 +59,16 @@ func MustGetStringFromEnv(enVarName string) string {
 }
 
 // GetBoolFromEnvWithDefault parses an OS Environment Variable as bool
-func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) bool {
+func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) (bool, error) {
 	envValue := os.Getenv(enVarName)
-	envBool, err := strconv.ParseBool(envValue)
-	if err != nil {
-		return defaultValue
+	if envValue == "" {
+		return defaultValue, nil
 	}
 
-	return envBool
+	envBool, err := strconv.ParseBool(envValue)
+	if err != nil {
+		return defaultValue, err
+	}
+
+	return envBool, nil
 }

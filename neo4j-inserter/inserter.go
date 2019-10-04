@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/codeuniversity/smag-mvp/utils"
-
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
@@ -25,24 +23,10 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string, kConfig *utils.KafkaConsumerConfig) *Inserter {
+func New(neo4jAddress, neo4jUsername, neo4jPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
-	i.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        kConfig.GroupID, //"user_neo4j_inserter",
-		Topic:          kConfig.RTopic,  //"user_follow_infos",
-		MinBytes:       10e3,            // 10KB
-		MaxBytes:       10e6,            // 10MB
-		CommitInterval: time.Second,
-	})
-	if kConfig.IsUserDiscovery {
-		i.qWriter = kafka.NewWriter(kafka.WriterConfig{
-			Brokers:  []string{kafkaAddress},
-			Topic:    kConfig.WTopic, //"user_names",
-			Balancer: &kafka.LeastBytes{},
-			Async:    true,
-		})
-	}
+	i.qReader = qReader
+	i.qWriter = qWriter
 
 	i.initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress)
 

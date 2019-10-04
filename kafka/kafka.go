@@ -3,6 +3,7 @@ package kafka
 import (
 	"time"
 
+	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -52,4 +53,22 @@ func NewWriter(c *WriterConfig) *kafka.Writer {
 		Balancer: &kafka.LeastBytes{},
 		Async:    c.Async,
 	})
+}
+
+func GetInserterConfig(isUserDiscovery bool) (*ReaderConfig, *WriterConfig) {
+	var readerConfig *ReaderConfig
+	var writerConfig *WriterConfig
+	var wTopic string
+
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
+	rTopic := utils.MustGetStringFromEnv("KAFKA_RTOPIC")
+
+	if isUserDiscovery {
+		wTopic = utils.MustGetStringFromEnv("KAFKA_WTOPIC")
+		writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
+	}
+
+	readerConfig = NewReaderConfig(kafkaAddress, groupID, rTopic)
+	return readerConfig, writerConfig
 }

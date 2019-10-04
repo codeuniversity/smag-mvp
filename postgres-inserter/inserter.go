@@ -26,7 +26,7 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
+func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
 	i.qWriter = qWriter
