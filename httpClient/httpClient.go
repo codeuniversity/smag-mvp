@@ -55,11 +55,12 @@ func New(localAddressCount int, kafkaAddress string) *HttpClient {
 	}
 	client.browserAgent = userAgent
 	client.localAddressesReachLimit = make(map[string]bool)
-	addresses, err := getLocalIpAddresses(localAddressCount)
-	if err != nil {
-		fmt.Println("httpClient getLocalIpAddresses Error: ", err)
-		return nil
-	}
+	//addresses, err := getLocalIpAddresses(localAddressCount)
+	//if err != nil {
+	//	fmt.Println("httpClient getLocalIpAddresses Error: ", err)
+	//	return nil
+	//}
+	addresses := []string{"172.31.32.141", "172.31.32.5"}
 
 	for _, localIp := range addresses {
 		client.localAddressesReachLimit[localIp] = true
@@ -100,8 +101,10 @@ func getLocalIpAddresses(count int) ([]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		for _, address := range addrs {
-			localAddresses = append(localAddresses, address.String())
+		if (networkInterface.Name == "eth0") || (networkInterface.Name == "eth1") {
+			for _, address := range addrs {
+				localAddresses = append(localAddresses, address.String())
+			}
 		}
 	}
 
@@ -216,23 +219,29 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 			return nil
 		}
 
+		switch err := err.(type) {
+		default:
+			fmt.Println("Error Type: ", err)
+		}
 		fmt.Println(err)
 		foundAddress, err := h.checkIfIPReachedTheLimit(err)
-
+		fmt.Println("FoundAddress: ", foundAddress)
 		if err != nil {
 			fmt.Println(err)
 		}
 		if foundAddress {
 			times++
 		}
-		time.Sleep(400 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 	return err
 }
 
 func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
+	fmt.Println("checkIfIPReachedTheLimit")
 	switch t := err.(type) {
 	case *json.SyntaxError:
+		fmt.Println("SyntaxError")
 		addresses, foundAddress := h.checkAvailableAddresses()
 
 		if foundAddress {
@@ -244,8 +253,9 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 				return false, err
 			}
 
-			renewedAddresses := models.RenewingAddresses{InstanceId: "", LocalIps: []string{}}
+			renewedAddresses := models.RenewingAddresses{}
 
+			fmt.Println("H.InstanceId: ", h.instanceId)
 			for renewedAddresses.InstanceId != h.instanceId {
 
 				renewedAddresses, err := h.waitForRenewElasticIpRequest()
@@ -261,6 +271,12 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 				}
 			}
 		}
+	case *json.UnmarshalTypeError:
+		fmt.Println("UnmarshalTypeError")
+	case *json.InvalidUnmarshalError:
+		fmt.Println("InvalidUnmarchedError")
+	case *json.UnsupportedTypeError:
+		fmt.Println("UnsupportedTypeError")
 	default:
 		fmt.Println("Found Wrong Json Type Error ", t)
 		return false, err
@@ -281,6 +297,7 @@ func (h *HttpClient) checkAvailableAddresses() ([]string, bool) {
 			if err != nil {
 				panic(err)
 			}
+			fmt.Println("Update Client")
 			return addresses, true
 		}
 	}
@@ -301,9 +318,11 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService(addresses []string
 }
 
 func (h *HttpClient) waitForRenewElasticIpRequest() (*models.RenewingAddresses, error) {
+	fmt.Println("waitForRenewElasticIpRequest")
 	message, err := h.renewedAddressQReader.FetchMessage(context.Background())
-
+	fmt.Println("waitForRenewElasticIpRequest Finished")
 	if err != nil {
+		fmt.Println("waitForRenewElasticIpRequest error")
 		return nil, err
 	}
 

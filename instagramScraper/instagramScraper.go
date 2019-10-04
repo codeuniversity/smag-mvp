@@ -69,7 +69,7 @@ func (i *InstagramScraper) accountInfo(username string) (*models.InstagramAccoun
 func (i *InstagramScraper) accountPosts(userId string, cursor string) (*models.InstagramMedia, error) {
 	var instagramAccountMedia *models.InstagramMedia
 
-	err := i.httpClient.WithRetries(5, func() error {
+	err := i.httpClient.WithRetries(2, func() error {
 		accountInfo, err := i.httpClient.ScrapeProfileMedia(userId, cursor)
 		if err != nil {
 			return err
