@@ -12,12 +12,7 @@ func main() {
 
 	dgraphAddress := utils.GetStringFromEnvWithDefault("DGRPAH_ADDRESS", "127.0.0.1:9080")
 
-	isUserDiscovery, err := utils.GetBoolFromEnvWithDefault("USER_DISCOVERY", false)
-	if err != nil {
-		panic(err)
-	}
-
-	qReaderConfig, qWriterConfig := kafka.GetInserterConfig(isUserDiscovery)
+	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetInserterConfig()
 
 	if isUserDiscovery {
 		i = inserter.New(

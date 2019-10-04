@@ -67,23 +67,24 @@ func NewWriter(c *WriterConfig) *kafka.Writer {
 
 // GetInserterConfig is a convenience function for gathering the necessary
 // kafka configuration for all inserters
-func GetInserterConfig(isUserDiscovery bool) (*ReaderConfig, *WriterConfig) {
+func GetInserterConfig() (*ReaderConfig, *WriterConfig, bool) {
 	var readerConfig *ReaderConfig
 	var writerConfig *WriterConfig
 	var wTopic string
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	isUserDiscovery := utils.GetBoolFromEnvWithDefault("USER_DISCOVERY", false)
 
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_R_TOPIC")
+	rTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
 
 	if isUserDiscovery {
-		wTopic = utils.MustGetStringFromEnv("KAFKA_W_TOPIC")
+		wTopic = utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
 		writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
 	}
 
 	readerConfig = NewReaderConfig(kafkaAddress, groupID, rTopic)
-	return readerConfig, writerConfig
+	return readerConfig, writerConfig, isUserDiscovery
 }
 
 // GetScraperConfig is a convenience function for gathering the necessary

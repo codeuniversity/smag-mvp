@@ -13,12 +13,7 @@ func main() {
 	postgresHost := utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1")
 	postgresPassword := utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", "")
 
-	isUserDiscovery, err := utils.GetBoolFromEnvWithDefault("USER_DISCOVERY", false)
-	if err != nil {
-		panic(err)
-	}
-
-	qReaderConfig, qWriterConfig := kafka.GetInserterConfig(isUserDiscovery)
+	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetInserterConfig()
 
 	if isUserDiscovery {
 		i = inserter.New(
