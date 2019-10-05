@@ -31,8 +31,8 @@ func New(localAddressCount int, kafkaAddress string) *HttpClient {
 	client := &HttpClient{}
 	client.renewedAddressQReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
-		GroupID:        "renewed_elastic_ip",
-		Topic:          "user_names",
+		GroupID:        "instagram_group1",
+		Topic:          "renewed_elastic_ip",
 		CommitInterval: time.Minute * 10,
 	})
 
@@ -219,10 +219,6 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 			return nil
 		}
 
-		switch err := err.(type) {
-		default:
-			fmt.Println("Error Type: ", err)
-		}
 		fmt.Println(err)
 		foundAddress, err := h.checkIfIPReachedTheLimit(err)
 		fmt.Println("FoundAddress: ", foundAddress)
@@ -320,11 +316,12 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService(addresses []string
 func (h *HttpClient) waitForRenewElasticIpRequest() (*models.RenewingAddresses, error) {
 	fmt.Println("waitForRenewElasticIpRequest")
 	message, err := h.renewedAddressQReader.FetchMessage(context.Background())
-	fmt.Println("waitForRenewElasticIpRequest Finished")
+	fmt.Println("waitForRenewElasticIpRequest Finished: ")
 	if err != nil {
 		fmt.Println("waitForRenewElasticIpRequest error")
 		return nil, err
 	}
+	fmt.Println("Wait Message ", message.Value)
 
 	var renewedAddresses models.RenewingAddresses
 	err = json.Unmarshal(message.Value, &renewedAddresses)
