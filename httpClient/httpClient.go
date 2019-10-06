@@ -330,6 +330,7 @@ func (h *HttpClient) waitForRenewElasticIpRequest() (*models.RenewingAddresses, 
 		return nil, err
 	}
 
+	h.renewedAddressQReader.CommitMessages(context.Background(), message)
 	return &renewedAddresses, err
 }
 
