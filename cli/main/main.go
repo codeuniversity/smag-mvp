@@ -15,7 +15,7 @@ func main() {
 	}
 	userNameArg := os.Args[1]
 	w := kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{"localhost:9092"},
+		Brokers:  []string{"172.31.32.93:9092"},
 		Topic:    "user_names",
 		Balancer: &kafka.LeastBytes{},
 	})
