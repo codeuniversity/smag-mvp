@@ -65,6 +65,8 @@ func (r *RenewingAddresses) Run() {
 	fmt.Println("starting AWS-Service")
 	for r.IsRunning() {
 		m, err := r.reachedLimitQReader.FetchMessage(context.Background())
+		fmt.Println("Message Time: ", m.Time)
+		fmt.Println("START")
 		if err != nil {
 			fmt.Println(err)
 			break

@@ -9,7 +9,7 @@ import (
 func main() {
 	kafkaAddress := os.Getenv("KAFKA_ADDRESS")
 	if kafkaAddress == "" {
-		kafkaAddress = "localhost:9092"
+		kafkaAddress = "52.58.171.160:9092"
 	}
 	s := instagramScraper.New(kafkaAddress)
 	service.CloseOnSignal(s)
