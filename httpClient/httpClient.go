@@ -73,6 +73,7 @@ func New(localAddressCount int, kafkaAddress string) *HttpClient {
 	}
 
 	client.instanceId = getAmazonInstanceId()
+	fmt.Println("localAddressesReachLimit: ", client.localAddressesReachLimit)
 	return client
 }
 
