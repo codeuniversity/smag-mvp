@@ -8,7 +8,7 @@ import (
 
 func main() {
 
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "172.31.32.93:9092")
 	postgresHost := utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1")
 
 	i := inserter.New(kafkaAddress, postgresHost)
