@@ -7,5 +7,6 @@ FROM alpine
 RUN apk --no-cache add ca-certificates
 RUN mkdir app
 COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/instascraper_scraper /app
+COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/useragents.json /app
 WORKDIR /app
 CMD ["./instascraper_scraper"]

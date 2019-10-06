@@ -322,7 +322,7 @@ func (h *HttpClient) waitForRenewElasticIpRequest() (*models.RenewingAddresses, 
 		fmt.Println("waitForRenewElasticIpRequest error")
 		return nil, err
 	}
-	fmt.Println("Wait Message ", message.Value)
+	fmt.Println("Wait Message Time: ", message.Time)
 
 	var renewedAddresses models.RenewingAddresses
 	err = json.Unmarshal(message.Value, &renewedAddresses)
