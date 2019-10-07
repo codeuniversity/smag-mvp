@@ -22,5 +22,6 @@ message UserName {
 
 
 service UserSearchService {
-    rpc GetUserWithUsername(UserName) returns (UserSearchResponse);
+    rpc GetAllUsersLikeUsername(UserName) returns (UserSearchResponse);
+    rpc GetUserWithUsername(UserName) returns (User);
 }

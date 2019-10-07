@@ -92,8 +92,8 @@ proto.proto.UserSearchServicePromiseClient =
  *   !proto.proto.UserName,
  *   !proto.proto.UserSearchResponse>}
  */
-const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.MethodDescriptor(
-  '/proto.UserSearchService/GetUserWithUsername',
+const methodDescriptor_UserSearchService_GetAllUsersLikeUsername = new grpc.web.MethodDescriptor(
+  '/proto.UserSearchService/GetAllUsersLikeUsername',
   grpc.web.MethodType.UNARY,
   proto.proto.UserName,
   proto.proto.UserSearchResponse,
@@ -111,7 +111,7 @@ const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.Meth
  *   !proto.proto.UserName,
  *   !proto.proto.UserSearchResponse>}
  */
-const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractClientBase.MethodInfo(
+const methodInfo_UserSearchService_GetAllUsersLikeUsername = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.UserSearchResponse,
   /** @param {!proto.proto.UserName} request */
   function(request) {
@@ -131,6 +131,80 @@ const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractCl
  * @return {!grpc.web.ClientReadableStream<!proto.proto.UserSearchResponse>|undefined}
  *     The XHR Node Readable Stream
  */
+proto.proto.UserSearchServiceClient.prototype.getAllUsersLikeUsername =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/proto.UserSearchService/GetAllUsersLikeUsername',
+      request,
+      metadata || {},
+      methodDescriptor_UserSearchService_GetAllUsersLikeUsername,
+      callback);
+};
+
+
+/**
+ * @param {!proto.proto.UserName} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.proto.UserSearchResponse>}
+ *     A native promise that resolves to the response
+ */
+proto.proto.UserSearchServicePromiseClient.prototype.getAllUsersLikeUsername =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/proto.UserSearchService/GetAllUsersLikeUsername',
+      request,
+      metadata || {},
+      methodDescriptor_UserSearchService_GetAllUsersLikeUsername);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.proto.UserName,
+ *   !proto.proto.User>}
+ */
+const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.MethodDescriptor(
+  '/proto.UserSearchService/GetUserWithUsername',
+  grpc.web.MethodType.UNARY,
+  proto.proto.UserName,
+  proto.proto.User,
+  /** @param {!proto.proto.UserName} request */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.User.deserializeBinary
+);
+
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.proto.UserName,
+ *   !proto.proto.User>}
+ */
+const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.proto.User,
+  /** @param {!proto.proto.UserName} request */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.User.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.proto.UserName} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.proto.User)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.proto.User>|undefined}
+ *     The XHR Node Readable Stream
+ */
 proto.proto.UserSearchServiceClient.prototype.getUserWithUsername =
     function(request, metadata, callback) {
   return this.client_.rpcCall(this.hostname_ +
@@ -147,7 +221,7 @@ proto.proto.UserSearchServiceClient.prototype.getUserWithUsername =
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
- * @return {!Promise<!proto.proto.UserSearchResponse>}
+ * @return {!Promise<!proto.proto.User>}
  *     A native promise that resolves to the response
  */
 proto.proto.UserSearchServicePromiseClient.prototype.getUserWithUsername =
