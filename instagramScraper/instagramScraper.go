@@ -129,41 +129,7 @@ func (i *InstagramScraper) Run() {
 		cursor := instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.PageInfo.EndCursor
 		userId := instagramAccountInfo.Graphql.User.ID
 
-		for _, element := range instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.Edges {
-			fmt.Println("Edges ", username)
-			fmt.Println(element.Node.Typename)
-			if element.Node.Shortcode != "" {
-				fmt.Println("Edges Node1 ", username)
-				instagramPost := models.InstagramPost{
-					element.Node.ID,
-					element.Node.Shortcode,
-					userId}
-
-				instagramPostJson, err := json.Marshal(instagramPost)
-
-				if err != nil {
-					fmt.Println(err)
-					break
-				}
-
-				err = i.userPostsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
-			} else if element.Node.Shortcode != "" {
-				fmt.Println("Edges Node2 ", username)
-				instagramPost := models.InstagramPost{
-					element.Node.ID,
-					element.Node.Shortcode,
-					userId}
-
-				instagramPostJson, err := json.Marshal(instagramPost)
-
-				if err != nil {
-					fmt.Println(err)
-					break
-				}
-
-				err = i.userPostsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
-			}
-		}
+		go i.sendUserInfoPostsId(instagramAccountInfo, username, userId)
 
 		isPostsSendingFinished := false
 		for i.IsRunning() && isPostsSendingFinished {
@@ -177,36 +143,63 @@ func (i *InstagramScraper) Run() {
 				continue
 			}
 
-			for _, element := range accountMedia.Data.User.EdgeOwnerToTimelineMedia.Edges {
-				if element.Node.ID != "" {
-
-					instagramPost := models.InstagramPost{
-						element.Node.ID,
-						element.Node.Shortcode,
-						userId}
-
-					instagramPostJson, err := json.Marshal(instagramPost)
-
-					if err != nil {
-						fmt.Println(err)
-						break
-					}
-
-					err = i.userPostsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
-					if err != nil {
-						fmt.Println(err)
-						break
-					}
-				}
-			}
-
 			cursor = accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.EndCursor
+			go i.sendUserTimlinePostsId(accountMedia, username, userId)
+
 			if !accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.HasNextPage {
 				isPostsSendingFinished = false
 			}
-			time.Sleep(time.Millisecond * 600)
+			time.Sleep(time.Millisecond * 100)
 		}
 		i.nameQReader.CommitMessages(context.Background(), m)
+	}
+}
+
+func (i *InstagramScraper) sendUserInfoPostsId(instagramAccountInfo *models.InstagramAccountInfo, username string, userId string) {
+	for _, element := range instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.Edges {
+		fmt.Println("Edges ", username)
+		fmt.Println(element.Node.Typename)
+		if element.Node.Shortcode != "" {
+			fmt.Println("Edges Node1 ", username)
+			instagramPost := models.InstagramPost{
+				element.Node.ID,
+				element.Node.Shortcode,
+				userId}
+
+			instagramPostJson, err := json.Marshal(instagramPost)
+
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+
+			err = i.userPostsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
+		}
+	}
+}
+
+func (i *InstagramScraper) sendUserTimlinePostsId(accountMedia *models.InstagramMedia, username string, userId string) {
+	for _, element := range accountMedia.Data.User.EdgeOwnerToTimelineMedia.Edges {
+		if element.Node.ID != "" {
+
+			instagramPost := models.InstagramPost{
+				element.Node.ID,
+				element.Node.Shortcode,
+				userId}
+
+			instagramPostJson, err := json.Marshal(instagramPost)
+
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+
+			err = i.userPostsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+		}
 	}
 }
 

@@ -110,9 +110,10 @@ func (r *RenewingAddresses) Run() {
 
 		if err != nil {
 			fmt.Println(err)
-			break
+			return
 		}
 
+		time.Sleep(time.Millisecond * 200)
 		r.reachedLimitQReader.CommitMessages(context.Background(), m)
 	}
 }
