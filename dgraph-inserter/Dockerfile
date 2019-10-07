@@ -1,6 +1,9 @@
 FROM golang:1.12 as builder
 WORKDIR /go/src/github.com/codeuniversity/smag-mvp
-COPY . .
+COPY go.mod .
+COPY go.sum .
+RUN GO111MODULE=on go mod download
+COPY . . 
 RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_dgraph_inserter dgraph-inserter/main/main.go
 
 FROM alpine
