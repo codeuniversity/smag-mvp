@@ -51,10 +51,8 @@ func (s *GrpcServer) Listen() {
 //GetUserWithUsername searches for User in Database
 func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserName) (*proto.UserSearchResponse, error) {
 	fmt.Println("Hallo")
-	query := fmt.Sprintf("SELECT * FROM users WHERE user_name LIKE '%s'", username.UserName)
 	response := &proto.UserSearchResponse{}
-
-	rows, err := s.db.Query(query)
+	rows, err := s.db.Query("SELECT * FROM users WHERE user_name LIKE '%$1%'", username.UserName)
 	if err != nil {
 		panic(err)
 	}
@@ -71,6 +69,5 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	return response, nil
 }
