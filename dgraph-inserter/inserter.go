@@ -27,22 +27,11 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, dgraphAddress string) *Inserter {
+func New(dgraphAddress string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
-	i.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_dgraph_inserter",
-		Topic:          "user_follow_infos",
-		MinBytes:       10e3, // 10KB
-		MaxBytes:       10e6, // 10MB
-		CommitInterval: time.Second,
-	})
-	i.qWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "user_names",
-		Balancer: &kafka.LeastBytes{},
-		Async:    true,
-	})
+	i.qReader = qReader
+	i.qWriter = qWriter
+
 	dg, conn := utils.GetDGraphClient(dgraphAddress)
 	i.dgClient = dg
 	i.dgConn = conn
@@ -83,7 +72,9 @@ func (i *Inserter) Close() {
 
 	i.dgConn.Close()
 	i.qReader.Close()
-	i.qWriter.Close()
+	if i.qWriter != nil {
+		i.qWriter.Close()
+	}
 
 	i.MarkAsClosed()
 }
@@ -145,7 +136,8 @@ func (i *Inserter) insertUser(p *models.User) {
 }
 
 func (i *Inserter) handleCreatedUser(userName, uid string, created bool) {
-	if created {
+	// if qWriter is nil, user discovery is disabled
+	if created && i.qWriter != nil {
 		i.qWriter.WriteMessages(context.Background(), kafka.Message{
 			Value: []byte(userName),
 		})
