@@ -40,7 +40,7 @@ func (m *User) Reset()         { *m = User{} }
 func (m *User) String() string { return proto.CompactTextString(m) }
 func (*User) ProtoMessage()    {}
 func (*User) Descriptor() ([]byte, []int) {
-	return fileDescriptor_usersearch_68e38b08d2cbe7af, []int{0}
+	return fileDescriptor_usersearch_322bccd5b5d12930, []int{0}
 }
 func (m *User) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_User.Unmarshal(m, b)
@@ -120,7 +120,7 @@ func (m *UserSearchResponse) Reset()         { *m = UserSearchResponse{} }
 func (m *UserSearchResponse) String() string { return proto.CompactTextString(m) }
 func (*UserSearchResponse) ProtoMessage()    {}
 func (*UserSearchResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_usersearch_68e38b08d2cbe7af, []int{1}
+	return fileDescriptor_usersearch_322bccd5b5d12930, []int{1}
 }
 func (m *UserSearchResponse) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UserSearchResponse.Unmarshal(m, b)
@@ -158,7 +158,7 @@ func (m *UserName) Reset()         { *m = UserName{} }
 func (m *UserName) String() string { return proto.CompactTextString(m) }
 func (*UserName) ProtoMessage()    {}
 func (*UserName) Descriptor() ([]byte, []int) {
-	return fileDescriptor_usersearch_68e38b08d2cbe7af, []int{2}
+	return fileDescriptor_usersearch_322bccd5b5d12930, []int{2}
 }
 func (m *UserName) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_UserName.Unmarshal(m, b)
@@ -264,10 +264,10 @@ var _UserSearchService_serviceDesc = grpc.ServiceDesc{
 }
 
 func init() {
-	proto.RegisterFile("api/proto/usersearch.proto", fileDescriptor_usersearch_68e38b08d2cbe7af)
+	proto.RegisterFile("api/proto/usersearch.proto", fileDescriptor_usersearch_322bccd5b5d12930)
 }
 
-var fileDescriptor_usersearch_68e38b08d2cbe7af = []byte{
+var fileDescriptor_usersearch_322bccd5b5d12930 = []byte{
 	// 290 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x90, 0x41, 0x4b, 0xc3, 0x40,
 	0x10, 0x85, 0x89, 0x4d, 0x6b, 0x33, 0x05, 0x5b, 0xd7, 0xcb, 0x5a, 0x11, 0x42, 0x2e, 0x8d, 0x97,
