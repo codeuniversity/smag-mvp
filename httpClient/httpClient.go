@@ -16,6 +16,7 @@ import (
 
 var userAccountInfoUrl = "https://instagram.com/%s/?__a=1"
 var userAccountMediaUrl = "https://www.instagram.com/graphql/query/?query_hash=58b6785bea111c67129decbe6a448951&variables=%s"
+var userPostsCommentUrl = "https://www.instagram.com/graphql/query/?query_hash=865589822932d1b43dfe312121dd353a&variables=%s"
 
 type HttpClient struct {
 	browserAgent             BrowserAgent
@@ -210,6 +211,48 @@ func (h *HttpClient) ScrapeProfileMedia(userId string, endCursor string) (models
 		return instagramMedia, err
 	}
 	return instagramMedia, nil
+}
+
+func (h *HttpClient) ScrapePostComments(shortCode string) (models.InstaPostComments, error) {
+	var instaPostComment models.InstaPostComments
+	type Variables struct {
+		Shortcode           string `json:"shortcode"`
+		ChildCommentCount   int    `json:"child_comment_count"`
+		FetchCommentCount   int    `json:"fetch_comment_count"`
+		ParentCommentCount  int    `json:"parent_comment_count"`
+		HasThreadedComments bool   `json:"has_threaded_comments"`
+	}
+
+	variable := &Variables{shortCode, 3, 40, 24, true}
+	variableJson, err := json.Marshal(variable)
+	if err != nil {
+		return instaPostComment, err
+	}
+
+	queryEncoded := url.QueryEscape(string(variableJson))
+	url := fmt.Sprintf(userPostsCommentUrl, queryEncoded)
+
+	request, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return instaPostComment, err
+	}
+	response, err := h.client.Do(request)
+	if err != nil {
+		return instaPostComment, err
+	}
+	if response.StatusCode != 200 {
+		return instaPostComment, &HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+	}
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return instaPostComment, err
+	}
+	err = json.Unmarshal(body, &instaPostComment)
+	if err != nil {
+		return instaPostComment, err
+	}
+	return instaPostComment, nil
 }
 
 func (h *HttpClient) WithRetries(times int, f func() error) error {
