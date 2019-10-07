@@ -69,13 +69,14 @@ func (r *RenewingAddresses) Run() {
 		fmt.Println("START")
 		if err != nil {
 			fmt.Println(err)
-			break
+			continue
 		}
 
 		var reachedRequestLimit models.RenewingAddresses
 		err = json.Unmarshal(m.Value, &reachedRequestLimit)
 		if err != nil {
 			fmt.Println("Json: ", err)
+			continue
 		}
 
 		publicIP, allocationIds, err := getElasticPublicAddresses(r.ec2Service, reachedRequestLimit.InstanceId)
@@ -83,38 +84,42 @@ func (r *RenewingAddresses) Run() {
 		if err != nil {
 			fmt.Println("getElasticPublicAddress Error: ", err)
 			r.sendErrorMessage(m, reachedRequestLimit.InstanceId, err)
-			return
+			continue
 		}
 		err = disassociateAddress(r.awsSession, publicIP)
 		if err != nil {
 			fmt.Println("disassociateAddress Error: ", err)
 			r.sendErrorMessage(m, reachedRequestLimit.InstanceId, err)
-			return
+			continue
 		}
 
 		err = releaseElasticAddresses(r.ec2Service, allocationIds)
 		if err != nil {
 			fmt.Println("Error ReleaseElasticAddress: ", err)
 			r.sendErrorMessage(m, reachedRequestLimit.InstanceId, err)
-			return
+			continue
 		}
 
 		err = allocateAddresses(r.ec2Service, reachedRequestLimit.InstanceId, 2, reachedRequestLimit.LocalIps)
 		if err != nil {
 			fmt.Println("Error AllocateAddress: ", err)
 			r.sendErrorMessage(m, reachedRequestLimit.InstanceId, err)
-			return
+			continue
 		}
 
 		err = r.renewedAddressQWriter.WriteMessages(context.Background(), kafka.Message{Value: m.Value})
 
 		if err != nil {
 			fmt.Println(err)
-			return
+			continue
 		}
 
-		time.Sleep(time.Millisecond * 200)
-		r.reachedLimitQReader.CommitMessages(context.Background(), m)
+		err = r.reachedLimitQReader.CommitMessages(context.Background(), m)
+
+		if err != nil {
+			fmt.Println("Commit Message: ", err)
+			continue
+		}
 	}
 }
 
