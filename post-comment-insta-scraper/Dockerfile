@@ -8,4 +8,4 @@ RUN apk --no-cache add ca-certificates
 RUN mkdir app
 COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/insta_comment_scraper /app
 WORKDIR /app
-CMD ["./instascraper_scraper"]
+CMD ["./insta_comment_scraper"]
