@@ -19,17 +19,18 @@
     userSearch.getUserWithUsername(request, {},function(err, response) {
         //...
     });
-- The default address for the database is `localhost`. If you want to change that simply add the enviroment variable `GRPC_POSTGRES_HOST`to the `grpc-server`container
-    ```
+- The default address for the database is `localhost`.
+  If you want to change that simply add the enviroment variable `GRPC_POSTGRES_HOST` to the `grpc-server`container
+
+
 ## Functions
 - `getUserWithUsername(UserSearchRequest) User`
-    - Queries the Database for one specific User
+    > Queries the Database for one specific User
 - `getAllUsersWithUsername(UserSearchRequest) UserSearchRsponse`
-    - Queries the database for all users that have a similar usenames and returns array of user
+    > Queries the database for all users that have a similar usenames and returns array of user
+
 
 ## Testing
 1. `docker-compose up`
 1. initialize the Database with `make init-db`
 1. Then connect with the envoy-proxy via `localhost:4000`
-
-
