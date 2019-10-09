@@ -21,6 +21,6 @@ message UserSearchRequest {
 }
 
 service UserSearchService {
-    rpc GetAllUsersLikeUsername(UserSearchrequest) returns (UserSearchResponse);
-    rpc GetUserWithUsername(UserSearchrequest) returns (User);
+    rpc GetAllUsersLikeUsername(UserSearchRequest) returns (UserSearchResponse);
+    rpc GetUserWithUsername(UserSearchRequest) returns (User);
 }
