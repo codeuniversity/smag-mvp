@@ -15,6 +15,7 @@
     userSearch.getUserWithUsername(request, {},function(err, response) {
         //...
     });
+- The default address for the database is `localhost`. If you want to change that simply add the enviroment variable `GRPC_POSTGRES_HOST`to the `grpc-server`container
     ```
 ## Functions
 - `getUserWithUsername(UserSearchRequest) User`
@@ -22,26 +23,9 @@
 - `getAllUsersWithUsername(UserSearchRequest) UserSearchRsponse`
     - Queries the database for all users that have a similar usenames and returns array of user
 
-
 ## Testing
-
-1. Start postgres container
-1. Change the IP Adress in the envoy.yaml config to yours (WIP)
-    ```yaml
-    hosts: [{ socket_address: { address: <your ip>, port_value: 10000 }}]
-    ```
-
-1. start gRPC Server with `go run api/grpcserver/main/main.go`
-
-1. build and start the envoy Container
-    - `docker build -t envoy-proxy -f api/envoy-proxy/Dockerfile .`
-    - `docker run -p 8080:8080 envoy-proxy`
-1. To run tests without a frontend you can use prototool
-    ```bash
-    prototool grpc api \
-    --address localhost:10000 \
-    --method proto.UserSearchService/<function you want to call> \
-    --data '{"user_name": "Hallo"}'
-    ```
+1. `docker-compose up`
+1. initialize the Database with `make init-db`
+1. Then connect with the envoy proxy via localhost on port 80
 
 
