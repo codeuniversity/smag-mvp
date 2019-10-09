@@ -18,7 +18,7 @@ require (
 	github.com/neo4j/neo4j-go-driver v1.7.4
 	github.com/onsi/ginkgo v1.10.1 // indirect
 	github.com/onsi/gomega v1.7.0 // indirect
-	github.com/pkg/errors v0.8.1 // indirect
+	github.com/pkg/errors v0.8.1
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/segmentio/kafka-go v0.3.2
 	github.com/temoto/robotstxt v1.1.1 // indirect

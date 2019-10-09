@@ -2,16 +2,31 @@ package main
 
 import (
 	inserter "github.com/codeuniversity/smag-mvp/dgraph-inserter"
+	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
 func main() {
+	var i *inserter.Inserter
 
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 	dgraphAddress := utils.GetStringFromEnvWithDefault("DGRPAH_ADDRESS", "127.0.0.1:9080")
 
-	i := inserter.New(kafkaAddress, dgraphAddress)
+	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetInserterConfig()
+
+	if isUserDiscovery {
+		i = inserter.New(
+			dgraphAddress,
+			kafka.NewReader(qReaderConfig),
+			kafka.NewWriter(qWriterConfig),
+		)
+	} else {
+		i = inserter.New(
+			dgraphAddress,
+			kafka.NewReader(qReaderConfig),
+			nil,
+		)
+	}
 
 	service.CloseOnSignal(i)
 	go i.Run()
