@@ -16,7 +16,6 @@ import (
 
 //GrpcServer holds port of server
 type GrpcServer struct {
-	Users    *proto.User
 	grpcPort int
 	db       *sql.DB
 }
@@ -48,11 +47,10 @@ func (s *GrpcServer) Listen() {
 	}
 }
 
-//GetUserWithUsername searches for User in Database
-func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserName) (*proto.UserSearchResponse, error) {
-	fmt.Println("Hallo")
+//GetAllUsersLikeUsername returns a List of users that are like the given username
+func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserName) (*proto.UserSearchResponse, error) {
 	response := &proto.UserSearchResponse{}
-	rows, err := s.db.Query("SELECT * FROM users WHERE user_name LIKE '%$1%'", username.UserName)
+	rows, err := s.db.Query("SELECT * FROM users WHERE LOWER(user_name) LIKE LOWER('%$1%')", username.UserName)
 	if err != nil {
 		panic(err)
 	}
@@ -70,4 +68,14 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 		log.Fatal(err)
 	}
 	return response, nil
+}
+
+//GetUserWithUsername returns one User that equals the given username
+func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserName) (*proto.User, error) {
+	u := &proto.User{}
+
+	row := s.db.QueryRow("SELECT * FROM users WHERE user_name = '%$1%'", username.UserName)
+
+	row.Scan(&u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl, &u.FollowingsCount, &u.FollowersCount)
+	return u, nil
 }
