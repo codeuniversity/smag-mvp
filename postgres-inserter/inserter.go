@@ -101,7 +101,7 @@ func (i *Inserter) Close() {
 // into the specified kafka topic
 func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	p := &models.User{
-		Name:      followInfo.UserName,
+		UserName:  followInfo.UserName,
 		RealName:  followInfo.RealName,
 		AvatarURL: followInfo.AvatarURL,
 		Bio:       followInfo.Bio,
@@ -110,7 +110,7 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 
 	for _, following := range followInfo.Followings {
 		p.Follows = append(p.Follows, &models.User{
-			Name: following,
+			UserName: following,
 		})
 	}
 
@@ -131,7 +131,7 @@ func (i *Inserter) insertUser(p *models.User) {
 	var err error
 
 	fromUser := models.User{}
-	filter := &models.User{Name: p.Name}
+	filter := &models.User{UserName: p.UserName}
 
 	err = createOrUpdate(i.db, &fromUser, filter, p)
 	handleErr(err)
@@ -140,16 +140,16 @@ func (i *Inserter) insertUser(p *models.User) {
 		//err := i.db.QueryRow("SELECT id from users where user_name = $1", follow.Name).Scan(&followedID)
 		var toUser models.User
 		var d *gorm.DB
-		d = i.db.Where("user_name = ?", follow.Name).Select("ID").Find(&toUser)
+		d = i.db.Where("user_name = ?", follow.UserName).Select("ID").Find(&toUser)
 		if err := d.Error; err != nil {
 			// err = i.db.QueryRow(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, follow.Name).Scan(&followedID)
 			if d.RecordNotFound() == true {
 				d = i.db.Create(&models.User{
-					Name: follow.Name,
+					UserName: follow.UserName,
 				}).Scan(&toUser)
 				handleErr(d.Error)
 
-				i.handleCreatedUser(follow.Name)
+				i.handleCreatedUser(follow.UserName)
 			} else {
 				handleErr(err)
 			}

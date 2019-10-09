@@ -18,7 +18,7 @@ type UserFollowInfo struct {
 type User struct {
 	gorm.Model
 	UID       string  `json:"uid,omitempty"`
-	Name      string  `json:"name,omitempty" gorm:"column:user_name"`
+	UserName  string  `json:"user_name,omitempty" gorm:"column:user_name"`
 	RealName  string  `json:"real_name,omitempty" gorm:"column:real_name"`
 	AvatarURL string  `json:"avatar_url,omitempty" gorm:"column:avatar_url"`
 	Bio       string  `json:"bio,omitempty" gorm:"column:bio"`

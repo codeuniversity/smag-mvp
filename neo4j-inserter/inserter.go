@@ -78,7 +78,7 @@ func (i *Inserter) Run() {
 // into the specified kafka topic
 func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	p := &models.User{
-		Name:      followInfo.UserName,
+		UserName:  followInfo.UserName,
 		RealName:  followInfo.RealName,
 		AvatarURL: followInfo.AvatarURL,
 		Bio:       followInfo.Bio,
@@ -87,7 +87,7 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 
 	for _, following := range followInfo.Followings {
 		p.Follows = append(p.Follows, &models.User{
-			Name: following,
+			UserName: following,
 		})
 	}
 	i.insertUser(p)
@@ -107,18 +107,18 @@ func (i *Inserter) insertUser(user *models.User) {
 		`
 	)
 
-	_, err := i.conn.ExecNeo(createUserOrAddDetails, map[string]interface{}{"name": user.Name, "realName": user.RealName, "avatarUrl": user.AvatarURL, "bio": user.Bio, "crawled": user.CrawledAt})
+	_, err := i.conn.ExecNeo(createUserOrAddDetails, map[string]interface{}{"name": user.UserName, "realName": user.RealName, "avatarUrl": user.AvatarURL, "bio": user.Bio, "crawled": user.CrawledAt})
 	if err != nil {
 		panic(err)
 	}
 
 	// setting relationship to followings
 	for _, followed := range user.Follows {
-		result, err := i.conn.ExecNeo(addRelationsshipAndCreateUserIfNotExisting, map[string]interface{}{"name1": user.Name, "name2": followed.Name})
+		result, err := i.conn.ExecNeo(addRelationsshipAndCreateUserIfNotExisting, map[string]interface{}{"name1": user.UserName, "name2": followed.UserName})
 		if err != nil {
 			panic(err)
 		}
-		i.handleCreatedUser(result, followed.Name)
+		i.handleCreatedUser(result, followed.UserName)
 	}
 
 }
