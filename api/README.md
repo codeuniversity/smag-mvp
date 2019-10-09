@@ -36,5 +36,12 @@
 1. build and start the envoy Container
     - `docker build -t envoy-proxy -f api/envoy-proxy/Dockerfile .`
     - `docker run -p 8080:8080 envoy-proxy`
+1. To run tests without a frontend you can use prototool
+    ```bash
+    prototool grpc api \
+    --address localhost:10000 \
+    --method proto.UserSearchService/<function you want to call> \
+    --data '{"user_name": "Hallo"}'
+    ```
 
 
