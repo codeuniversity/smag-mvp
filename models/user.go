@@ -17,7 +17,7 @@ type UserFollowInfo struct {
 // User is the struct containing all user fields, used for serializing users to dgraph
 type User struct {
 	gorm.Model
-	//	UID       string  `json:"uid,omitempty" gorm:"column:uid"`
+	UID       string  `json:"uid,omitempty"`
 	Name      string  `json:"name,omitempty" gorm:"column:user_name"`
 	RealName  string  `json:"real_name,omitempty" gorm:"column:real_name"`
 	AvatarURL string  `json:"avatar_url,omitempty" gorm:"column:avatar_url"`

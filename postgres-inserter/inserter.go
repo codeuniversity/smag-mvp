@@ -51,7 +51,9 @@ func New(kafkaAddress, postgresHost, postgresPassword string) *Inserter {
 	if err != nil {
 		panic(err)
 	}
-	i.db = db.Debug()
+	i.db = db
+
+	db.AutoMigrate(&models.User{})
 
 	i.Executor = service.New()
 	return i
