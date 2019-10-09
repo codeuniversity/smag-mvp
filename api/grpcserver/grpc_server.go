@@ -59,7 +59,7 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 	for rows.Next() {
 		u := proto.User{}
 
-		rows.Scan(&u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl, &u.FollowingsCount, &u.FollowersCount)
+		rows.Scan(&u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 
 		// TODO: error handling
 		response.UserList = append(response.UserList, &u)
@@ -76,6 +76,6 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 
 	row := s.db.QueryRow("SELECT user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName)
 
-	row.Scan(&u.UserName, &u.RealName, &u.Bio)
+	row.Scan(&u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 	return u, nil
 }
