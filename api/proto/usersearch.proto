@@ -16,7 +16,7 @@ message UserSearchResponse {
     repeated User user_list = 1;
 }
 
-message UserSearchrequest {
+message UserSearchRequest {
     string user_name = 1;
 }
 
