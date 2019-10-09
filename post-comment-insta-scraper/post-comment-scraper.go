@@ -25,7 +25,7 @@ func New(kafkaAddress string) *PostCommentScraper {
 	p.postIdQReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
 		GroupID:        "insta_comments_group1",
-		Topic:          "insta_comments_info",
+		Topic:          "user_post",
 		CommitInterval: time.Minute * 40,
 	})
 	p.commentsInfoQWriter = kafka.NewWriter(kafka.WriterConfig{
