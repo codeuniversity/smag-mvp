@@ -50,7 +50,7 @@ func (s *GrpcServer) Listen() {
 //GetAllUsersLikeUsername returns a List of users that are like the given username
 func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserName) (*proto.UserSearchResponse, error) {
 	response := &proto.UserSearchResponse{}
-	rows, err := s.db.Query("SELECT user_nanme, real_name, bio, avatar_url WHERE LOWER(user_name) LIKE LOWER($1)", username.UserName)
+	rows, err := s.db.Query("SELECT user_name, real_name, bio, avatar_url WHERE LOWER(user_name) LIKE LOWER($1)", username.UserName)
 	if err != nil {
 		panic(err)
 	}
@@ -74,7 +74,7 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserName) (*proto.User, error) {
 	u := &proto.User{}
 
-	row := s.db.QueryRow("SELECT user_nanme, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName)
+	row := s.db.QueryRow("SELECT user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName)
 
 	row.Scan(&u.UserName, &u.RealName, &u.Bio)
 	return u, nil
