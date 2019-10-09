@@ -3,7 +3,7 @@ WORKDIR /go/src/github.com/codeuniversity/smag-mvp
 COPY go.mod .
 COPY go.sum .
 RUN GO111MODULE=on go mod download
-COPY . .   
+COPY ./api .   
 RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o grpc_server api/grpcserver/main/main.go
 
 FROM alpine

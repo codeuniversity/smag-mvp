@@ -41,4 +41,4 @@ static_resources:
     type: logical_dns
     http2_protocol_options: {}
     lb_policy: round_robin
-    hosts: [{ socket_address: { address: 10.0.1.180, port_value: 10000 }}]
+    hosts: [{ socket_address: { address: grpc-server, port_value: 10000 }}]

@@ -68,5 +68,29 @@ services:
     ports:
       - 5432:5432
 
+  pgadmin:
+    image: "dpage/pgadmin4:4.13"
+    ports:
+      - "25432:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "my_awesome_email@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "does_not_matter"
+
+  envoy-proxy:
+    build: "./api/envoy-proxy"
+    depends_on:
+      - "grpc-server"
+    ports:
+      - "8080:8080"
+  grpc-server:
+    build:
+      context: "."
+      dockerfile: "./api/grpcserver/Dockerfile"
+    
+    enviroment:
+      GRPC_POSTGRES_HOST: "postgres"
+    ports:
+      - "10000:10000"
+
 volumes:
   dgraph:
