@@ -16,12 +16,11 @@ message UserSearchResponse {
     repeated User user_list = 1;
 }
 
-message UserName {
+message UserSearchrequest {
     string user_name = 1;
 }
 
-
 service UserSearchService {
-    rpc GetAllUsersLikeUsername(UserName) returns (UserSearchResponse);
-    rpc GetUserWithUsername(UserName) returns (User);
+    rpc GetAllUsersLikeUsername(UserSearchrequest) returns (UserSearchResponse);
+    rpc GetUserWithUsername(UserSearchrequest) returns (User);
 }

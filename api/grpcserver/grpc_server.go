@@ -51,7 +51,7 @@ func (s *GrpcServer) Listen() {
 }
 
 //GetAllUsersLikeUsername returns a List of users that are like the given username
-func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserName) (*proto.UserSearchResponse, error) {
+func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserSearchRequest) (*proto.UserSearchResponse, error) {
 	response := &proto.UserSearchResponse{}
 	rows, err := s.db.Query("SELECT user_name, real_name, bio, avatar_url FROM users WHERE LOWER(user_name) LIKE LOWER($1)", fmt.Sprintf("%%%s%%", username.UserName))
 	if err != nil {
@@ -77,7 +77,7 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 }
 
 //GetUserWithUsername returns one User that equals the given username
-func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserName) (*proto.User, error) {
+func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserSearchRequest) (*proto.User, error) {
 	u := &proto.User{}
 	fmt.Println(username)
 

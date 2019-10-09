@@ -89,15 +89,15 @@ proto.proto.UserSearchServicePromiseClient =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.proto.UserName,
+ *   !proto.proto.UserSearchrequest,
  *   !proto.proto.UserSearchResponse>}
  */
 const methodDescriptor_UserSearchService_GetAllUsersLikeUsername = new grpc.web.MethodDescriptor(
   '/proto.UserSearchService/GetAllUsersLikeUsername',
   grpc.web.MethodType.UNARY,
-  proto.proto.UserName,
+  proto.proto.UserSearchrequest,
   proto.proto.UserSearchResponse,
-  /** @param {!proto.proto.UserName} request */
+  /** @param {!proto.proto.UserSearchrequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -108,12 +108,12 @@ const methodDescriptor_UserSearchService_GetAllUsersLikeUsername = new grpc.web.
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.proto.UserName,
+ *   !proto.proto.UserSearchrequest,
  *   !proto.proto.UserSearchResponse>}
  */
 const methodInfo_UserSearchService_GetAllUsersLikeUsername = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.UserSearchResponse,
-  /** @param {!proto.proto.UserName} request */
+  /** @param {!proto.proto.UserSearchrequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -122,7 +122,7 @@ const methodInfo_UserSearchService_GetAllUsersLikeUsername = new grpc.web.Abstra
 
 
 /**
- * @param {!proto.proto.UserName} request The
+ * @param {!proto.proto.UserSearchrequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
@@ -143,7 +143,7 @@ proto.proto.UserSearchServiceClient.prototype.getAllUsersLikeUsername =
 
 
 /**
- * @param {!proto.proto.UserName} request The
+ * @param {!proto.proto.UserSearchrequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
@@ -163,15 +163,15 @@ proto.proto.UserSearchServicePromiseClient.prototype.getAllUsersLikeUsername =
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
- *   !proto.proto.UserName,
+ *   !proto.proto.UserSearchrequest,
  *   !proto.proto.User>}
  */
 const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.MethodDescriptor(
   '/proto.UserSearchService/GetUserWithUsername',
   grpc.web.MethodType.UNARY,
-  proto.proto.UserName,
+  proto.proto.UserSearchrequest,
   proto.proto.User,
-  /** @param {!proto.proto.UserName} request */
+  /** @param {!proto.proto.UserSearchrequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -182,12 +182,12 @@ const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.Meth
 /**
  * @const
  * @type {!grpc.web.AbstractClientBase.MethodInfo<
- *   !proto.proto.UserName,
+ *   !proto.proto.UserSearchrequest,
  *   !proto.proto.User>}
  */
 const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.User,
-  /** @param {!proto.proto.UserName} request */
+  /** @param {!proto.proto.UserSearchrequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -196,7 +196,7 @@ const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractCl
 
 
 /**
- * @param {!proto.proto.UserName} request The
+ * @param {!proto.proto.UserSearchrequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
@@ -217,7 +217,7 @@ proto.proto.UserSearchServiceClient.prototype.getUserWithUsername =
 
 
 /**
- * @param {!proto.proto.UserName} request The
+ * @param {!proto.proto.UserSearchrequest} request The
  *     request proto
  * @param {?Object<string, string>} metadata User defined
  *     call metadata
