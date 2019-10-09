@@ -1,51 +1,16 @@
 version: "3.2"
-services:
-  zero:
-    image: dgraph/dgraph:v1.0.17
-    volumes:
-      - type: volume
-        source: dgraph
-        target: /dgraph
-        volume:
-          nocopy: true
-    ports:
-      - 5080:5080
-      - 6080:6080
-    restart: on-failure
-    command: dgraph zero --my=zero:5080
-  server:
-    image: dgraph/dgraph:v1.0.17
-    volumes:
-      - type: volume
-        source: dgraph
-        target: /dgraph
-        volume:
-          nocopy: true
-    ports:
-      - 8080:8080
-      - 9080:9080
-    restart: on-failure
-    command: dgraph alpha --my=server:7080 --lru_mb=2048 --zero=zero:5080
-  ratel:
-    image: dgraph/dgraph:v1.0.17
-    volumes:
-      - type: volume
-        source: dgraph
-        target: /dgraph
-        volume:
-          nocopy: true
-    ports:
-      - 8000:8000
-    command: dgraph-ratel
 
+services:
+  # KAFKA
+  # ports: 3000 - 3999
   zookeeper:
     image: "wurstmeister/zookeeper"
     ports:
-      - "2181:2181"
+      - "3000:2181"
   kafka:
     image: "wurstmeister/kafka:0.10.2.0"
     ports:
-      - "9092:9092"
+      - "3100:9092"
     depends_on:
       - "zookeeper"
     environment:
@@ -55,42 +20,94 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  neo4j:
-    image: "neo4j:3.5.9"
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-    environment:
-      NEO4J_HOME: "/var/lib/neo4j"
-  #      NEO4J_AUTH: none
-  postgres:
-    image: postgres:11.5
-    ports:
-      - 5432:5432
-
-  pgadmin:
-    image: "dpage/pgadmin4:4.13"
-    ports:
-      - "25432:80"
-    environment:
-      PGADMIN_DEFAULT_EMAIL: "my_awesome_email@email.com"
-      PGADMIN_DEFAULT_PASSWORD: "does_not_matter"
-
+  # GRPC
+  # ports: 4000 - 4999
   envoy-proxy:
     build: "./api/envoy-proxy"
     depends_on:
       - "grpc-server"
     ports:
-      - "8080:8080"
+      - "4000:8080"
   grpc-server:
     build:
       context: "."
       dockerfile: "./api/grpcserver/Dockerfile"
-    
-    enviroment:
+    environment:
       GRPC_POSTGRES_HOST: "postgres"
     ports:
-      - "10000:10000"
+      - "4100:10000"
+
+  # POSTGRES
+  # ports: 5000 - 5999
+  postgres:
+    image: "postgres:11.5"
+    ports:
+      - "5000:5432"
+  pgadmin:
+    image: "dpage/pgadmin4:4.13"
+    ports:
+      - "5100:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "my_awesome_email@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "does_not_matter"
+
+  # NEO4J
+  # ports: 6000 - 6999
+  neo4j:
+    image: "neo4j:3.5.9"
+    ports:
+      - "6000:7474"
+      - "6001:7687"
+    environment:
+      NEO4J_HOME: "/var/lib/neo4j"
+      # NEO4J_AUTH: none
+
+  # DGRPAH
+  # ports: 7000 - 7999
+  zero:
+    image: "dgraph/dgraph:v1.0.17"
+    volumes:
+      - type: volume
+        source: dgraph
+        target: /dgraph
+        volume:
+          nocopy: true
+    ports:
+      - "7000:5080"
+      - "7001:6080"
+    restart: "on-failure"
+    command: ["dgraph", "zero", "--my=zero:5080"]
+  server:
+    image: "dgraph/dgraph:v1.0.17"
+    volumes:
+      - type: volume
+        source: dgraph
+        target: /dgraph
+        volume:
+          nocopy: true
+    ports:
+      - "7100:8080"
+      - "7101:9080"
+    restart: on-failure
+    command:
+      [
+        "dgraph",
+        "alpha",
+        "--my=server:7080",
+        "--lru_mb=2048",
+        "--zero=zero:5080",
+      ]
+  ratel:
+    image: "dgraph/dgraph:v1.0.17"
+    volumes:
+      - type: volume
+        source: dgraph
+        target: /dgraph
+        volume:
+          nocopy: true
+    ports:
+      - "7200:8000"
+    command: ["dgraph-ratel"]
 
 volumes:
   dgraph:
