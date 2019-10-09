@@ -1,5 +1,9 @@
 # gRPC API
 
+- [Usage](#usage)
+- [Functions](#functions)
+- [Testing](#testing)
+
 ## Usage
 - Make sure to `npm install google-protobuf grpc-web`
 - Then import the auto-generated proto files
@@ -26,6 +30,6 @@
 ## Testing
 1. `docker-compose up`
 1. initialize the Database with `make init-db`
-1. Then connect with the envoy proxy via localhost on port 80
+1. Then connect with the envoy-proxy via `localhost:4000`
 
 
