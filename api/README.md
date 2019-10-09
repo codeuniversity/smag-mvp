@@ -16,6 +16,12 @@
         //...
     });
     ```
+## Functions
+- `getUserWithUsername(UserSearchRequest) User`
+    - Queries the Database for one specific User
+- `getAllUsersWithUsername(UserSearchRequest) UserSearchRsponse`
+    - Queries the database for all users that have a similar usenames and returns array of user
+
 
 ## Testing
 
