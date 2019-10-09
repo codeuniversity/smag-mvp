@@ -1,4 +1,5 @@
 version: "3.2"
+
 services:
   zookeeper:
     image: "wurstmeister/zookeeper"
@@ -17,16 +18,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  neo4j:
-    image: "neo4j:3.5.9"
-    ports:
-      - "7474:7474"
-      - "7687:7687"
-    environment:
-      NEO4J_HOME: "/var/lib/neo4j"
-  #      NEO4J_AUTH: none
   postgres:
     image: postgres:11.5
     ports:
       - 5432:5432
-
