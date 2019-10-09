@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/codeuniversity/smag-mvp/scraper"
+	scraper "github.com/codeuniversity/smag-mvp/instagram_scraper"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
