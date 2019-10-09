@@ -1,32 +1,18 @@
 package main
 
 import (
-	"context"
 	"fmt"
-	"github.com/segmentio/kafka-go"
-	"time"
+	insta_post_comment_scraper "github.com/codeuniversity/smag-mvp/insta-post-comment-scraper"
 )
 
 func main() {
 
-	kafkaAddress := "52.58.171.160:9092"
-	renewedAddressQReader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "instagram_group1",
-		Topic:          "renewed_elastic_ip",
-		CommitInterval: time.Minute * 10,
-	})
+	client := insta_post_comment_scraper.New("52.58.171.160:9092")
+	comments, err := client.Scrape("B2hByt_obIu")
 
-	counter := 0
-	for true {
-		m, err := renewedAddressQReader.FetchMessage(context.Background())
-
-		if err != nil {
-			fmt.Println("Err: ", err)
-		}
-
-		fmt.Println("Counter: ", counter)
-		fmt.Println("MessageTime: ", m.Time)
-		counter++
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+	fmt.Println(comments.Status)
 }

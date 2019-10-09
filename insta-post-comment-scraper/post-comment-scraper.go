@@ -57,6 +57,7 @@ func (p *PostCommentScraper) Run() {
 
 		message, err := p.postIdQReader.FetchMessage(context.Background())
 
+		fmt.Println("New Message")
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -69,9 +70,11 @@ func (p *PostCommentScraper) Run() {
 			continue
 		}
 
+		fmt.Println("ShortCode: ", post.ShortCode)
 		var postsComments *models.InstaPostComments
 		counter++
 		err = p.httpClient.WithRetries(3, func() error {
+			time.Sleep(1400 * time.Millisecond)
 			instaPostComments, err := p.httpClient.ScrapePostComments(post.ShortCode)
 
 			if err != nil {
@@ -83,6 +86,7 @@ func (p *PostCommentScraper) Run() {
 		})
 
 		if err != nil {
+			fmt.Println("error: ", err)
 			errorMessage := models.InstaCommentScrapError{
 				PostId: post.PostId,
 				Error:  err.Error(),
@@ -101,11 +105,31 @@ func (p *PostCommentScraper) Run() {
 		}
 		p.postIdQReader.CommitMessages(context.Background(), message)
 		counter++
+
+		time.Sleep(time.Millisecond * 900)
 	}
 }
 
-func (p *PostCommentScraper) sendComments(postsComments *models.InstaPostComments, postId models.InstagramPost) error {
+func (p *PostCommentScraper) Scrape(shortCode string) (*models.InstaPostComments, error) {
+	var postsComments *models.InstaPostComments
+	err := p.httpClient.WithRetries(3, func() error {
+		time.Sleep(9 * time.Second)
+		instaPostComments, err := p.httpClient.ScrapePostComments(shortCode)
 
+		if err != nil {
+			return err
+		}
+
+		postsComments = &instaPostComments
+		return nil
+	})
+	return postsComments, err
+}
+
+func (p *PostCommentScraper) sendComments(postsComments *models.InstaPostComments, postId models.InstagramPost) error {
+	jsonTest, _ := json.Marshal(postsComments)
+	fmt.Println("Print InstaPostComments: ", string(jsonTest))
+	fmt.Println("sendComments: ", len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	messages := make([]kafka.Message, 0, len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
 		if element.Node.ID != "" {

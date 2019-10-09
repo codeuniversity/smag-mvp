@@ -59,6 +59,7 @@ func New(localAddressCount int, kafkaAddress string) *HttpClient {
 	client.browserAgent = userAgent
 	client.localAddressesReachLimit = make(map[string]bool)
 	addresses := getLocalIpAddresses(localAddressCount)
+	//addresses := []string{"192.168.178.41"}
 
 	for _, localIp := range addresses {
 		client.localAddressesReachLimit[localIp] = true
@@ -135,7 +136,8 @@ func getLocalIpAddresses(count int) []string {
 		panic(fmt.Sprintf("Not Enough Local Ip Addresses, Requirement: %d \n", count))
 	}
 
-	return localAddresses[:(count - 1)]
+	fmt.Println("All LocalAddresses: ", localAddresses)
+	return localAddresses[:count]
 }
 
 func (h *HttpClient) getClient(localIp string) (*http.Client, error) {
@@ -264,6 +266,7 @@ func (h *HttpClient) ScrapePostComments(shortCode string) (models.InstaPostComme
 	if response.StatusCode != 200 {
 		return instaPostComment, &HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
 	}
+	fmt.Println("ScrapePostComments got response")
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return instaPostComment, err
@@ -337,6 +340,37 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 		fmt.Println("InvalidUnmarchedError")
 	case *json.UnsupportedTypeError:
 		fmt.Println("UnsupportedTypeError")
+	case *HttpStatusError:
+		fmt.Println("HttpStatusError")
+		addresses, foundAddress := h.checkAvailableAddresses()
+
+		if foundAddress {
+			return true, nil
+		}
+		if h.localAddressesReachLimit[h.currentAddress] == false {
+			err := h.sendRenewElasticIpRequestToAmazonService(addresses)
+			if err != nil {
+				return false, err
+			}
+
+			renewedAddresses := models.RenewingAddresses{}
+
+			fmt.Println("H.InstanceId: ", h.instanceId)
+			for renewedAddresses.InstanceId != h.instanceId {
+
+				renewedAddresses, err := h.waitForRenewElasticIpRequest()
+				if err != nil {
+					return false, err
+				}
+
+				if renewedAddresses.InstanceId == h.instanceId {
+					for ip := range h.localAddressesReachLimit {
+						h.localAddressesReachLimit[ip] = true
+					}
+					return true, nil
+				}
+			}
+		}
 	default:
 		fmt.Println("Found Wrong Json Type Error ", t)
 		return false, err

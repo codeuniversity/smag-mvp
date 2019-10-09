@@ -186,7 +186,8 @@ func (i *InstagramScraper) sendUserTimlinePostsId(accountMedia *models.Instagram
 			instagramPost := models.InstagramPost{
 				element.Node.ID,
 				element.Node.Shortcode,
-				userId}
+				userId,
+				element.Node.DisplayURL}
 
 			instagramPostJson, err := json.Marshal(instagramPost)
 
