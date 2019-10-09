@@ -92,7 +92,7 @@ func (i *Inserter) Close() {
 // into the specified kafka topic
 func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	p := &models.User{
-		Name:      followInfo.UserName,
+		UserName:  followInfo.UserName,
 		RealName:  followInfo.RealName,
 		AvatarURL: followInfo.AvatarURL,
 		Bio:       followInfo.Bio,
@@ -101,7 +101,7 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 
 	for _, following := range followInfo.Followings {
 		p.Follows = append(p.Follows, &models.User{
-			Name: following,
+			UserName: following,
 		})
 	}
 
@@ -115,12 +115,12 @@ func handleErr(err error) {
 }
 
 func (i *Inserter) insertUser(p *models.User) {
-	uid, created := getOrCreateUIDForUserWithRetries(i.dgClient, p.Name)
-	i.handleCreatedUser(p.Name, uid, created)
+	uid, created := getOrCreateUIDForUserWithRetries(i.dgClient, p.UserName)
+	i.handleCreatedUser(p.UserName, uid, created)
 	p.UID = uid
 	for _, followed := range p.Follows {
-		uid, created := getOrCreateUIDForUserWithRetries(i.dgClient, followed.Name)
-		i.handleCreatedUser(followed.Name, uid, created)
+		uid, created := getOrCreateUIDForUserWithRetries(i.dgClient, followed.UserName)
+		i.handleCreatedUser(followed.UserName, uid, created)
 		followed.UID = uid
 	}
 
@@ -177,7 +177,7 @@ func getOrCreateUIDForUser(dg *dgo.Dgraph, name string) (uid string, created boo
 	mu := &api.Mutation{
 		CommitNow: true,
 	}
-	p := &models.User{Name: name}
+	p := &models.User{UserName: name}
 	pb, err := json.Marshal(p)
 	if err != nil {
 		return "", false, err
