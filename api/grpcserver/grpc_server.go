@@ -50,7 +50,7 @@ func (s *GrpcServer) Listen() {
 //GetAllUsersLikeUsername returns a List of users that are like the given username
 func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserName) (*proto.UserSearchResponse, error) {
 	response := &proto.UserSearchResponse{}
-	rows, err := s.db.Query("SELECT user_nanme, real_name, bio, avatar_url, followings WHERE LOWER(user_name) LIKE LOWER($1)", username.UserName)
+	rows, err := s.db.Query("SELECT user_nanme, real_name, bio, avatar_url WHERE LOWER(user_name) LIKE LOWER($1)", username.UserName)
 	if err != nil {
 		panic(err)
 	}
