@@ -1,4 +1,4 @@
-package post_comment_insta_scraper
+package insta_post_comment_scraper
 
 import (
 	"context"
@@ -110,12 +110,12 @@ func (p *PostCommentScraper) sendComments(postsComments *models.InstaPostComment
 	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
 		if element.Node.ID != "" {
 			postComment := models.InstaComment{
-				Id:        element.Node.ID,
-				Text:      element.Node.Text,
-				CreatedAt: element.Node.CreatedAt,
-				PostId:    postId.PostId,
-				ShortCode: postId.ShortCode,
-				UserName:  element.Node.Owner.Username,
+				Id:            element.Node.ID,
+				Text:          element.Node.Text,
+				CreatedAt:     element.Node.CreatedAt,
+				PostId:        postId.PostId,
+				ShortCode:     postId.ShortCode,
+				OwnerUsername: element.Node.Owner.Username,
 			}
 			fmt.Println("CommentText: ", element.Node.Text)
 			postCommentJson, err := json.Marshal(postComment)
