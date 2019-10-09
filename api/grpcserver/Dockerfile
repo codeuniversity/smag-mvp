@@ -1,9 +1,9 @@
 FROM golang:1.12 as builder
 WORKDIR /go/src/github.com/codeuniversity/smag-mvp
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 RUN GO111MODULE=on go mod download
-COPY ./api .   
+COPY api/  ./api
+COPY utils/ ./utils
 RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o grpc_server api/grpcserver/main/main.go
 
 FROM alpine
