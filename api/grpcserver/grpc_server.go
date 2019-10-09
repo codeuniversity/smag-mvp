@@ -11,6 +11,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/codeuniversity/smag-mvp/api/proto"
+	"github.com/codeuniversity/smag-mvp/utils"
 	"google.golang.org/grpc"
 )
 
@@ -21,7 +22,8 @@ type GrpcServer struct {
 }
 
 // NewGrpcServer returns initilized gRPC Server
-func NewGrpcServer(grpcPort int, postgresHost string) *GrpcServer {
+func NewGrpcServer(grpcPort int) *GrpcServer {
+	postgresHost := utils.GetStringFromEnvWithDefault("GRPC_POSTGRES_HOST", "127.0.0.1")
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
 	if err != nil {
 		panic(err)
