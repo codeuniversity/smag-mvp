@@ -39,6 +39,9 @@ func (s *GrpcServer) Listen() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+
+	fmt.Println("Start gRPC Server")
+
 	grpcServer := grpc.NewServer()
 	proto.RegisterUserSearchServiceServer(grpcServer, s)
 
@@ -50,9 +53,10 @@ func (s *GrpcServer) Listen() {
 //GetAllUsersLikeUsername returns a List of users that are like the given username
 func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserName) (*proto.UserSearchResponse, error) {
 	response := &proto.UserSearchResponse{}
-	rows, err := s.db.Query("SELECT user_name, real_name, bio, avatar_url WHERE LOWER(user_name) LIKE LOWER($1)", username.UserName)
+	rows, err := s.db.Query("SELECT user_name, real_name, bio, avatar_url FROM users WHERE LOWER(user_name) LIKE LOWER($1)", fmt.Sprintf("%%%s%%", username.UserName))
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -65,14 +69,17 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 		response.UserList = append(response.UserList, &u)
 	}
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return nil, err
 	}
+	fmt.Println(response)
 	return response, nil
 }
 
 //GetUserWithUsername returns one User that equals the given username
 func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserName) (*proto.User, error) {
 	u := &proto.User{}
+	fmt.Println(username)
 
 	row := s.db.QueryRow("SELECT user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName)
 
