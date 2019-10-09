@@ -11,6 +11,8 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -56,12 +58,7 @@ func New(localAddressCount int, kafkaAddress string) *HttpClient {
 	}
 	client.browserAgent = userAgent
 	client.localAddressesReachLimit = make(map[string]bool)
-	//addresses, err := getLocalIpAddresses(localAddressCount)
-	//if err != nil {
-	//	fmt.Println("httpClient getLocalIpAddresses Error: ", err)
-	//	return nil
-	//}
-	addresses := []string{"172.31.32.141", "172.31.32.5"}
+	addresses := getLocalIpAddresses(localAddressCount)
 
 	for _, localIp := range addresses {
 		client.localAddressesReachLimit[localIp] = true
@@ -89,23 +86,47 @@ func getAmazonInstanceId() string {
 	return string(body)
 }
 
-func getLocalIpAddresses(count int) ([]string, error) {
-	interfaces, err := net.Interfaces()
+func isNetworkInterfaces(name string) bool {
+	matched, err := regexp.MatchString("eth[0-9]*$", name)
 
 	if err != nil {
 		panic(err)
 	}
 
+	return matched
+}
+
+func isIpv4Address(ip string) bool {
+	matched, err := regexp.MatchString("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", ip)
+
+	if err != nil {
+		panic(err)
+	}
+
+	return matched
+}
+
+func getLocalIpAddresses(count int) []string {
+	interfaces, err := net.Interfaces()
+
+	if err != nil {
+		fmt.Println("Get Network Interfaces Error: ")
+		panic(err)
+	}
+
 	var localAddresses []string
 	for _, networkInterface := range interfaces {
-		fmt.Println("NetworkInterface: ", networkInterface.Name)
-		addrs, err := networkInterface.Addrs()
-		if err != nil {
-			return nil, err
-		}
-		if (networkInterface.Name == "eth0") || (networkInterface.Name == "eth1") {
+		if isNetworkInterfaces(networkInterface.Name) {
+			addrs, err := networkInterface.Addrs()
+			if err != nil {
+				fmt.Println("Error Addrs: ", err)
+				panic(err)
+			}
 			for _, address := range addrs {
-				localAddresses = append(localAddresses, address.String())
+				ip := strings.Split(address.String(), "/")
+				if isIpv4Address(ip[0]) {
+					localAddresses = append(localAddresses, ip[0])
+				}
 			}
 		}
 	}
@@ -114,8 +135,7 @@ func getLocalIpAddresses(count int) ([]string, error) {
 		panic(fmt.Sprintf("Not Enough Local Ip Addresses, Requirement: %d \n", count))
 	}
 
-	fmt.Println(localAddresses)
-	return localAddresses[:(count - 1)], nil
+	return localAddresses[:(count - 1)]
 }
 
 func (h *HttpClient) getClient(localIp string) (*http.Client, error) {
