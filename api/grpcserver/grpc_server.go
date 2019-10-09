@@ -14,13 +14,13 @@ import (
 	"google.golang.org/grpc"
 )
 
-//GrpcServer holds port of server
+//GrpcServer represents the gRPC Server containing the db connection and port
 type GrpcServer struct {
 	grpcPort int
 	db       *sql.DB
 }
 
-// NewGrpcServer creates a GrpcServer
+// NewGrpcServer returns initilized gRPC Server
 func NewGrpcServer(grpcPort int, postgresHost string) *GrpcServer {
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
 	if err != nil {
