@@ -30,7 +30,9 @@
     ```yaml
     hosts: [{ socket_address: { address: <your ip>, port_value: 10000 }}]
     ```
-1.start gRPC Server with `go run api/grpcserver/main/main.go`
+
+1. start gRPC Server with `go run api/grpcserver/main/main.go`
+
 1. build and start the envoy Container
     `docker build -t envoy-proxy -f api/envoy-proxy/Dockerfile .`
     `docker run -p 8080:8080 envoy-proxy`
