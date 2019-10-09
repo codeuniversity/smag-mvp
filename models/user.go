@@ -510,8 +510,7 @@ type InstaComment struct {
 	CreatedAt     int    `json:"created_at"`
 	PostId        string `json:"post_id"`
 	ShortCode     string `json:"short_code"`
-	UserId        string `json:"user_id"`
-	OwnerUserId   string `json:"owner_user_id"`
+	UserName      string `json:"user_name"`
 	OwnerUsername string `json:"owner_username"`
 }
 
@@ -519,4 +518,9 @@ type InstagramPost struct {
 	PostId    string `json:"post_id"`
 	ShortCode string `json:"short_code"`
 	UserId    string `json:"user_id"`
+}
+
+type InstaCommentScrapError struct {
+	PostId string `json:"post_id,omitempty"`
+	Error  string `json:"error,omitempty"`
 }

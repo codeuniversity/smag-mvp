@@ -62,8 +62,8 @@ func (p *PostCommentScraper) Run() {
 			continue
 		}
 
-		var postId models.InstagramPost
-		err = json.Unmarshal(message.Value, &postId)
+		var post models.InstagramPost
+		err = json.Unmarshal(message.Value, &post)
 		if err != nil {
 			fmt.Println(err)
 			continue
@@ -71,8 +71,8 @@ func (p *PostCommentScraper) Run() {
 
 		var postsComments *models.InstaPostComments
 		counter++
-		p.httpClient.WithRetries(3, func() error {
-			instaPostComments, err := p.httpClient.ScrapePostComments(postId.ShortCode)
+		err = p.httpClient.WithRetries(3, func() error {
+			instaPostComments, err := p.httpClient.ScrapePostComments(post.ShortCode)
 
 			if err != nil {
 				return err
@@ -81,38 +81,54 @@ func (p *PostCommentScraper) Run() {
 			postsComments = &instaPostComments
 			return nil
 		})
-		go p.sendComments(postsComments, postId)
+
+		if err != nil {
+			errorMessage := models.InstaCommentScrapError{
+				PostId: post.PostId,
+				Error:  err.Error(),
+			}
+
+			errorMessageJson, err := json.Marshal(errorMessage)
+			if err != nil {
+				panic(err)
+			}
+			p.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJson})
+		} else {
+			err = p.sendComments(postsComments, post)
+			if err != nil {
+				panic(err)
+			}
+		}
+		p.postIdQReader.CommitMessages(context.Background(), message)
 		counter++
 	}
 }
 
-func (p *PostCommentScraper) sendComments(postsComments *models.InstaPostComments, postId models.InstagramPost) {
+func (p *PostCommentScraper) sendComments(postsComments *models.InstaPostComments, postId models.InstagramPost) error {
+
+	messages := make([]kafka.Message, 0, len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
 		if element.Node.ID != "" {
 			postComment := models.InstaComment{
-				Id:          element.Node.ID,
-				Text:        element.Node.Text,
-				CreatedAt:   element.Node.CreatedAt,
-				PostId:      postId.PostId,
-				ShortCode:   postId.ShortCode,
-				UserId:      postId.UserId,
-				OwnerUserId: element.Node.Owner.ID,
+				Id:        element.Node.ID,
+				Text:      element.Node.Text,
+				CreatedAt: element.Node.CreatedAt,
+				PostId:    postId.PostId,
+				ShortCode: postId.ShortCode,
+				UserName:  element.Node.Owner.Username,
 			}
 			fmt.Println("CommentText: ", element.Node.Text)
 			postCommentJson, err := json.Marshal(postComment)
 
 			if err != nil {
-				fmt.Println(err)
-				continue
+				panic(fmt.Errorf("json marshal failed with InstaComment: %s", err))
 			}
 
-			err = p.commentsInfoQWriter.WriteMessages(context.Background(), kafka.Message{Value: postCommentJson})
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
+			m := kafka.Message{Value: postCommentJson}
+			messages = append(messages, m)
 		}
 	}
+	return p.commentsInfoQWriter.WriteMessages(context.Background(), messages...)
 }
 
 func (p *PostCommentScraper) Close() {
