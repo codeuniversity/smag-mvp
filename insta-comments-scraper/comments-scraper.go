@@ -1,4 +1,4 @@
-package insta_post_comment_scraper
+package insta_comments_scraper
 
 import (
 	"context"

@@ -1,4 +1,4 @@
-package instagramScraper
+package insta_posts_scraper
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-type InstagramScraper struct {
+type InstaPostsScraper struct {
 	nameQReader      *kafka.Reader
 	userPostsQWriter *kafka.Writer
 	errQWriter       *kafka.Writer
@@ -21,8 +21,8 @@ type InstagramScraper struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress string) *InstagramScraper {
-	i := &InstagramScraper{}
+func New(kafkaAddress string) *InstaPostsScraper {
+	i := &InstaPostsScraper{}
 	i.nameQReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
 		GroupID:        "user_instagram_scraper_posts",
@@ -47,7 +47,7 @@ func New(kafkaAddress string) *InstagramScraper {
 	return i
 }
 
-func (i *InstagramScraper) accountInfo(username string) (*models.InstagramAccountInfo, error) {
+func (i *InstaPostsScraper) accountInfo(username string) (*models.InstagramAccountInfo, error) {
 	var instagramAccountInfo *models.InstagramAccountInfo
 
 	err := i.httpClient.WithRetries(2, func() error {
@@ -66,7 +66,7 @@ func (i *InstagramScraper) accountInfo(username string) (*models.InstagramAccoun
 	return instagramAccountInfo, err
 }
 
-func (i *InstagramScraper) accountPosts(userId string, cursor string) (*models.InstagramMedia, error) {
+func (i *InstaPostsScraper) accountPosts(userId string, cursor string) (*models.InstagramMedia, error) {
 	var instagramAccountMedia *models.InstagramMedia
 
 	err := i.httpClient.WithRetries(2, func() error {
@@ -85,7 +85,7 @@ func (i *InstagramScraper) accountPosts(userId string, cursor string) (*models.I
 	return instagramAccountMedia, err
 }
 
-func (i *InstagramScraper) Run() {
+func (i *InstaPostsScraper) Run() {
 	defer func() {
 		i.MarkAsStopped()
 	}()
@@ -155,7 +155,7 @@ func (i *InstagramScraper) Run() {
 	}
 }
 
-func (i *InstagramScraper) sendUserInfoPostsId(instagramAccountInfo *models.InstagramAccountInfo, username string, userId string) {
+func (i *InstaPostsScraper) sendUserInfoPostsId(instagramAccountInfo *models.InstagramAccountInfo, username string, userId string) {
 	for _, element := range instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.Edges {
 		fmt.Println("Edges ", username)
 		fmt.Println(element.Node.Typename)
@@ -179,7 +179,7 @@ func (i *InstagramScraper) sendUserInfoPostsId(instagramAccountInfo *models.Inst
 	}
 }
 
-func (i *InstagramScraper) sendUserTimlinePostsId(accountMedia *models.InstagramMedia, username string, userId string) {
+func (i *InstaPostsScraper) sendUserTimlinePostsId(accountMedia *models.InstagramMedia, username string, userId string) {
 	for _, element := range accountMedia.Data.User.EdgeOwnerToTimelineMedia.Edges {
 		if element.Node.ID != "" {
 
@@ -205,7 +205,7 @@ func (i *InstagramScraper) sendUserTimlinePostsId(accountMedia *models.Instagram
 	}
 }
 
-func (i *InstagramScraper) sendErrorMessage(m kafka.Message, username string, err error) {
+func (i *InstaPostsScraper) sendErrorMessage(m kafka.Message, username string, err error) {
 	errMessage := &models.InstagramScrapeError{
 		Name:  username,
 		Error: err.Error(),
@@ -218,7 +218,7 @@ func (i *InstagramScraper) sendErrorMessage(m kafka.Message, username string, er
 	i.nameQReader.CommitMessages(context.Background(), m)
 }
 
-func (i *InstagramScraper) Close() {
+func (i *InstaPostsScraper) Close() {
 	i.Stop()
 	i.WaitUntilStopped(time.Second * 3)
 

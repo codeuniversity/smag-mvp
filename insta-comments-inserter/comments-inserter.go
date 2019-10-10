@@ -1,4 +1,4 @@
-package insta_post_comments_inserter
+package insta_comments_inserter
 
 import (
 	"context"
