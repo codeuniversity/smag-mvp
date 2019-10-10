@@ -18,7 +18,7 @@ type InstaCommentInserter struct {
 	*service.Executor
 }
 
-func New(kafkaAddress string) *InstaCommentInserter {
+func New(kafkaAddress string, postgresHost string) *InstaCommentInserter {
 	p := &InstaCommentInserter{}
 	p.qReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
@@ -33,6 +33,11 @@ func New(kafkaAddress string) *InstaCommentInserter {
 		Async:    false,
 	})
 	p.Executor = service.New()
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
+	if err != nil {
+		panic(err)
+	}
+	p.db = db
 	return p
 }
 
@@ -61,12 +66,6 @@ func (c *InstaCommentInserter) Run() {
 			panic(fmt.Errorf("comments inserter failed %s ", err))
 		}
 		c.qReader.CommitMessages(context.Background(), m)
-	}
-}
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
 	}
 }
 
@@ -133,6 +132,7 @@ func (c *InstaCommentInserter) insertComment(p *models.InstaComment) error {
 		return err
 	}
 
+	//Todo on Conflict
 	_, err = c.db.Exec(`INSERT INTO comments(post_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4,$5)`, postID, p.Text, ownerUserID)
 
 	if err != nil {
