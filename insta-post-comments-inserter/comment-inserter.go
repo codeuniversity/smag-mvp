@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
+	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 	"time"
 )
@@ -46,7 +47,7 @@ func (c *InstaCommentInserter) Run() {
 		c.MarkAsStopped()
 	}()
 
-	fmt.Println("starting inserter")
+	fmt.Println("starting Comments inserter")
 	for c.IsRunning() {
 		m, err := c.qReader.FetchMessage(context.Background())
 		if err != nil {
@@ -77,13 +78,8 @@ func (c *InstaCommentInserter) findOrCreateUser(username string) (userID int, er
 			return 0, err
 		}
 
-		result, err := c.db.Exec(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, username)
-		if err != nil {
-			return 0, err
-		}
-
-		insertedUserID, err := result.LastInsertId()
-
+		var insertedUserID int
+		err := c.db.QueryRow(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, username).Scan(&insertedUserID)
 		if err != nil {
 			return 0, err
 		}
@@ -102,13 +98,8 @@ func (c *InstaCommentInserter) findOrCreatePost(postId string) (postID int, err 
 			return 0, err
 		}
 
-		result, err := c.db.Exec(`INSERT INTO posts(post_id) VALUES($1) RETURNING id`, postId)
-		if err != nil {
-			return 0, err
-		}
-
-		insertedUserID, err := result.LastInsertId()
-
+		var insertedUserID int
+		err := c.db.QueryRow(`INSERT INTO posts(post_id) VALUES($1) RETURNING id`, postId).Scan(&insertedUserID)
 		if err != nil {
 			return 0, err
 		}
@@ -132,8 +123,7 @@ func (c *InstaCommentInserter) insertComment(p *models.InstaComment) error {
 		return err
 	}
 
-	//Todo on Conflict
-	_, err = c.db.Exec(`INSERT INTO comments(post_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4,$5)`, postID, p.Text, ownerUserID)
+	_, err = c.db.Exec(`INSERT INTO comments(post_id, comment_text, owner_user_id) VALUES($1,$2,$3) ON CONFLICT(post_id) DO UPDATE SET comment_text=$2`, postID, p.Text, ownerUserID)
 
 	if err != nil {
 		return err
