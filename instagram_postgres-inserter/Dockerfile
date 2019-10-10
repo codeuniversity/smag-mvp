@@ -4,7 +4,7 @@ COPY go.mod .
 COPY go.sum .
 RUN GO111MODULE=on go mod download
 COPY . . 
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_postgres_inserter postgres-inserter/main/main.go
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_postgres_inserter instagram_postgres-inserter/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates

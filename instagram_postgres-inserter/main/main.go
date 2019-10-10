@@ -1,8 +1,8 @@
 package main
 
 import (
+	inserter "github.com/codeuniversity/smag-mvp/instagram_postgres-inserter"
 	"github.com/codeuniversity/smag-mvp/kafka"
-	inserter "github.com/codeuniversity/smag-mvp/postgres-inserter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
