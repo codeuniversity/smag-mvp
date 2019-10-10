@@ -6,7 +6,7 @@ RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o insta
 FROM alpine
 RUN apk --no-cache add ca-certificates
 RUN mkdir app
-COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/insta_posts__inserter /app
+COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/insta_posts_inserter /app
 COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/useragents.json /app
 WORKDIR /app
 CMD ["./insta_posts_inserter"]
