@@ -123,7 +123,7 @@ func (c *InstaCommentInserter) insertComment(p *models.InstaComment) error {
 		return err
 	}
 
-	_, err = c.db.Exec(`INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.Text, ownerUserID)
+	_, err = c.db.Exec(`INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.Id, p.Text, ownerUserID)
 
 	if err != nil {
 		return err
