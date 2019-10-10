@@ -114,7 +114,7 @@ func getUserForID(dg *dgo.Dgraph, id int) (info *models.UserFollowInfo, err erro
 	user := result.Me[0]
 
 	info = &models.UserFollowInfo{
-		UserName:  user.Name,
+		UserName:  user.UserName,
 		RealName:  user.RealName,
 		AvatarURL: user.AvatarURL,
 		Bio:       user.Bio,
@@ -122,7 +122,7 @@ func getUserForID(dg *dgo.Dgraph, id int) (info *models.UserFollowInfo, err erro
 	}
 
 	for _, following := range user.Follows {
-		info.Followings = append(info.Followings, following.Name)
+		info.Followings = append(info.Followings, following.UserName)
 	}
 	return info, nil
 }
