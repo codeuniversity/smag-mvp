@@ -10,10 +10,23 @@
 In different terminal windows:
 
 1. Start `kafka` and `dgraph` with `docker-compose up`
-1. Run the scraper with `go run scraper/main/main.go`
-1. Run the dgraph inserter with `go run dgraph-inserter/main/main.go`
-1. Run the neo4j inserter with `go run neo4j-inserter/main/main.go`
-1. Run the postgres inserter with `go run postgres-inserter/main/main.go`
+
+> For the scraper, make sure to set the following environment variables:
+> - `KAFKA_GROUPID`
+> - `KAFKA_NAME_TOPIC` - read from topic
+> - `KAFKA_INFO_TOPIC` - write to topic
+> - `KAFKA_ERR_TOPIC` - error write to topic
+
+2. Run the scraper with `go run scraper/main/main.go`
+
+> For the insertes, make sure to set the following environment variables:
+> - `KAFKA_GROUPID`
+> - `KAFKA_NAME_TOPIC` - read from topic
+> - `KAFKA_INFO_TOPIC` - write to topic
+
+3. Run the dgraph inserter with `go run dgraph-inserter/main/main.go`
+3. Run the neo4j inserter with `go run neo4j-inserter/main/main.go`
+3. Run the postgres inserter with `go run postgres-inserter/main/main.go`
 
 If this is your first time running this:
 

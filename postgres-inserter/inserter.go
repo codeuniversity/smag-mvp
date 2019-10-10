@@ -26,22 +26,11 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, postgresHost, postgresPassword string) *Inserter {
+func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
-	i.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_postgres_inserter",
-		Topic:          "user_follow_infos",
-		MinBytes:       10e3, // 10KB
-		MaxBytes:       10e6, // 10MB
-		CommitInterval: time.Second,
-	})
-	i.qWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "user_names",
-		Balancer: &kafka.LeastBytes{},
-		Async:    true,
-	})
+	i.qReader = qReader
+	i.qWriter = qWriter
+
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
 		connectionString += " " + "password=" + postgresPassword
@@ -92,7 +81,9 @@ func (i *Inserter) Close() {
 
 	i.db.Close()
 	i.qReader.Close()
-	i.qWriter.Close()
+	if i.qWriter != nil {
+		i.qWriter.Close()
+	}
 
 	i.MarkAsClosed()
 }
@@ -166,9 +157,12 @@ func (i *Inserter) insertUser(p *models.User) {
 }
 
 func (i *Inserter) handleCreatedUser(userName string) {
-	i.qWriter.WriteMessages(context.Background(), kafka.Message{
-		Value: []byte(userName),
-	})
+	// if qWriter is nil, user discovery is disabled
+	if i.qWriter != nil {
+		i.qWriter.WriteMessages(context.Background(), kafka.Message{
+			Value: []byte(userName),
+		})
+	}
 }
 
 func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {

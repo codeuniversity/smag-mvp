@@ -14,11 +14,7 @@ require (
 	github.com/jinzhu/gorm v1.9.11
 	github.com/johnnadratowski/golang-neo4j-bolt-driver v0.0.0-20181101021923-6b24c0085aae
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/lib/pq v1.2.0
-	github.com/neo4j-drivers/gobolt v1.7.4 // indirect
-	github.com/neo4j/neo4j-go-driver v1.7.4
-	github.com/onsi/ginkgo v1.10.1 // indirect
-	github.com/onsi/gomega v1.7.0 // indirect
+	github.com/lib/pq v1.2.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/segmentio/kafka-go v0.3.2
@@ -28,6 +24,5 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20191002063906-3421d5a6bb1c // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/tools v0.0.0-20191001184121-329c8d646ebe // indirect
 	google.golang.org/grpc v1.22.1
 )

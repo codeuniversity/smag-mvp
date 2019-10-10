@@ -23,22 +23,10 @@ type Inserter struct {
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress, neo4jAddress, neo4jUsername, neo4jPassword string) *Inserter {
+func New(neo4jAddress, neo4jUsername, neo4jPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
-	i.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_neo4j_inserter",
-		Topic:          "user_follow_infos",
-		MinBytes:       10e3, // 10KB
-		MaxBytes:       10e6, // 10MB
-		CommitInterval: time.Second,
-	})
-	i.qWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "user_names",
-		Balancer: &kafka.LeastBytes{},
-		Async:    true,
-	})
+	i.qReader = qReader
+	i.qWriter = qWriter
 
 	i.initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress)
 
@@ -128,7 +116,8 @@ func (i *Inserter) handleCreatedUser(result bolt.Result, username string) {
 	// Username gets added to Queue only if it just got created
 	// rowCount == 2 -> User (only username) and relationship created
 	// rowCount == 1 -> relationship created
-	if rowsCount, _ := result.RowsAffected(); rowsCount == 2 {
+	// if qWriter is nil, user discovery is disabled
+	if rowsCount, _ := result.RowsAffected(); rowsCount == 2 && i.qWriter != nil {
 		i.qWriter.WriteMessages(context.Background(), kafka.Message{
 			Value: []byte(username),
 		})
@@ -160,7 +149,9 @@ func (i *Inserter) Close() {
 
 	i.conn.Close()
 	i.qReader.Close()
-	i.qWriter.Close()
+	if i.qWriter != nil {
+		i.qWriter.Close()
+	}
 
 	i.MarkAsClosed()
 }
