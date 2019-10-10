@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
+	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 	"time"
 )
