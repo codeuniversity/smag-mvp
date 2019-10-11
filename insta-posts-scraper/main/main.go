@@ -1,14 +1,16 @@
 package main
 
 import (
-	"github.com/codeuniversity/smag-mvp/insta-posts-scraper"
+	insta_posts_scraper "github.com/codeuniversity/smag-mvp/insta-posts-scraper"
+	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/service"
-	"github.com/codeuniversity/smag-mvp/utils"
 )
 
 func main() {
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "52.58.171.160:9092")
-	s := insta_posts_scraper.New(kafkaAddress)
+	nameReaderConfig, infoWriterConfig, errWriterConfig := kafka.GetScraperConfig()
+
+	s := insta_posts_scraper.New(kafka.NewReader(nameReaderConfig), kafka.NewWriter(infoWriterConfig), kafka.NewWriter(errWriterConfig))
+
 	service.CloseOnSignal(s)
 	go s.Run()
 

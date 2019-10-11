@@ -16,28 +16,21 @@ type InstaPostInserter struct {
 	postQReader *kafka.Reader
 	errQWriter  *kafka.Writer
 	*service.Executor
-	db           *sql.DB
-	kafkaAddress string
+	db *sql.DB
 }
 
-func New(kafkaAddress string, postgresHost string) *InstaPostInserter {
+func New(postgresHost, postgresPassword string, postQReader *kafka.Reader, errQWriter *kafka.Writer) *InstaPostInserter {
 	p := &InstaPostInserter{}
-	p.postQReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "insta_post_inserter_group1",
-		Topic:          "user_post",
-		CommitInterval: time.Minute * 40,
-	})
-	p.errQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "post_post_inserter_errors",
-		Balancer: &kafka.LeastBytes{},
-		Async:    false,
-	})
+	p.postQReader = postQReader
+	p.errQWriter = errQWriter
 	p.Executor = service.New()
-	p.kafkaAddress = kafkaAddress
 
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
+	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
+	if postgresPassword != "" {
+		connectionString += " " + "password=" + postgresPassword
+	}
+
+	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		panic(err)
 	}

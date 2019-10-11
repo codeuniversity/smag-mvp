@@ -12,38 +12,22 @@ import (
 )
 
 type InstaPostsScraper struct {
-	nameQReader      *kafka.Reader
-	userPostsQWriter *kafka.Writer
-	errQWriter       *kafka.Writer
+	nameQReader  *kafka.Reader
+	postsQWriter *kafka.Writer
+	errQWriter   *kafka.Writer
 	*service.Executor
 	kafkaAddress string
 	httpClient   *httpClient.HttpClient
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress string) *InstaPostsScraper {
+func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *InstaPostsScraper {
 	i := &InstaPostsScraper{}
-	i.nameQReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "user_instagram_scraper_posts",
-		Topic:          "user_names",
-		CommitInterval: time.Minute * 40,
-	})
-	i.userPostsQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "user_post",
-		Balancer: &kafka.LeastBytes{},
-		Async:    true,
-	})
-	i.errQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "user_instagram-scrape_errors",
-		Balancer: &kafka.LeastBytes{},
-		Async:    false,
-	})
+	i.nameQReader = nameQReader
+	i.postsQWriter = infoQWriter
+	i.errQWriter = errQWriter
 	i.Executor = service.New()
-	i.kafkaAddress = kafkaAddress
-	i.httpClient = httpClient.New(2, i.kafkaAddress)
+	i.httpClient = httpClient.New(2, "52.58.171.160:9092")
 	return i
 }
 
@@ -174,7 +158,7 @@ func (i *InstaPostsScraper) sendUserInfoPostsId(instagramAccountInfo *models.Ins
 				break
 			}
 
-			err = i.userPostsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
+			err = i.postsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
 		}
 	}
 }
@@ -196,7 +180,7 @@ func (i *InstaPostsScraper) sendUserTimlinePostsId(accountMedia *models.Instagra
 				break
 			}
 
-			err = i.userPostsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
+			err = i.postsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJson})
 			if err != nil {
 				fmt.Println(err)
 				break
@@ -223,7 +207,7 @@ func (i *InstaPostsScraper) Close() {
 	i.WaitUntilStopped(time.Second * 3)
 
 	i.nameQReader.Close()
-	i.userPostsQWriter.Close()
+	i.postsQWriter.Close()
 	i.errQWriter.Close()
 	i.httpClient.Close()
 	i.MarkAsClosed()

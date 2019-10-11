@@ -13,28 +13,25 @@ import (
 )
 
 type InstaCommentInserter struct {
-	qReader    *kafka.Reader
-	errQWriter *kafka.Writer
-	db         *sql.DB
+	commentsQReader *kafka.Reader
+	errQWriter      *kafka.Writer
+	db              *sql.DB
 	*service.Executor
 }
 
-func New(kafkaAddress string, postgresHost string) *InstaCommentInserter {
+func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, errQWriter *kafka.Writer) *InstaCommentInserter {
 	p := &InstaCommentInserter{}
-	p.qReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "insta_inserter_group1",
-		Topic:          "insta_comments_info",
-		CommitInterval: time.Minute * 40,
-	})
-	p.errQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "post_comment__insta_inserter_errors",
-		Balancer: &kafka.LeastBytes{},
-		Async:    false,
-	})
+	p.commentsQReader = commentsQReader
+	p.errQWriter = errQWriter
+	p.errQWriter = errQWriter
 	p.Executor = service.New()
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
+
+	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
+	if postgresPassword != "" {
+		connectionString += " " + "password=" + postgresPassword
+	}
+
+	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		panic(err)
 	}
@@ -49,7 +46,7 @@ func (c *InstaCommentInserter) Run() {
 
 	fmt.Println("starting Comments inserter")
 	for c.IsRunning() {
-		m, err := c.qReader.FetchMessage(context.Background())
+		m, err := c.commentsQReader.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -66,7 +63,7 @@ func (c *InstaCommentInserter) Run() {
 		if err != nil {
 			panic(fmt.Errorf("comments inserter failed %s ", err))
 		}
-		c.qReader.CommitMessages(context.Background(), m)
+		c.commentsQReader.CommitMessages(context.Background(), m)
 	}
 }
 
@@ -137,6 +134,6 @@ func (c *InstaCommentInserter) Close() {
 	c.WaitUntilStopped(time.Second * 3)
 
 	c.errQWriter.Close()
-	c.qReader.Close()
+	c.commentsQReader.Close()
 	c.MarkAsClosed()
 }

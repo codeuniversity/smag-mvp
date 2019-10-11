@@ -16,33 +16,16 @@ type PostCommentScraper struct {
 	commentsInfoQWriter *kafka.Writer
 	errQWriter          *kafka.Writer
 	*service.Executor
-	kafkaAddress string
-	httpClient   *httpClient.HttpClient
+	httpClient *httpClient.HttpClient
 }
 
-func New(kafkaAddress string) *PostCommentScraper {
+func New(postReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
 	p := &PostCommentScraper{}
-	p.postIdQReader = kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{kafkaAddress},
-		GroupID:        "insta_comments_group1",
-		Topic:          "user_post",
-		CommitInterval: time.Minute * 40,
-	})
-	p.commentsInfoQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "insta_comments_info",
-		Balancer: &kafka.LeastBytes{},
-		Async:    true,
-	})
-	p.errQWriter = kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{kafkaAddress},
-		Topic:    "post_comment_insta_scraper_errors",
-		Balancer: &kafka.LeastBytes{},
-		Async:    false,
-	})
+	p.postIdQReader = postReader
+	p.commentsInfoQWriter = commentsInfoQWriter
+	p.errQWriter = errQWriter
 	p.Executor = service.New()
-	p.kafkaAddress = kafkaAddress
-	p.httpClient = httpClient.New(2, p.kafkaAddress)
+	p.httpClient = httpClient.New(2, "52.58.171.160:9092")
 	return p
 }
 
