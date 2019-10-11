@@ -1,6 +1,2 @@
-.idea/
-*.impl
-.DS_Store
-
-
-
+*/Dockerfile
+Dockerfile
