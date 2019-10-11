@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -20,8 +21,12 @@ func main() {
 		Balancer: &kafka.LeastBytes{},
 	})
 	defer w.Close()
-
-	w.WriteMessages(context.Background(), kafka.Message{
+	t, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+	err := w.WriteMessages(t, kafka.Message{
 		Value: []byte(userNameArg),
 	})
+	if err != nil {
+		panic(err)
+	}
 }

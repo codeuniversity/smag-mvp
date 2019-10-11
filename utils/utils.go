@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/dgraph-io/dgo"
@@ -37,7 +38,7 @@ func WithRetries(times int, f func() error) error {
 	return err
 }
 
-//GetStringFromEnvWithDefault returns default Value if OS Enviroment Variable is not set
+//GetStringFromEnvWithDefault returns default Value if OS Environment Variable is not set
 func GetStringFromEnvWithDefault(enVarName, defaultValue string) string {
 	envValue := os.Getenv(enVarName)
 	if envValue == "" {
@@ -45,4 +46,29 @@ func GetStringFromEnvWithDefault(enVarName, defaultValue string) string {
 	}
 
 	return envValue
+}
+
+//MustGetStringFromEnv panics if OS Environment Variable is not set
+func MustGetStringFromEnv(enVarName string) string {
+	envValue := os.Getenv(enVarName)
+	if envValue == "" {
+		panic(fmt.Sprintf("%s must not be empty", enVarName))
+	}
+
+	return envValue
+}
+
+// GetBoolFromEnvWithDefault parses an OS Environment Variable as bool
+func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) bool {
+	envValue := os.Getenv(enVarName)
+	if envValue == "" {
+		return defaultValue
+	}
+
+	envBool, err := strconv.ParseBool(envValue)
+	if err != nil {
+		panic(fmt.Errorf("couldn't parse %s as bool: %s", enVarName, err))
+	}
+
+	return envBool
 }
