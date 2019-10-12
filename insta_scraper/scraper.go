@@ -1,4 +1,4 @@
-package instagram_scraper
+package insta_scraper
 
 import (
 	"context"

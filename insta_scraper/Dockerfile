@@ -2,8 +2,8 @@ FROM golang:1.12 as builder
 WORKDIR /go/src/github.com/codeuniversity/smag-mvp
 COPY go.mod go.sum ./
 RUN GO111MODULE=on go mod download
-COPY ./instagram_scraper ./instagram_scraper 
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_scraper instagram_scraper/main/main.go
+COPY ./insta_scraper ./insta_scraper 
+RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_scraper insta_scraper/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates

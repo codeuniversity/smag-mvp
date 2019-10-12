@@ -35,9 +35,9 @@ services:
       - 5432:5432
 
   # INSTAGRAM SCRAPER
-  instagram_scraper:
-    build: "instagram_scraper/"
-    image: "smag-instagram_scraper"
+  insta_scraper:
+    build: "insta_scraper/"
+    image: "smag-insta_scraper"
     depends_on:
       - "kafka"
     environment:
