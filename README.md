@@ -21,8 +21,8 @@ In different terminal windows:
 
 > For the insertes, make sure to set the following environment variables:
 > - `KAFKA_GROUPID`
-> - `KAFKA_NAME_TOPIC` - read from topic
-> - `KAFKA_INFO_TOPIC` - write to topic
+> - `KAFKA_INFO_TOPIC` - read from topic
+> - `KAFKA_NAME_TOPIC` - write to topic
 
 3. Run the dgraph inserter with `go run dgraph-inserter/main/main.go`
 3. Run the neo4j inserter with `go run neo4j-inserter/main/main.go`
