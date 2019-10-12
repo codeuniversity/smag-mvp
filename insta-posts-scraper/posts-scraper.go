@@ -84,9 +84,8 @@ func (i *InstaPostsScraper) scrapeAccountInfo(username string) (instagramAccount
 	if err != nil {
 		return userAccountInfo, err
 	}
-	i.httpClient.AddHeaders(request)
 
-	response, err := i.httpClient.GetClient().Do(request)
+	response, err := i.httpClient.Do(request)
 	if err != nil {
 		return userAccountInfo, err
 	}
