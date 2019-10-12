@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package proto;
+
+message User {
+    string user_name = 1;
+    string real_name = 2;
+    string bio = 3;
+    string avatar_url = 4;
+    uint64 followings_count = 5;
+    uint64 followers_count = 6;
+    repeated User followings_users = 7;
+}
+
+message UserSearchResponse {
+    repeated User user_list = 1;
+}
+
+message UserSearchRequest {
+    string user_name = 1;
+}
+
+service UserSearchService {
+    rpc GetAllUsersLikeUsername(UserSearchRequest) returns (UserSearchResponse);
+    rpc GetUserWithUsername(UserSearchRequest) returns (User);
+}

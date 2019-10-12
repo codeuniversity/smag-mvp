@@ -12,6 +12,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gocolly/colly v1.2.0
 	github.com/jinzhu/gorm v1.9.11
+	github.com/golang/protobuf v1.2.0
 	github.com/johnnadratowski/golang-neo4j-bolt-driver v0.0.0-20181101021923-6b24c0085aae
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/lib/pq v1.2.0 // indirect
@@ -24,5 +25,6 @@ require (
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20191002063906-3421d5a6bb1c // indirect
 	golang.org/x/text v0.3.2 // indirect
+	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	google.golang.org/grpc v1.22.1
 )

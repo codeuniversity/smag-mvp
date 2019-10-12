@@ -1,15 +1,16 @@
 version: "3.2"
 
 services:
-
+  # KAFKA
+  # ports: 3000 - 3999
   zookeeper:
     image: "wurstmeister/zookeeper"
     ports:
-      - "2181:2181"
+      - "3000:2181"
   kafka:
     image: "wurstmeister/kafka:0.10.2.0"
     ports:
-      - "9092:9092"
+      - "3100:9092"
     depends_on:
       - "zookeeper"
     environment:
@@ -21,18 +22,22 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  # neo4j:
-  #   image: "neo4j:3.5.9"
-  #   ports:
-  #     - "7474:7474"
-  #     - "7687:7687"
-  #   environment:
-  #     NEO4J_HOME: "/var/lib/neo4j"
-  #      NEO4J_AUTH: none
-  postgres:
-    image: postgres:11.5
+  # GRPC
+  # ports: 4000 - 4999
+  envoy-proxy:
+    build: "./api/envoy-proxy"
+    depends_on:
+      - "grpc-server"
     ports:
-      - 5432:5432
+      - "4000:8080"
+  grpc-server:
+    build:
+      context: "."
+      dockerfile: "./api/grpcserver/Dockerfile"
+    environment:
+      GRPC_POSTGRES_HOST: "postgres"
+    ports:
+      - "4100:10000"
 
   # INSTAGRAM SCRAPER
   insta_scraper:
@@ -75,3 +80,17 @@ services:
       KAFKA_INSERT_TOPIC: "twitter-user_names"
       SEED_NAME: "urhengula5"
       SLEEP_SECONDS: "10"
+
+  # POSTGRES
+  # ports: 5000 - 5999
+  postgres:
+    image: "postgres:11.5"
+    ports:
+      - "5000:5432"
+  pgadmin:
+    image: "dpage/pgadmin4:4.13"
+    ports:
+      - "5100:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "my_awesome_email@email.com"
+      PGADMIN_DEFAULT_PASSWORD: "does_not_matter"
