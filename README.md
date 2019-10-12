@@ -33,6 +33,17 @@ If this is your first time running this:
 3. add `127.0.0.1 my-kafka` to your `/etc/hosts` file
 4. Choose a user_name as a starting point and run `go run cli/main/main.go <user_name>`
 
+## Postgres change stream
+
+The debezium connector generates a change stream from all the changes in postgres
+
+To read from this stream you can
+
+- inspect the topic list in kafka `kt topic`, all topic starting with `postgres` are streams from individual tables
+- consume a topic with, for example `kt consume --topic postgres.public.users`
+
+The messages are quite verbose, since they include their own schema description. The most interesting part is the `value.payload` -> `kt consume --topic postgres.public.users | jq '.value | fromjson | .payload'`
+
 ## Building docker images
 
 ### Scraper
