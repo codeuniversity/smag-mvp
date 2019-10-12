@@ -11,8 +11,8 @@ require (
 	github.com/dgraph-io/dgo v0.0.0-20190801004348-3d281925f1d3
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gocolly/colly v1.2.0
-	github.com/jinzhu/gorm v1.9.11
 	github.com/golang/protobuf v1.2.0
+	github.com/jinzhu/gorm v1.9.11
 	github.com/johnnadratowski/golang-neo4j-bolt-driver v0.0.0-20181101021923-6b24c0085aae
 	github.com/kennygrant/sanitize v1.2.4 // indirect
 	github.com/lib/pq v1.2.0 // indirect
@@ -21,10 +21,9 @@ require (
 	github.com/segmentio/kafka-go v0.3.2
 	github.com/temoto/robotstxt v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20191001170739-f9e2070545dc // indirect
-	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0 // indirect
+	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
 	golang.org/x/sys v0.0.0-20191002063906-3421d5a6bb1c // indirect
 	golang.org/x/text v0.3.2 // indirect
-	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	google.golang.org/grpc v1.22.1
 )
