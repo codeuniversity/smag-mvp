@@ -15,9 +15,7 @@ func main() {
 	startID := utils.GetStringFromEnvWithDefault("START_ID", "1")
 
 	startIDInt, err := strconv.ParseInt(startID, 10, 64)
-	if err != nil {
-		panic(err)
-	}
+	utils.HandleErr(err)
 	i := extractor.New(kafkaAddress, dgraphAddress, int(startIDInt))
 
 	service.CloseOnSignal(i)

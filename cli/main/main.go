@@ -6,6 +6,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -26,7 +27,5 @@ func main() {
 	err := w.WriteMessages(t, kafka.Message{
 		Value: []byte(userNameArg),
 	})
-	if err != nil {
-		panic(err)
-	}
+	utils.HandleErr(err)
 }

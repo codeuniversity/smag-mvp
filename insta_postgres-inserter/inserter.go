@@ -12,6 +12,7 @@ import (
 
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -37,9 +38,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 	}
 
 	db, err := gorm.Open("postgres", connectionString)
-	if err != nil {
-		panic(err)
-	}
+	utils.HandleErr(err)
 	i.db = db
 
 	db.AutoMigrate(&models.User{})
@@ -108,12 +107,6 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	i.insertUser(p)
 }
 
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func (i *Inserter) insertUser(p *models.User) {
 	/*_, err := i.db.Exec(`INSERT INTO users(user_name,real_name, bio, avatar_url, crawl_ts)
 	VALUES($1,$2,$3,$4,$5) ON CONFLICT (user_name) DO UPDATE SET user_name = $1, real_name = $2, bio = $3, avatar_url = $4, crawl_ts = $5`,
@@ -125,7 +118,7 @@ func (i *Inserter) insertUser(p *models.User) {
 	filter := &models.User{UserName: p.UserName}
 
 	err = createOrUpdate(i.db, &fromUser, filter, p)
-	handleErr(err)
+	utils.HandleErr(err)
 
 	for _, follow := range p.Follows {
 		//err := i.db.QueryRow("SELECT id from users where user_name = $1", follow.Name).Scan(&followedID)
@@ -138,11 +131,11 @@ func (i *Inserter) insertUser(p *models.User) {
 				d = i.db.Create(&models.User{
 					UserName: follow.UserName,
 				}).Scan(&toUser)
-				handleErr(d.Error)
+				utils.HandleErr(d.Error)
 
 				i.handleCreatedUser(follow.UserName)
 			} else {
-				handleErr(err)
+				utils.HandleErr(err)
 			}
 		}
 
@@ -151,7 +144,7 @@ func (i *Inserter) insertUser(p *models.User) {
 			From: fromUser.ID,
 			To:   toUser.ID,
 		}).Error
-		handleErr(err)
+		utils.HandleErr(err)
 	}
 
 }

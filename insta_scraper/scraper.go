@@ -171,9 +171,3 @@ func getUserInfoIn(url string) (info *scrapedInfo, err error) {
 
 	return
 }
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}

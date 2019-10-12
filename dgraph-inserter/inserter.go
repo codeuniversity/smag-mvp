@@ -99,12 +99,6 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	i.insertUser(p)
 }
 
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func (i *Inserter) insertUser(p *models.User) {
 	uid, created := getOrCreateUIDForUserWithRetries(i.dgClient, p.UserName)
 	i.handleCreatedUser(p.UserName, uid, created)
@@ -120,9 +114,7 @@ func (i *Inserter) insertUser(p *models.User) {
 	}
 
 	pb, err := json.Marshal(p)
-	if err != nil {
-		panic(err)
-	}
+	utils.HandleErr(err)
 	mu.SetJson = pb
 
 	err = utils.WithRetries(5, func() error {
@@ -130,9 +122,7 @@ func (i *Inserter) insertUser(p *models.User) {
 		_, err = i.dgClient.NewTxn().Mutate(ctx, mu)
 		return err
 	})
-	if err != nil {
-		panic(err)
-	}
+	utils.HandleErr(err)
 }
 
 func (i *Inserter) handleCreatedUser(userName, uid string, created bool) {
@@ -192,8 +182,6 @@ func getOrCreateUIDForUserWithRetries(dg *dgo.Dgraph, name string) (uid string, 
 		uid, created, err = getOrCreateUIDForUser(dg, name)
 		return err
 	})
-	if err != nil {
-		panic(err)
-	}
+	utils.HandleErr(err)
 	return
 }

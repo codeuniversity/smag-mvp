@@ -61,9 +61,7 @@ func (i *Extractor) Run() {
 			fmt.Println("skipping user with id ", i.currentID, " because he was not crawled")
 		} else {
 			message, err := json.Marshal(info)
-			if err != nil {
-				panic(err)
-			}
+			utils.HandleErr(err)
 			fmt.Println("writing: ", i.currentID, " ", info.UserName)
 			i.qWriter.WriteMessages(context.Background(), kafka.Message{Value: message})
 		}

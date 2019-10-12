@@ -1,8 +1,8 @@
 package main
 
 import (
-	"os"
 	"context"
+	"os"
 
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/dgraph-io/dgo/protos/api"
@@ -10,12 +10,6 @@ import (
 
 func main() {
 	prepareDB()
-}
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
 
 func prepareDB() {
@@ -29,7 +23,7 @@ func prepareDB() {
 	op := &api.Operation{DropAll: true}
 
 	ctx := context.Background()
-	handleErr(dg.Alter(ctx, op))
+	utils.HandleErr(dg.Alter(ctx, op))
 
 	op = &api.Operation{}
 	op.Schema = `
@@ -41,6 +35,6 @@ func prepareDB() {
 	`
 
 	ctx = context.Background()
-	handleErr(dg.Alter(ctx, op))
+	utils.HandleErr(dg.Alter(ctx, op))
 
 }

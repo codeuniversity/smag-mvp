@@ -72,3 +72,10 @@ func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) bool {
 
 	return envBool
 }
+
+// HandleErr panics if err != nil
+func HandleErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
