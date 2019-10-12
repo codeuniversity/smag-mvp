@@ -11,7 +11,7 @@ func main() {
 	postgresHost := utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1")
 	postgresPassword := utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", "")
 
-	qReaderConfig, qWriterConfig, _ := kafka.GetInserterConfig()
+	qReaderConfig, qWriterConfig, _ := kafka.GetUserDiscoveryInserterConfig()
 
 	s := insta_comments_inserter.New(postgresHost, postgresPassword, kafka.NewReader(qReaderConfig), kafka.NewWriter(qWriterConfig))
 

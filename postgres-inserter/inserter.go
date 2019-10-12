@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/codeuniversity/smag-mvp/utils"
 	"time"
 
 	// necessary for sql :pointup:
@@ -128,19 +129,10 @@ func (i *Inserter) insertUser(p *models.User) {
 		VALUES($1) RETURNING id`, follow.Name).
 				Scan(&followedID)
 			handleErr(err)
-			i.handleCreatedUser(follow.Name)
+			utils.HandleCreatedUser(i.qWriter, follow.Name)
 		}
 
 		_, err = i.db.Exec(`INSERT INTO follows(from_id, to_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, userID, followedID)
 		handleErr(err)
-	}
-}
-
-func (i *Inserter) handleCreatedUser(userName string) {
-	// if qWriter is nil, user discovery is disabled
-	if i.qWriter != nil {
-		i.qWriter.WriteMessages(context.Background(), kafka.Message{
-			Value: []byte(userName),
-		})
 	}
 }

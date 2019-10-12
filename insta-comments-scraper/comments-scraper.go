@@ -92,7 +92,7 @@ func (p *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComment
 	var postsComments *instaPostComments
 	err := p.httpClient.WithRetries(3, func() error {
 		time.Sleep(1400 * time.Millisecond)
-		instaPostComments, err := p.scrapePostComments(shortCode)
+		instaPostComments, err := p.scrapePostComment(shortCode)
 
 		if err != nil {
 			return err
@@ -131,7 +131,7 @@ func (p *PostCommentScraper) sendComments(postsComments *instaPostComments, post
 	return p.commentsInfoQWriter.WriteMessages(context.Background(), messages...)
 }
 
-func (p *PostCommentScraper) scrapePostComments(shortCode string) (instaPostComments, error) {
+func (p *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComments, error) {
 	var instaPostComment instaPostComments
 	type Variables struct {
 		Shortcode           string `json:"shortcode"`

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 	"time"
@@ -14,16 +15,15 @@ import (
 
 type InstaCommentInserter struct {
 	commentsQReader *kafka.Reader
-	errQWriter      *kafka.Writer
+	userQWriter     *kafka.Writer
 	db              *sql.DB
 	*service.Executor
 }
 
-func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, errQWriter *kafka.Writer) *InstaCommentInserter {
+func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, userQWriter *kafka.Writer) *InstaCommentInserter {
 	p := &InstaCommentInserter{}
 	p.commentsQReader = commentsQReader
-	p.errQWriter = errQWriter
-	p.errQWriter = errQWriter
+	p.userQWriter = userQWriter
 	p.Executor = service.New()
 
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
@@ -81,6 +81,7 @@ func (c *InstaCommentInserter) findOrCreateUser(username string) (userID int, er
 			return 0, err
 		}
 
+		utils.HandleCreatedUser(c.userQWriter, username)
 		userID = int(insertedUserID)
 	}
 
@@ -133,7 +134,7 @@ func (c *InstaCommentInserter) Close() {
 	c.Stop()
 	c.WaitUntilStopped(time.Second * 3)
 
-	c.errQWriter.Close()
+	c.userQWriter.Close()
 	c.commentsQReader.Close()
 	c.MarkAsClosed()
 }
