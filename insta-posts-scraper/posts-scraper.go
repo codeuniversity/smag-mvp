@@ -206,7 +206,7 @@ func (i *InstaPostsScraper) Run() {
 			}
 
 			cursor = accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.EndCursor
-			go i.sendUserTimlinePostsId(accountMedia, username, userId)
+			i.sendUserTimlinePostsId(accountMedia, username, userId)
 
 			if !accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.HasNextPage {
 				isPostsSendingFinished = false
