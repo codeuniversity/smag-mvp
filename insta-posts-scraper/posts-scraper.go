@@ -90,7 +90,7 @@ func (i *InstaPostsScraper) scrapeAccountInfo(username string) (instagramAccount
 		return userAccountInfo, err
 	}
 	if response.StatusCode != 200 {
-		return userAccountInfo, &scraper_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+		return userAccountInfo, &scraper_client.HttpStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
