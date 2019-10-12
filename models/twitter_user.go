@@ -47,23 +47,23 @@ type TwitterUser struct {
 	Username        string
 	Bio             string
 	Avatar          string
-	BackgroundImage string `gorm:"column:background_image"`
+	BackgroundImage string
 
 	// Profile stats
 	Location   string
-	JoinDate   string `json:"join_date"`
-	JoinTime   string `json:"join_time"`
-	IsPrivate  int    `json:"is_private"`
-	IsVerified int    `json:"is_verified"`
+	JoinDate   string
+	JoinTime   string
+	IsPrivate  int
+	IsVerified int
 
 	// Follows
 	Following     int
-	FollowingList []string `json:"following_list"`
+	FollowingList []string
 	Followers     int
-	FollowersList []string `json:"followers_list"`
+	FollowersList []string
 
 	// Usage stats
 	Tweets     int
-	Likes      int `json:"likes"`
-	MediaCount int `json:"media_count"`
+	Likes      int
+	MediaCount int
 }
