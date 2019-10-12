@@ -34,7 +34,7 @@ type TwitterUserRaw struct {
 }
 
 // TwitterUser holds the follow graph info, only relating userNames
-type TwitterUserRaw struct {
+type TwitterUser struct {
 	// Meta
 	ID   string
 	URL  string
