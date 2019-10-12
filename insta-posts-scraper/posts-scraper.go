@@ -131,7 +131,7 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userId string, endCursor string) 
 		return instagramMedia, err
 	}
 	if response.StatusCode != 200 {
-		return instagramMedia, &scraper_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+		return instagramMedia, &scraper_client.HttpStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
