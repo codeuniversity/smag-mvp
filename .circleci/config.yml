@@ -97,13 +97,13 @@ workflows:
   workflow:
     jobs:
       - tests
-      - scraper-image:
+      - insta_scraper-image:
           requires:
             - tests
           filters:
             branches:
               only: master
-      - postgres-inserter-image:
+      - insta_postgres-inserter-image:
           requires:
             - tests
           filters:
