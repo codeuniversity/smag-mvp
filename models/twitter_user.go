@@ -35,6 +35,8 @@ type TwitterUserRaw struct {
 
 // TwitterUser holds the follow graph info, only relating userNames
 type TwitterUser struct {
+	GormModelWithoutID
+
 	// Meta
 	ID   string
 	URL  string
