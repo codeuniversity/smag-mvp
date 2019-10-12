@@ -1,5 +1,8 @@
 FROM golang:1.13 as builder
 WORKDIR /go/src/github.com/codeuniversity/smag-mvp
+COPY go.mod .
+COPY go.sum .
+RUN GO111MODULE=on go mod download
 COPY . .
 RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o insta_comments_scraper insta-comments-scraper/main/main.go
 
