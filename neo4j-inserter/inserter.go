@@ -97,12 +97,12 @@ func (i *Inserter) insertUser(user *models.User) {
 	)
 
 	_, err := i.conn.ExecNeo(createUserOrAddDetails, map[string]interface{}{"name": user.UserName, "realName": user.RealName, "avatarUrl": user.AvatarURL, "bio": user.Bio, "crawled": user.CrawledAt})
-	utils.HandleErr(err)
+	utils.PanicIfErr(err)
 
 	// setting relationship to followings
 	for _, followed := range user.Follows {
 		result, err := i.conn.ExecNeo(addRelationsshipAndCreateUserIfNotExisting, map[string]interface{}{"name1": user.UserName, "name2": followed.UserName})
-		utils.HandleErr(err)
+		utils.PanicIfErr(err)
 		i.handleCreatedUser(result, followed.UserName)
 	}
 
@@ -126,10 +126,10 @@ func (i *Inserter) initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress st
 	driver := bolt.NewDriver()
 	address := fmt.Sprintf("bolt://%s:%s@%s", neo4jUsername, neo4jPassword, neo4jAddress)
 	con, err := driver.OpenNeo(address)
-	utils.HandleErr(err)
+	utils.PanicIfErr(err)
 
 	_, err = con.ExecNeo("CREATE CONSTRAINT ON (U:User) ASSERT U.name IS UNIQUE", nil)
-	utils.HandleErr(err)
+	utils.PanicIfErr(err)
 
 	i.conn = con
 

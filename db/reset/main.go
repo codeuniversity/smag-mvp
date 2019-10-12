@@ -23,7 +23,7 @@ func prepareDB() {
 	op := &api.Operation{DropAll: true}
 
 	ctx := context.Background()
-	utils.HandleErr(dg.Alter(ctx, op))
+	utils.PanicIfErr(dg.Alter(ctx, op))
 
 	op = &api.Operation{}
 	op.Schema = `
@@ -35,6 +35,6 @@ func prepareDB() {
 	`
 
 	ctx = context.Background()
-	utils.HandleErr(dg.Alter(ctx, op))
+	utils.PanicIfErr(dg.Alter(ctx, op))
 
 }

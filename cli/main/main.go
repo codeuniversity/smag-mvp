@@ -27,5 +27,5 @@ func main() {
 	err := w.WriteMessages(t, kafka.Message{
 		Value: []byte(userNameArg),
 	})
-	utils.HandleErr(err)
+	utils.PanicIfErr(err)
 }

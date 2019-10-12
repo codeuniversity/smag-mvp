@@ -38,7 +38,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 	}
 
 	db, err := gorm.Open("postgres", connectionString)
-	utils.HandleErr(err)
+	utils.PanicIfErr(err)
 	i.db = db
 
 	db.AutoMigrate(&models.User{})
@@ -118,7 +118,7 @@ func (i *Inserter) insertUser(p *models.User) {
 	filter := &models.User{UserName: p.UserName}
 
 	err = createOrUpdate(i.db, &fromUser, filter, p)
-	utils.HandleErr(err)
+	utils.PanicIfErr(err)
 
 	for _, follow := range p.Follows {
 		//err := i.db.QueryRow("SELECT id from users where user_name = $1", follow.Name).Scan(&followedID)
@@ -131,11 +131,11 @@ func (i *Inserter) insertUser(p *models.User) {
 				d = i.db.Create(&models.User{
 					UserName: follow.UserName,
 				}).Scan(&toUser)
-				utils.HandleErr(d.Error)
+				utils.PanicIfErr(d.Error)
 
 				i.handleCreatedUser(follow.UserName)
 			} else {
-				utils.HandleErr(err)
+				utils.PanicIfErr(err)
 			}
 		}
 
@@ -144,7 +144,7 @@ func (i *Inserter) insertUser(p *models.User) {
 			From: fromUser.ID,
 			To:   toUser.ID,
 		}).Error
-		utils.HandleErr(err)
+		utils.PanicIfErr(err)
 	}
 
 }
