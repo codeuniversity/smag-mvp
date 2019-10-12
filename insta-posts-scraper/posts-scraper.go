@@ -39,8 +39,8 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	return i
 }
 
-func (i *InstaPostsScraper) accountInfo(username string) (*models.InstagramAccountInfo, error) {
-	var instagramAccountInfo *models.InstagramAccountInfo
+func (i *InstaPostsScraper) accountInfo(username string) (*InstagramAccountInfo, error) {
+	var instagramAccountInfo *InstagramAccountInfo
 
 	err := i.httpClient.WithRetries(2, func() error {
 		accountInfo, err := i.scrapeAccountInfo(username)
@@ -58,8 +58,8 @@ func (i *InstaPostsScraper) accountInfo(username string) (*models.InstagramAccou
 	return instagramAccountInfo, err
 }
 
-func (i *InstaPostsScraper) accountPosts(userId string, cursor string) (*models.InstagramMedia, error) {
-	var instagramAccountMedia *models.InstagramMedia
+func (i *InstaPostsScraper) accountPosts(userId string, cursor string) (*InstagramMedia, error) {
+	var instagramAccountMedia *InstagramMedia
 
 	err := i.httpClient.WithRetries(2, func() error {
 		accountInfo, err := i.scrapeProfileMedia(userId, cursor)
@@ -77,8 +77,8 @@ func (i *InstaPostsScraper) accountPosts(userId string, cursor string) (*models.
 	return instagramAccountMedia, err
 }
 
-func (i *InstaPostsScraper) scrapeAccountInfo(username string) (models.InstagramAccountInfo, error) {
-	var userAccountInfo models.InstagramAccountInfo
+func (i *InstaPostsScraper) scrapeAccountInfo(username string) (InstagramAccountInfo, error) {
+	var userAccountInfo InstagramAccountInfo
 	url := fmt.Sprintf(userAccountInfoUrl, username)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -105,8 +105,8 @@ func (i *InstaPostsScraper) scrapeAccountInfo(username string) (models.Instagram
 	return userAccountInfo, nil
 }
 
-func (i *InstaPostsScraper) scrapeProfileMedia(userId string, endCursor string) (models.InstagramMedia, error) {
-	var instagramMedia models.InstagramMedia
+func (i *InstaPostsScraper) scrapeProfileMedia(userId string, endCursor string) (InstagramMedia, error) {
+	var instagramMedia InstagramMedia
 
 	type Variables struct {
 		Id    string `json:"id"`
@@ -217,7 +217,7 @@ func (i *InstaPostsScraper) Run() {
 	}
 }
 
-func (i *InstaPostsScraper) sendUserInfoPostsId(instagramAccountInfo *models.InstagramAccountInfo, username string, userId string) {
+func (i *InstaPostsScraper) sendUserInfoPostsId(instagramAccountInfo *InstagramAccountInfo, username string, userId string) {
 	for _, element := range instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.Edges {
 		fmt.Println("Edges ", username)
 		fmt.Println(element.Node.Typename)
@@ -241,7 +241,7 @@ func (i *InstaPostsScraper) sendUserInfoPostsId(instagramAccountInfo *models.Ins
 	}
 }
 
-func (i *InstaPostsScraper) sendUserTimlinePostsId(accountMedia *models.InstagramMedia, username string, userId string) {
+func (i *InstaPostsScraper) sendUserTimlinePostsId(accountMedia *InstagramMedia, username string, userId string) {
 	for _, element := range accountMedia.Data.User.EdgeOwnerToTimelineMedia.Edges {
 		if element.Node.ID != "" {
 

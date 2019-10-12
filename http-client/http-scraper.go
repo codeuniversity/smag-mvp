@@ -9,11 +9,11 @@ type ClientScraper interface {
 }
 
 type HttpStatusError struct {
-	s string
+	S string
 }
 
 func (e *HttpStatusError) Error() string {
-	return e.s
+	return e.S
 }
 
 type BrowserAgent []struct {
