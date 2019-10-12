@@ -52,7 +52,82 @@ jobs:
             docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
             docker push $SCRAPER_IMAGE_NAME:latest
             docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-
+  insta-comments-inserter:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-comments-inserter
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-comments-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  insta-comments-scraper:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-comments-scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-comments-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  insta-posts-inserter:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-posts-inserter
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-posts-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  insta-posts-scraper:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-posts-scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-posts-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
   neo4j-inserter-image:
     # specify the version
     executor: job-runner
@@ -110,6 +185,30 @@ workflows:
             branches:
               only: master
       - neo4j-inserter-image:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta-comments-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta-comments-scraper:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta-posts-scraper:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta-comments-inserter:
           requires:
             - tests
           filters:
