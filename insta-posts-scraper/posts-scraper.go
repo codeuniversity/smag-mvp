@@ -35,12 +35,12 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
 	i.Executor = service.New()
-	i.httpClient = scraper_client.NewSimpleHttpClient()
+	i.httpClient = scraper_client.NewSimpleScraperClient()
 	return i
 }
 
-func (i *InstaPostsScraper) accountInfo(username string) (*InstagramAccountInfo, error) {
-	var instagramAccountInfo *InstagramAccountInfo
+func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo, error) {
+	var instagramAccountInfo *instagramAccountInfo
 
 	err := i.httpClient.WithRetries(2, func() error {
 		accountInfo, err := i.scrapeAccountInfo(username)
@@ -77,8 +77,8 @@ func (i *InstaPostsScraper) accountPosts(userId string, cursor string) (*Instagr
 	return instagramAccountMedia, err
 }
 
-func (i *InstaPostsScraper) scrapeAccountInfo(username string) (InstagramAccountInfo, error) {
-	var userAccountInfo InstagramAccountInfo
+func (i *InstaPostsScraper) scrapeAccountInfo(username string) (instagramAccountInfo, error) {
+	var userAccountInfo instagramAccountInfo
 	url := fmt.Sprintf(userAccountInfoUrl, username)
 	request, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -127,8 +127,7 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userId string, endCursor string) 
 	if err != nil {
 		return instagramMedia, err
 	}
-	i.httpClient.AddHeaders(request)
-	response, err := i.httpClient.GetClient().Do(request)
+	response, err := i.httpClient.Do(request)
 	if err != nil {
 		return instagramMedia, err
 	}
@@ -217,7 +216,7 @@ func (i *InstaPostsScraper) Run() {
 	}
 }
 
-func (i *InstaPostsScraper) sendUserInfoPostsId(instagramAccountInfo *InstagramAccountInfo, username string, userId string) {
+func (i *InstaPostsScraper) sendUserInfoPostsId(instagramAccountInfo *instagramAccountInfo, username string, userId string) {
 	for _, element := range instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.Edges {
 		fmt.Println("Edges ", username)
 		fmt.Println(element.Node.Typename)

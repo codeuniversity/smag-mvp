@@ -1,6 +1,6 @@
 package insta_comments_scraper
 
-type InstaPostComments struct {
+type instaPostComments struct {
 	Data struct {
 		ShortcodeMedia struct {
 			Typename   string `json:"__typename"`

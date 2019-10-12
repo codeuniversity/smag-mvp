@@ -15,7 +15,7 @@ type SimpleScraperClient struct {
 	instanceId     string
 }
 
-func NewSimpleHttpClient() *SimpleScraperClient {
+func NewSimpleScraperClient() *SimpleScraperClient {
 	client := &SimpleScraperClient{}
 	data, err := ioutil.ReadFile("useragents.json")
 	if err != nil {
@@ -45,16 +45,17 @@ func (s *SimpleScraperClient) WithRetries(times int, f func() error) error {
 	return err
 }
 
-func (s *SimpleScraperClient) GetClient() *http.Client {
-	return s.client
-}
-
 func (s *SimpleScraperClient) getRandomUserAgent() string {
 	randomNumber := rand.Intn(len(s.browserAgent))
 	return s.browserAgent[randomNumber].UserAgents
 }
 
-func (s *SimpleScraperClient) AddHeaders(request *http.Request) {
+func (s *SimpleScraperClient) Do(request *http.Request) (*http.Response, error) {
+	s.addHeaders(request)
+	return s.client.Do(request)
+}
+
+func (s *SimpleScraperClient) addHeaders(request *http.Request) {
 	request.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3")
 	request.Header.Add("Accept-Charset", "utf-8")
 	request.Header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")

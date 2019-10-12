@@ -32,7 +32,7 @@ func New(postReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter
 	p.commentsInfoQWriter = commentsInfoQWriter
 	p.errQWriter = errQWriter
 	p.Executor = service.New()
-	p.httpClient = scraper_client.NewSimpleHttpClient()
+	p.httpClient = scraper_client.NewSimpleScraperClient()
 	return p
 }
 
@@ -88,8 +88,8 @@ func (p *PostCommentScraper) Run() {
 	}
 }
 
-func (p *PostCommentScraper) scrapeComments(shortCode string) (*InstaPostComments, error) {
-	var postsComments *InstaPostComments
+func (p *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComments, error) {
+	var postsComments *instaPostComments
 	err := p.httpClient.WithRetries(3, func() error {
 		time.Sleep(1400 * time.Millisecond)
 		instaPostComments, err := p.scrapePostComments(shortCode)
@@ -104,7 +104,7 @@ func (p *PostCommentScraper) scrapeComments(shortCode string) (*InstaPostComment
 	return postsComments, err
 }
 
-func (p *PostCommentScraper) sendComments(postsComments *InstaPostComments, postId models.InstagramPost) error {
+func (p *PostCommentScraper) sendComments(postsComments *instaPostComments, postId models.InstagramPost) error {
 	fmt.Println("sendComments: ", len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	messages := make([]kafka.Message, 0, len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
@@ -131,8 +131,8 @@ func (p *PostCommentScraper) sendComments(postsComments *InstaPostComments, post
 	return p.commentsInfoQWriter.WriteMessages(context.Background(), messages...)
 }
 
-func (p *PostCommentScraper) scrapePostComments(shortCode string) (InstaPostComments, error) {
-	var instaPostComment InstaPostComments
+func (p *PostCommentScraper) scrapePostComments(shortCode string) (instaPostComments, error) {
+	var instaPostComment instaPostComments
 	type Variables struct {
 		Shortcode           string `json:"shortcode"`
 		ChildCommentCount   int    `json:"child_comment_count"`
@@ -155,8 +155,7 @@ func (p *PostCommentScraper) scrapePostComments(shortCode string) (InstaPostComm
 	if err != nil {
 		return instaPostComment, err
 	}
-	p.httpClient.AddHeaders(request)
-	response, err := p.httpClient.GetClient().Do(request)
+	response, err := p.httpClient.Do(request)
 	if err != nil {
 		return instaPostComment, err
 	}

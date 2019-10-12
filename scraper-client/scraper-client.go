@@ -4,8 +4,7 @@ import "net/http"
 
 type ScraperClient interface {
 	WithRetries(times int, f func() error) error
-	GetClient() *http.Client
-	AddHeaders(request *http.Request)
+	Do(request *http.Request) (*http.Response, error)
 }
 
 type HttpStatusError struct {

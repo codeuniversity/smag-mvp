@@ -1,6 +1,6 @@
 package insta_posts_scraper
 
-type InstagramAccountInfo struct {
+type instagramAccountInfo struct {
 	LoggingPageID         string `json:"logging_page_id"`
 	ShowSuggestedProfiles bool   `json:"show_suggested_profiles"`
 	ShowFollowDialog      bool   `json:"show_follow_dialog"`
