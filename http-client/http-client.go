@@ -1,4 +1,4 @@
-package httpClient
+package http_client
 
 import (
 	"context"
@@ -30,7 +30,7 @@ type HttpClient struct {
 	instanceId               string
 }
 
-func New(localAddressCount int, kafkaAddress string) *HttpClient {
+func NewHttpClient(localAddressCount int, kafkaAddress string) *HttpClient {
 	client := &HttpClient{}
 	client.renewedAddressQReader = kafka.NewReader(kafka.ReaderConfig{
 		Brokers:        []string{kafkaAddress},
@@ -65,7 +65,7 @@ func New(localAddressCount int, kafkaAddress string) *HttpClient {
 		client.localAddressesReachLimit[localIp] = true
 	}
 
-	client.client, err = client.getClient(addresses[0])
+	client.client, err = client.getBoundAddressClient(addresses[0])
 
 	if err != nil {
 		panic(err)
@@ -140,7 +140,7 @@ func getLocalIpAddresses(count int) []string {
 	return localAddresses[:count]
 }
 
-func (h *HttpClient) getClient(localIp string) (*http.Client, error) {
+func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error) {
 	localAddr, err := net.ResolveIPAddr("ip", localIp)
 
 	if err != nil {
@@ -166,6 +166,10 @@ func (h *HttpClient) getClient(localIp string) (*http.Client, error) {
 	return &http.Client{Transport: tr}, nil
 }
 
+func (h *HttpClient) getClient() *http.Client {
+	return h.client
+}
+
 func (h *HttpClient) ScrapeAccountInfo(username string) (models.InstagramAccountInfo, error) {
 	var userAccountInfo models.InstagramAccountInfo
 	url := fmt.Sprintf(userAccountInfoUrl, username)
@@ -173,7 +177,7 @@ func (h *HttpClient) ScrapeAccountInfo(username string) (models.InstagramAccount
 	if err != nil {
 		return userAccountInfo, err
 	}
-	h.getHeaders(request)
+	h.GetHeaders(request)
 
 	response, err := h.client.Do(request)
 	if err != nil {
@@ -387,7 +391,7 @@ func (h *HttpClient) checkAvailableAddresses() ([]string, bool) {
 		addresses = append(addresses, ip)
 		if h.localAddressesReachLimit[ip] == true {
 			h.currentAddress = ip
-			h.client, err = h.getClient(ip)
+			h.client, err = h.getBoundAddressClient(ip)
 			if err != nil {
 				panic(err)
 			}
@@ -431,14 +435,6 @@ func (h *HttpClient) waitForRenewElasticIpRequest() (*models.RenewingAddresses, 
 	return &renewedAddresses, err
 }
 
-type HttpStatusError struct {
-	s string
-}
-
-func (e *HttpStatusError) Error() string {
-	return e.s
-}
-
 type BrowserAgent []struct {
 	UserAgents string `json:"useragent"`
 }
@@ -453,7 +449,7 @@ func (h *HttpClient) Close() {
 	h.reachedLimitQWriter.Close()
 }
 
-func (h *HttpClient) getHeaders(request *http.Request) {
+func (h *HttpClient) GetHeaders(request *http.Request) {
 	request.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3")
 	request.Header.Add("Accept-Charset", "utf-8")
 	request.Header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")

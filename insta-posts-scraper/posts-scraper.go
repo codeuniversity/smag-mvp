@@ -4,11 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/httpClient"
+	"github.com/codeuniversity/smag-mvp/http-client"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/segmentio/kafka-go"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"time"
+)
+
+const (
+	userAccountInfoUrl  = "https://instagram.com/%s/?__a=1"
+	userAccountMediaUrl = "https://www.instagram.com/graphql/query/?query_hash=58b6785bea111c67129decbe6a448951&variables=%s"
 )
 
 type InstaPostsScraper struct {
@@ -17,7 +25,7 @@ type InstaPostsScraper struct {
 	errQWriter   *kafka.Writer
 	*service.Executor
 	kafkaAddress string
-	httpClient   *httpClient.HttpClient
+	httpClient   http_client.ClientScraper
 }
 
 // New returns an initilized scraper
@@ -27,7 +35,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
 	i.Executor = service.New()
-	i.httpClient = httpClient.New(2, "52.58.171.160:9092")
+	i.httpClient = http_client.NewSimpleHttpClient()
 	return i
 }
 
@@ -35,7 +43,7 @@ func (i *InstaPostsScraper) accountInfo(username string) (*models.InstagramAccou
 	var instagramAccountInfo *models.InstagramAccountInfo
 
 	err := i.httpClient.WithRetries(2, func() error {
-		accountInfo, err := i.httpClient.ScrapeAccountInfo(username)
+		accountInfo, err := i.scrapeAccountInfo(username)
 		if err != nil {
 			return err
 		}
@@ -54,7 +62,7 @@ func (i *InstaPostsScraper) accountPosts(userId string, cursor string) (*models.
 	var instagramAccountMedia *models.InstagramMedia
 
 	err := i.httpClient.WithRetries(2, func() error {
-		accountInfo, err := i.httpClient.ScrapeProfileMedia(userId, cursor)
+		accountInfo, err := i.scrapeProfileMedia(userId, cursor)
 		if err != nil {
 			return err
 		}
@@ -67,6 +75,76 @@ func (i *InstaPostsScraper) accountPosts(userId string, cursor string) (*models.
 		return instagramAccountMedia, err
 	}
 	return instagramAccountMedia, err
+}
+
+func (i *InstaPostsScraper) scrapeAccountInfo(username string) (models.InstagramAccountInfo, error) {
+	var userAccountInfo models.InstagramAccountInfo
+	url := fmt.Sprintf(userAccountInfoUrl, username)
+	request, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return userAccountInfo, err
+	}
+	i.httpClient.AddHeaders(request)
+
+	response, err := i.httpClient.GetClient().Do(request)
+	if err != nil {
+		return userAccountInfo, err
+	}
+	if response.StatusCode != 200 {
+		return userAccountInfo, &http_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return userAccountInfo, err
+	}
+	err = json.Unmarshal(body, &userAccountInfo)
+	if err != nil {
+		return userAccountInfo, err
+	}
+	return userAccountInfo, nil
+}
+
+func (i *InstaPostsScraper) scrapeProfileMedia(userId string, endCursor string) (models.InstagramMedia, error) {
+	var instagramMedia models.InstagramMedia
+
+	type Variables struct {
+		Id    string `json:"id"`
+		First int    `json:"first"`
+		After string `json:"after"`
+	}
+	variable := &Variables{userId, 12, endCursor}
+	variableJson, err := json.Marshal(variable)
+	fmt.Println(string(variableJson))
+	if err != nil {
+		return instagramMedia, err
+	}
+	queryEncoded := url.QueryEscape(string(variableJson))
+	url := fmt.Sprintf(userAccountMediaUrl, queryEncoded)
+
+	request, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return instagramMedia, err
+	}
+	i.httpClient.AddHeaders(request)
+	response, err := i.httpClient.GetClient().Do(request)
+	if err != nil {
+		return instagramMedia, err
+	}
+	if response.StatusCode != 200 {
+		return instagramMedia, &http_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return instagramMedia, err
+	}
+	err = json.Unmarshal(body, &instagramMedia)
+	if err != nil {
+		return instagramMedia, err
+	}
+	return instagramMedia, nil
 }
 
 func (i *InstaPostsScraper) Run() {
@@ -209,6 +287,5 @@ func (i *InstaPostsScraper) Close() {
 	i.nameQReader.Close()
 	i.postsQWriter.Close()
 	i.errQWriter.Close()
-	i.httpClient.Close()
 	i.MarkAsClosed()
 }

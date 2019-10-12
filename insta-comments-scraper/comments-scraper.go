@@ -4,11 +4,18 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/httpClient"
+	"github.com/codeuniversity/smag-mvp/http-client"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/segmentio/kafka-go"
+	"io/ioutil"
+	"net/http"
+	"net/url"
 	"time"
+)
+
+const (
+	userPostsCommentUrl = "https://www.instagram.com/graphql/query/?query_hash=865589822932d1b43dfe312121dd353a&variables=%s"
 )
 
 type PostCommentScraper struct {
@@ -16,7 +23,7 @@ type PostCommentScraper struct {
 	commentsInfoQWriter *kafka.Writer
 	errQWriter          *kafka.Writer
 	*service.Executor
-	httpClient *httpClient.HttpClient
+	httpClient http_client.ClientScraper
 }
 
 func New(postReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
@@ -25,7 +32,7 @@ func New(postReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter
 	p.commentsInfoQWriter = commentsInfoQWriter
 	p.errQWriter = errQWriter
 	p.Executor = service.New()
-	p.httpClient = httpClient.New(2, "52.58.171.160:9092")
+	p.httpClient = http_client.NewSimpleHttpClient()
 	return p
 }
 
@@ -54,22 +61,10 @@ func (p *PostCommentScraper) Run() {
 		}
 
 		fmt.Println("ShortCode: ", post.ShortCode)
-		var postsComments *models.InstaPostComments
 		counter++
-		err = p.httpClient.WithRetries(3, func() error {
-			time.Sleep(1400 * time.Millisecond)
-			instaPostComments, err := p.httpClient.ScrapePostComments(post.ShortCode)
-
-			if err != nil {
-				return err
-			}
-
-			postsComments = &instaPostComments
-			return nil
-		})
+		postsComments, err := p.scrapeComments(post.ShortCode)
 
 		if err != nil {
-			fmt.Println("error: ", err)
 			errorMessage := models.InstaCommentScrapError{
 				PostId: post.PostId,
 				Error:  err.Error(),
@@ -93,11 +88,11 @@ func (p *PostCommentScraper) Run() {
 	}
 }
 
-func (p *PostCommentScraper) Scrape(shortCode string) (*models.InstaPostComments, error) {
+func (p *PostCommentScraper) scrapeComments(shortCode string) (*models.InstaPostComments, error) {
 	var postsComments *models.InstaPostComments
 	err := p.httpClient.WithRetries(3, func() error {
-		time.Sleep(9 * time.Second)
-		instaPostComments, err := p.httpClient.ScrapePostComments(shortCode)
+		time.Sleep(1400 * time.Millisecond)
+		instaPostComments, err := p.scrapePostComments(shortCode)
 
 		if err != nil {
 			return err
@@ -136,6 +131,50 @@ func (p *PostCommentScraper) sendComments(postsComments *models.InstaPostComment
 	return p.commentsInfoQWriter.WriteMessages(context.Background(), messages...)
 }
 
+func (p *PostCommentScraper) scrapePostComments(shortCode string) (models.InstaPostComments, error) {
+	var instaPostComment models.InstaPostComments
+	type Variables struct {
+		Shortcode           string `json:"shortcode"`
+		ChildCommentCount   int    `json:"child_comment_count"`
+		FetchCommentCount   int    `json:"fetch_comment_count"`
+		ParentCommentCount  int    `json:"parent_comment_count"`
+		HasThreadedComments bool   `json:"has_threaded_comments"`
+	}
+
+	variable := &Variables{shortCode, 3, 40, 24, true}
+	variableJson, err := json.Marshal(variable)
+	if err != nil {
+		return instaPostComment, err
+	}
+
+	queryEncoded := url.QueryEscape(string(variableJson))
+	url := fmt.Sprintf(userPostsCommentUrl, queryEncoded)
+
+	request, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return instaPostComment, err
+	}
+	p.httpClient.AddHeaders(request)
+	response, err := p.httpClient.GetClient().Do(request)
+	if err != nil {
+		return instaPostComment, err
+	}
+	if response.StatusCode != 200 {
+		return instaPostComment, &http_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+	}
+	fmt.Println("ScrapePostComments got response")
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return instaPostComment, err
+	}
+	err = json.Unmarshal(body, &instaPostComment)
+	if err != nil {
+		return instaPostComment, err
+	}
+	return instaPostComment, nil
+}
+
 func (p *PostCommentScraper) Close() {
 	p.Stop()
 	p.WaitUntilStopped(time.Second * 3)
@@ -143,6 +182,5 @@ func (p *PostCommentScraper) Close() {
 	p.postIdQReader.Close()
 	p.commentsInfoQWriter.Close()
 	p.errQWriter.Close()
-	p.httpClient.Close()
 	p.MarkAsClosed()
 }
