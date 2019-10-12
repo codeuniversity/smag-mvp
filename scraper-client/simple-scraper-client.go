@@ -1,4 +1,4 @@
-package http_client
+package scraper_client
 
 import (
 	"encoding/json"
@@ -8,15 +8,15 @@ import (
 	"time"
 )
 
-type SimpleHttpClient struct {
+type SimpleScraperClient struct {
 	browserAgent   BrowserAgent
 	currentAddress string
 	client         *http.Client
 	instanceId     string
 }
 
-func NewSimpleHttpClient() *SimpleHttpClient {
-	client := &SimpleHttpClient{}
+func NewSimpleHttpClient() *SimpleScraperClient {
+	client := &SimpleScraperClient{}
 	data, err := ioutil.ReadFile("useragents.json")
 	if err != nil {
 		panic(err)
@@ -32,7 +32,7 @@ func NewSimpleHttpClient() *SimpleHttpClient {
 	return client
 }
 
-func (s *SimpleHttpClient) WithRetries(times int, f func() error) error {
+func (s *SimpleScraperClient) WithRetries(times int, f func() error) error {
 	var err error
 	for i := 0; i < times; i++ {
 		err = f()
@@ -45,16 +45,16 @@ func (s *SimpleHttpClient) WithRetries(times int, f func() error) error {
 	return err
 }
 
-func (s *SimpleHttpClient) GetClient() *http.Client {
+func (s *SimpleScraperClient) GetClient() *http.Client {
 	return s.client
 }
 
-func (s *SimpleHttpClient) getRandomUserAgent() string {
+func (s *SimpleScraperClient) getRandomUserAgent() string {
 	randomNumber := rand.Intn(len(s.browserAgent))
 	return s.browserAgent[randomNumber].UserAgents
 }
 
-func (s *SimpleHttpClient) AddHeaders(request *http.Request) {
+func (s *SimpleScraperClient) AddHeaders(request *http.Request) {
 	request.Header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3")
 	request.Header.Add("Accept-Charset", "utf-8")
 	request.Header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")

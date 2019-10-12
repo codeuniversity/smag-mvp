@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/http-client"
 	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/scraper-client"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/segmentio/kafka-go"
 	"io/ioutil"
@@ -25,7 +25,7 @@ type InstaPostsScraper struct {
 	errQWriter   *kafka.Writer
 	*service.Executor
 	kafkaAddress string
-	httpClient   http_client.ClientScraper
+	httpClient   scraper_client.ScraperClient
 }
 
 // New returns an initilized scraper
@@ -35,7 +35,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
 	i.Executor = service.New()
-	i.httpClient = http_client.NewSimpleHttpClient()
+	i.httpClient = scraper_client.NewSimpleHttpClient()
 	return i
 }
 
@@ -91,7 +91,7 @@ func (i *InstaPostsScraper) scrapeAccountInfo(username string) (InstagramAccount
 		return userAccountInfo, err
 	}
 	if response.StatusCode != 200 {
-		return userAccountInfo, &http_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+		return userAccountInfo, &scraper_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -133,7 +133,7 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userId string, endCursor string) 
 		return instagramMedia, err
 	}
 	if response.StatusCode != 200 {
-		return instagramMedia, &http_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+		return instagramMedia, &scraper_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)

@@ -1,8 +1,8 @@
-package http_client
+package scraper_client
 
 import "net/http"
 
-type ClientScraper interface {
+type ScraperClient interface {
 	WithRetries(times int, f func() error) error
 	GetClient() *http.Client
 	AddHeaders(request *http.Request)

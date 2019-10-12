@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/http-client"
 	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/scraper-client"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/segmentio/kafka-go"
 	"io/ioutil"
@@ -23,7 +23,7 @@ type PostCommentScraper struct {
 	commentsInfoQWriter *kafka.Writer
 	errQWriter          *kafka.Writer
 	*service.Executor
-	httpClient http_client.ClientScraper
+	httpClient scraper_client.ScraperClient
 }
 
 func New(postReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
@@ -32,7 +32,7 @@ func New(postReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter
 	p.commentsInfoQWriter = commentsInfoQWriter
 	p.errQWriter = errQWriter
 	p.Executor = service.New()
-	p.httpClient = http_client.NewSimpleHttpClient()
+	p.httpClient = scraper_client.NewSimpleHttpClient()
 	return p
 }
 
@@ -161,7 +161,7 @@ func (p *PostCommentScraper) scrapePostComments(shortCode string) (InstaPostComm
 		return instaPostComment, err
 	}
 	if response.StatusCode != 200 {
-		return instaPostComment, &http_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+		return instaPostComment, &scraper_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
 	}
 	fmt.Println("ScrapePostComments got response")
 	body, err := ioutil.ReadAll(response.Body)
