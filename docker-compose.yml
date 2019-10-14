@@ -6,17 +6,18 @@ services:
   zookeeper:
     image: "wurstmeister/zookeeper"
     ports:
-      - "3000:2181"
-  kafka:
+      - "2181:2181"
+  my-kafka:
     image: "wurstmeister/kafka:0.10.2.0"
     ports:
-      - "3100:9092"
+      - "9092:9092"
     depends_on:
       - "zookeeper"
     environment:
       KAFKA_CREATE_TOPICS: "user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1,reached_limit:4:1,renewed_elastic_ip:4:1,renewing_elastic_ip_errors:4:1,user_post:4:1,user_instagram-scrape_errors:4:1,insta_comments_info:4:1,post_comment_insta_scraper_errors:4:1"
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-      KAFKA_ADVERTISED_HOST_NAME: "localhost"
+      KAFKA_LISTENERS: PLAINTEXT://:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://my-kafka:9092
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
@@ -38,11 +39,23 @@ services:
       - "4100:10000"
 
   # POSTGRES
-  # ports: 5000 - 5999
   postgres:
-    image: "postgres:11.5"
+    image: "debezium/postgres:11"
     ports:
-      - "5000:5432"
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=12345678
+  connect:
+    image: debezium/connect:0.10
+    ports:
+      - 8083:8083
+    environment:
+      - BOOTSTRAP_SERVERS=my-kafka:9092
+      - GROUP_ID=1
+      - CONFIG_STORAGE_TOPIC=my_connect_configs
+      - OFFSET_STORAGE_TOPIC=my_connect_offsets
+      - STATUS_STORAGE_TOPIC=my_connect_statuses
   pgadmin:
     image: "dpage/pgadmin4:4.13"
     ports:

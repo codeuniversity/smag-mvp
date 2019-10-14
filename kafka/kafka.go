@@ -76,10 +76,10 @@ func GetUserDiscoveryInserterConfig() (*ReaderConfig, *WriterConfig, bool) {
 	isUserDiscovery := utils.GetBoolFromEnvWithDefault("USER_DISCOVERY", false)
 
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
+	rTopic := utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
 
 	if isUserDiscovery {
-		wTopic = utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
+		wTopic = utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
 		writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
 	}
 
