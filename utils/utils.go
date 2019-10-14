@@ -79,3 +79,11 @@ func PanicIfErr(err error) {
 		panic(err)
 	}
 }
+
+// ConvertIntToBool converts an integer to a bool (binary)
+func ConvertIntToBool(value int) bool {
+	if value == 1 {
+		return true
+	}
+	return false
+}

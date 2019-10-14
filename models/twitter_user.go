@@ -1,5 +1,11 @@
 package models
 
+import (
+	"time"
+
+	"github.com/codeuniversity/smag-mvp/utils"
+)
+
 // TwitterUserRaw holds the follow graph info, only relating userNames
 type TwitterUserRaw struct {
 	// Meta
@@ -51,19 +57,68 @@ type TwitterUser struct {
 
 	// Profile stats
 	Location   string
-	JoinDate   string
-	JoinTime   string
-	IsPrivate  int
-	IsVerified int
+	JoinDate   time.Time
+	IsPrivate  bool
+	IsVerified bool
 
 	// Follows
 	Following     int
-	FollowingList []string
+	FollowingList []*TwitterUser
 	Followers     int
-	FollowersList []string
+	FollowersList []*TwitterUser
 
 	// Usage stats
 	Tweets     int
 	Likes      int
 	MediaCount int
+}
+
+func convertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
+	followingList := make([]*TwitterUser, len(raw.FollowingList))
+	followersList := make([]*TwitterUser, len(raw.FollowersList))
+
+	for index, item := range raw.FollowingList {
+		followingList[index] = &TwitterUser{
+			Username: item,
+			//^^^ check if item is username using scraper output
+		}
+	}
+
+	for index, item := range raw.FollowingList {
+		followingList[index] = &TwitterUser{
+			Username: item,
+			//^^^ check if item is username using scraper output
+		}
+	}
+
+	//joinDate := time.Unix() TODO
+
+	isPrivate := utils.ConvertIntToBool(raw.IsPrivate)
+	isVerified := utils.ConvertIntToBool(raw.IsVerified)
+
+	return &TwitterUser{
+		ID:   raw.ID,
+		URL:  raw.URL,
+		Type: raw.Type,
+
+		Name:            raw.Name,
+		Username:        raw.Username,
+		Bio:             raw.Bio,
+		Avatar:          raw.Avatar,
+		BackgroundImage: raw.BackgroundImage,
+
+		Location: raw.Location,
+		//JoinDate: joinDate,
+		IsPrivate:  isPrivate,
+		IsVerified: isVerified,
+
+		Following:     raw.Following,
+		FollowingList: followingList,
+		Followers:     raw.Followers,
+		FollowersList: followersList,
+
+		Tweets:     raw.Tweets,
+		Likes:      raw.Likes,
+		MediaCount: raw.MediaCount,
+	}
 }
