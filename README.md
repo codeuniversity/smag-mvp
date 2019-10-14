@@ -39,6 +39,7 @@ The debezium connector generates a change stream from all the changes in postgre
 
 To read from this stream you can
 
+- get [kt](https://github.com/fgeller/kt)
 - inspect the topic list in kafka `kt topic`, all topic starting with `postgres` are streams from individual tables
 - consume a topic with, for example `kt consume --topic postgres.public.users`
 
