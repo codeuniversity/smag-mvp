@@ -12,4 +12,4 @@ RUN mkdir app
 COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/insta_comments_inserter /app
 COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/useragents.json /app
 WORKDIR /app
-CMD ["./insta_post_comments_inserter"]
+CMD ["./insta_comments_inserter"]

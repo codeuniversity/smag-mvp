@@ -12,4 +12,4 @@ RUN mkdir app
 COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/insta_comments_scraper /app
 COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/useragents.json /app
 WORKDIR /app
-CMD ["./insta_post_comment_scraper"]
+CMD ["./insta_comments_scraper"]
