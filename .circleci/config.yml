@@ -164,7 +164,7 @@ workflows:
           filters:
             branches:
               only: master
-      - insta-comments-inserter:
+      - insta-posts-inserter:
           requires:
             - tests
           filters:
