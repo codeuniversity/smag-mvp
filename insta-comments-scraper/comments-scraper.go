@@ -160,7 +160,7 @@ func (p *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComme
 		return instaPostComment, err
 	}
 	if response.StatusCode != 200 {
-		return instaPostComment, &scraper_client.HttpStatusError{fmt.Sprintf("Error HttpStatus: %s", response.StatusCode)}
+		return instaPostComment, &scraper_client.HttpStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 	fmt.Println("ScrapePostComments got response")
 	body, err := ioutil.ReadAll(response.Body)
