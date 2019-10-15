@@ -6,9 +6,9 @@ services:
         image: "smag-twitter_scraper"
         command: ["-m", "twitterscraper.user_scraper"]
         depends_on:
-            - "kafka"
+            - "my-kafka"
         environment:
-            KAFKA_HOST_PORT: "kafka:9092"
+            KAFKA_HOST_PORT: "my-kafka:9092"
             KAFKA_FETCH_TOPIC: "user_names"
             KAFKA_INSERT_TOPIC: "users_scraped"
 
@@ -17,9 +17,9 @@ services:
         image: "smag-twitter_scraper"
         command: ["-m", "twitterscraper.tweets_scraper"]
         depends_on:
-            - "kafka"
+            - "my-kafka"
         environment:
-            KAFKA_HOST_PORT: "kafka:9092"
+            KAFKA_HOST_PORT: "my-kafka:9092"
             KAFKA_FETCH_TOPIC: "user_names"
             KAFKA_INSERT_TOPIC: "tweets_scaped"
 
@@ -27,7 +27,7 @@ services:
         image: "wurstmeister/zookeeper:latest"
         ports:
             - "2181:2181"
-    kafka:
+    my-kafka:
         image: "wurstmeister/kafka:2.11-1.1.1"
         ports:
             - "9092:9092"
@@ -36,7 +36,8 @@ services:
         environment:
             KAFKA_CREATE_TOPICS: "user_names:4:1,users_scraped:4:1,tweets_scraped:4:1"
             KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
-            KAFKA_ADVERTISED_HOST_NAME: "kafka"
+            KAFKA_LISTENERS: PLAINTEXT://:9092
+            KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://my-kafka:9092
         volumes:
             - "/var/run/docker.sock:/var/run/docker.sock"
     kafka-seed:
@@ -44,9 +45,9 @@ services:
         image: "smag-twitter_scraper"
         command: ["-m", "twitterscraper.insert_seed"]
         depends_on:
-            - "kafka"
+            - "my-kafka"
         environment:
-            KAFKA_HOST_PORT: "kafka:9092"
-            KAFKA_INSERT_TOPIC: "twitter-user_names"
+            KAFKA_HOST_PORT: "my-kafka:9092"
+            KAFKA_INSERT_TOPIC: "user_names"
             SEED_NAME: "urhengula5"
             SLEEP_SECONDS: "10"
