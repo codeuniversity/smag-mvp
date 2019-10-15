@@ -41,7 +41,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 	utils.PanicIfErr(err)
 	i.db = db
 
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.TwitterUser{})
 
 	i.Executor = service.New()
 	return i
@@ -60,16 +60,16 @@ func (i *Inserter) Run() {
 			fmt.Println(err)
 			break
 		}
-		info := &models.UserFollowInfo{}
+		info := &models.TwitterUserRaw{}
 		err = json.Unmarshal(m.Value, info)
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		fmt.Println("inserting: ", info.UserName)
-		i.InsertUserFollowInfo(info)
+		fmt.Println("inserting: ", info.Username)
+		i.insertUser(models.ConvertTwitterUser(info))
 		i.qReader.CommitMessages(context.Background(), m)
-		fmt.Println("commited: ", info.UserName)
+		fmt.Println("commited: ", info.Username)
 	}
 }
 
@@ -87,46 +87,20 @@ func (i *Inserter) Close() {
 	i.MarkAsClosed()
 }
 
-// InsertUserFollowInfo inserts the user follow info into dgraph, while writting userNames that don't exist in the graph yet
-// into the specified kafka topic
-func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
-	p := &models.User{
-		UserName:  followInfo.UserName,
-		RealName:  followInfo.RealName,
-		AvatarURL: followInfo.AvatarURL,
-		Bio:       followInfo.Bio,
-		CrawledAt: followInfo.CrawlTs,
-	}
-
-	for _, following := range followInfo.Followings {
-		p.Follows = append(p.Follows, &models.User{
-			UserName: following,
-		})
-	}
-
-	i.insertUser(p)
-}
-
-func (i *Inserter) insertUser(p *models.User) {
-	/*_, err := i.db.Exec(`INSERT INTO users(user_name,real_name, bio, avatar_url, crawl_ts)
-	VALUES($1,$2,$3,$4,$5) ON CONFLICT (user_name) DO UPDATE SET user_name = $1, real_name = $2, bio = $3, avatar_url = $4, crawl_ts = $5`,
-		p.Name, p.RealName, p.Bio, p.AvatarURL, p.CrawledAt)
-	*/
+func (i *Inserter) insertUser(user *models.TwitterUser) {
 	var err error
 
-	fromUser := models.User{}
-	filter := &models.User{UserName: p.UserName}
+	fromUser := models.TwitterUser{}
+	filter := &models.TwitterUser{ID: user.ID}
 
-	err = createOrUpdate(i.db, &fromUser, filter, p)
+	err = createOrUpdate(i.db, &fromUser, filter, user)
 	utils.PanicIfErr(err)
 
 	for _, follow := range p.Follows {
-		//err := i.db.QueryRow("SELECT id from users where user_name = $1", follow.Name).Scan(&followedID)
 		var toUser models.User
 		var d *gorm.DB
 		d = i.db.Where("user_name = ?", follow.UserName).Select("ID").Find(&toUser)
 		if err := d.Error; err != nil {
-			// err = i.db.QueryRow(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, follow.Name).Scan(&followedID)
 			if d.RecordNotFound() == true {
 				d = i.db.Create(&models.User{
 					UserName: follow.UserName,
@@ -138,8 +112,6 @@ func (i *Inserter) insertUser(p *models.User) {
 				utils.PanicIfErr(err)
 			}
 		}
-
-		//_, err = i.db.Exec(`INSERT INTO follows(from_id, to_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, userID, followedID)
 		err = i.db.Set("gorm:insert_option", "ON CONFLICT DO NOTHING").Create(&models.Follow{
 			From: fromUser.ID,
 			To:   toUser.ID,

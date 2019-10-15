@@ -54,6 +54,8 @@ type TwitterPostRaw struct {
 
 // TwitterPost is the struct containing all processed twitter post fields
 type TwitterPost struct {
+	GormModelWithoutID
+
 	// meta
 	ID             int
 	ConversationID string
@@ -97,7 +99,7 @@ type ReplyUser struct {
 	Username string `json:"username"`
 }
 
-func convertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
+func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 	var user *TwitterUser
 	var retweetUser *TwitterUser
 
@@ -107,8 +109,6 @@ func convertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 	for index, item := range raw.Mentions {
 		mentions[index] = &TwitterUser{
 			Username: item,
-			//^^^ check if item is username using scraper output
-			//or if it's like ReplyUser
 		}
 	}
 
@@ -126,12 +126,13 @@ func convertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 
 	if raw.UserRt != "" {
 		retweetUser = &TwitterUser{
-			ID: raw.UserRtID, //IS THIS RIGHT?
+			ID:       raw.UserRtID,
+			Username: raw.UserRt,
 		}
 	}
 
-	//dateTime := time.Unix() TODO
-	//retweetDate := time.Unix() TODO
+	dateTime := time.Unix(int64(raw.DateTime/1000), 0)
+	//retweetDate := time.Unix()
 
 	likesCount, _ := strconv.Atoi(raw.LikesCount)
 	repliesCount, _ := strconv.Atoi(raw.RepliesCount)
@@ -143,7 +144,7 @@ func convertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 		Link:           raw.Link,
 		Type:           raw.Type,
 
-		//DateTime: dateTime,
+		DateTime: dateTime,
 		TimeZone: raw.TimeZone,
 		Geo:      raw.Geo,
 		Near:     raw.Near,
