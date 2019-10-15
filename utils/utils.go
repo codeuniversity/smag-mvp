@@ -87,3 +87,8 @@ func ConvertIntToBool(value int) bool {
 	}
 	return false
 }
+
+// ConvertDateStrToTime converts a dateStr to a time.Time obj
+func ConvertDateStrToTime(dateStr string) (time.Time, error) {
+	return time.Parse("02 Jan 2006", dateStr)
+}
