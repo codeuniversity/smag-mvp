@@ -41,7 +41,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 	utils.PanicIfErr(err)
 	i.db = db
 
-	db.AutoMigrate(&models.TwitterUser{})
+	db.AutoMigrate(&models.TwitterPost{})
 
 	i.Executor = service.New()
 	return i
@@ -53,23 +53,24 @@ func (i *Inserter) Run() {
 		i.MarkAsStopped()
 	}()
 
-	fmt.Println("starting inserter")
+	fmt.Println("starting twitter postgres posts inserter")
 	for i.IsRunning() {
 		m, err := i.qReader.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		info := &models.TwitterUserRaw{}
-		err = json.Unmarshal(m.Value, info)
+		rawPost := &models.TwitterPostRaw{}
+		err = json.Unmarshal(m.Value, rawPost)
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		fmt.Println("inserting: ", info.Username)
-		i.insertUser(models.ConvertTwitterUser(info))
+		fmt.Println("inserting post:", rawPost.Link)
+		post = models.ConvertTwitterPost(rawPost)
+		i.insertPost(post)
 		i.qReader.CommitMessages(context.Background(), m)
-		fmt.Println("commited: ", info.Username)
+		fmt.Println("commited: ", rawPost.Link)
 	}
 }
 
@@ -87,36 +88,34 @@ func (i *Inserter) Close() {
 	i.MarkAsClosed()
 }
 
-func (i *Inserter) insertUser(user *models.TwitterUser) {
+func (i *Inserter) insertPost(post *models.TwitterPost) {
 	var err error
 
-	fromUser := models.TwitterUser{}
-	filter := &models.TwitterUser{ID: user.ID}
+	fromPost := models.TwitterPost{}
+	filter := &models.TwitterPost{ID: post.ID}
 
-	err = createOrUpdate(i.db, &fromUser, filter, user)
+	err = createOrUpdate(i.db, &fromPost, filter, post)
 	utils.PanicIfErr(err)
 
-	for _, follow := range p.Follows {
-		var toUser models.User
+	usersList := append(RetweetUser, post.Mentions...)
+	append(usersList, post.ReplyTo...)
+
+	for _, user := range usersList {
+		var toPost models.TwitterUser
 		var d *gorm.DB
-		d = i.db.Where("user_name = ?", follow.UserName).Select("ID").Find(&toUser)
+		d = i.db.Where("username = ?", user.Username).Select("ID").Find(&toPost)
 		if err := d.Error; err != nil {
 			if d.RecordNotFound() == true {
 				d = i.db.Create(&models.User{
-					UserName: follow.UserName,
-				}).Scan(&toUser)
+					UserName: user.UserName,
+				})
 				utils.PanicIfErr(d.Error)
 
-				i.handleCreatedUser(follow.UserName)
+				i.handleCreatedUser(user.UserName)
 			} else {
 				utils.PanicIfErr(err)
 			}
 		}
-		err = i.db.Set("gorm:insert_option", "ON CONFLICT DO NOTHING").Create(&models.Follow{
-			From: fromUser.ID,
-			To:   toUser.ID,
-		}).Error
-		utils.PanicIfErr(err)
 	}
 
 }
