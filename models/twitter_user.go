@@ -130,26 +130,25 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 	}
 }
 
+// Create converts multiple TwitterUser slices into a single custom
+// TwitterUserList slice
 func (list *TwitterUserList) Create(slices ...[]*TwitterUser) {
 	for _, slice := range slices {
 		*list = append(*list, slice...)
 	}
 }
 
+// RemoveDuplicates removes duplicated values from the TwitterUserList
 func (list *TwitterUserList) RemoveDuplicates() {
-	set := make(map[*TwitterUser]bool)
-	for index := range *list {
-		if !set[(*list)[index]] {
-			set[(*list)[index]] = true
+	uniqueSlice := make([]*TwitterUser, 0, len(*list))
+	set := make(map[string]bool)
+
+	for i, user := range *list {
+		if !set[user.Username] {
+			set[user.Username] = true
+			uniqueSlice = append(uniqueSlice, (*list)[i])
 		}
 	}
 
-	uniqueList := make([]*TwitterUser, len(set))
-	index := 0
-	for user := range set {
-		uniqueList[index] = user
-		index++
-	}
-
-	*list = uniqueList
+	*list = uniqueSlice
 }
