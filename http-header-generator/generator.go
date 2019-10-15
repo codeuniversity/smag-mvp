@@ -18,10 +18,10 @@ func New() *HttpHeaderGenerator {
 		panic(err)
 	}
 	var userAgent BrowserAgent
-	errJson := json.Unmarshal(data, &userAgent)
+	err = json.Unmarshal(data, &userAgent)
 
-	if errJson != nil {
-		panic(errJson)
+	if err != nil {
+		panic(err)
 	}
 	httpHeader.browserAgent = userAgent
 	return httpHeader
