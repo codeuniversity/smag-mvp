@@ -99,6 +99,8 @@ type ReplyUser struct {
 	Username string `json:"username"`
 }
 
+// ConvertTwitterPost converts the raw TwitterPost structure
+// from kafka into the database model
 func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 	var user *TwitterUser
 	var retweetUser *TwitterUser
@@ -114,20 +116,20 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 
 	for index, item := range raw.ReplyTo {
 		replyTo[index] = &TwitterUser{
-			ID:       item.UserID,
-			Username: item.Username,
+			TwitterID: item.UserID,
+			Username:  item.Username,
 		}
 	}
 
 	user = &TwitterUser{
-		ID:       raw.UserIDstr,
-		Username: raw.UserName,
+		TwitterID: raw.UserIDstr,
+		Username:  raw.UserName,
 	}
 
 	if raw.UserRt != "" {
 		retweetUser = &TwitterUser{
-			ID:       raw.UserRtID,
-			Username: raw.UserRt,
+			TwitterID: raw.UserRtID,
+			Username:  raw.UserRt,
 		}
 	}
 
