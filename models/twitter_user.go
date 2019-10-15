@@ -73,25 +73,27 @@ type TwitterUser struct {
 	MediaCount int
 }
 
-func convertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
-	followingList := make([]*TwitterUser, len(raw.FollowingList))
-	followersList := make([]*TwitterUser, len(raw.FollowersList))
+func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
+	/*
+		followingList := make([]*TwitterUser, len(raw.FollowingList))
+		followersList := make([]*TwitterUser, len(raw.FollowersList))
 
-	for index, item := range raw.FollowingList {
-		followingList[index] = &TwitterUser{
-			Username: item,
-			//^^^ check if item is username using scraper output
+		for index, item := range raw.FollowingList {
+			followingList[index] = &TwitterUser{
+				Username: item,
+				//^^^ check if item is username using scraper output
+			}
 		}
-	}
 
-	for index, item := range raw.FollowingList {
-		followingList[index] = &TwitterUser{
-			Username: item,
-			//^^^ check if item is username using scraper output
+		for index, item := range raw.FollowingList {
+			followingList[index] = &TwitterUser{
+				Username: item,
+				//^^^ check if item is username using scraper output
+			}
 		}
-	}
+	*/
 
-	//joinDate := time.Unix() TODO
+	//joinDate :=  TODO 28 Nov 2019 ... 11:52AM
 
 	isPrivate := utils.ConvertIntToBool(raw.IsPrivate)
 	isVerified := utils.ConvertIntToBool(raw.IsVerified)
@@ -112,10 +114,10 @@ func convertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 		IsPrivate:  isPrivate,
 		IsVerified: isVerified,
 
-		Following:     raw.Following,
-		FollowingList: followingList,
-		Followers:     raw.Followers,
-		FollowersList: followersList,
+		Following: raw.Following,
+		//FollowingList: followingList,
+		Followers: raw.Followers,
+		//FollowersList: followersList,
 
 		Tweets:     raw.Tweets,
 		Likes:      raw.Likes,
