@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/codeuniversity/smag-mvp/http-header-generator"
 	"strings"
 	"time"
 
@@ -21,6 +22,7 @@ type Scraper struct {
 	infoQWriter *kafka.Writer
 	errQWriter  *kafka.Writer
 	*service.Executor
+	*http_header_generator.HttpHeaderGenerator
 }
 
 // New returns an initilized scraper
@@ -30,6 +32,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	s.infoQWriter = infoQWriter
 	s.errQWriter = errQWriter
 	s.Executor = service.New()
+	s.HttpHeaderGenerator = &http_header_generator.HttpHeaderGenerator{}
 	return s
 }
 
@@ -49,7 +52,7 @@ func (s *Scraper) Run() {
 		}
 
 		userName := string(m.Value)
-		followInfo, err := ScrapeUserFollowGraph(userName)
+		followInfo, err := s.scrapeUserFollowGraph(userName)
 		if err != nil {
 			fmt.Println(err)
 			errMessage := &models.ScrapeError{
@@ -92,11 +95,11 @@ func (s *Scraper) Close() {
 }
 
 //ScrapeUserFollowGraph returns the follow information for a userName
-func ScrapeUserFollowGraph(userName string) (*models.UserFollowInfo, error) {
+func (s *Scraper) scrapeUserFollowGraph(userName string) (*models.UserFollowInfo, error) {
 	u := &models.UserFollowInfo{UserName: userName}
 
 	err := utils.WithRetries(5, func() error {
-		followingsInfo, err := getUserInfoIn(fmt.Sprintf("http://picdeer.com/%s/followings", userName))
+		followingsInfo, err := s.getUserInfoIn(fmt.Sprintf("http://picdeer.com/%s/followings", userName))
 		if err != nil {
 			return err
 		}
@@ -123,12 +126,13 @@ type scrapedInfo struct {
 	bio             string
 }
 
-func getUserInfoIn(url string) (info *scrapedInfo, err error) {
+func (s *Scraper) getUserInfoIn(url string) (info *scrapedInfo, err error) {
 	info = new(scrapedInfo)
 
 	c := colly.NewCollector()
+	c.UserAgent = s.GetRandomUserAgent()
 	c.OnRequest(func(r *colly.Request) {
-		// fmt.Println("Visiting", r.URL)
+		s.AddHeaders(r.Headers)
 	})
 
 	c.OnError(func(c *colly.Response, err error) {
