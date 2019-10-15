@@ -90,33 +90,46 @@ func (i *Inserter) Close() {
 func (i *Inserter) insertUser(user *models.TwitterUser) {
 	var err error
 
-	fromUser := models.TwitterUser{}
+	baseUser := models.TwitterUser{}
 	filter := &models.TwitterUser{ID: user.ID}
 
-	err = createOrUpdate(i.db, &fromUser, filter, user)
+	err = createOrUpdate(i.db, &baseUser, filter, user)
 	utils.PanicIfErr(err)
 
-	for _, follow := range p.Follows {
-		var toUser models.User
+	for _, follower := range user.FollowersList {
+		var userModel models.TwitterUser
 		var d *gorm.DB
-		d = i.db.Where("user_name = ?", follow.UserName).Select("ID").Find(&toUser)
+		d = i.db.Where("username = ?", follower.Username).Find(&userModel)
 		if err := d.Error; err != nil {
 			if d.RecordNotFound() == true {
-				d = i.db.Create(&models.User{
-					UserName: follow.UserName,
-				}).Scan(&toUser)
+				d = i.db.Create(&models.TwitterUser{
+					Username: follower.Username,
+				})
 				utils.PanicIfErr(d.Error)
 
-				i.handleCreatedUser(follow.UserName)
+				i.handleCreatedUser(follower.Username)
 			} else {
 				utils.PanicIfErr(err)
 			}
 		}
-		err = i.db.Set("gorm:insert_option", "ON CONFLICT DO NOTHING").Create(&models.Follow{
-			From: fromUser.ID,
-			To:   toUser.ID,
-		}).Error
-		utils.PanicIfErr(err)
+	}
+
+	for _, following := range user.FollowingList {
+		var userModel models.TwitterUser
+		var d *gorm.DB
+		d = i.db.Where("username = ?", following.Username).Find(&userModel)
+		if err := d.Error; err != nil {
+			if d.RecordNotFound() == true {
+				d = i.db.Create(&models.TwitterUser{
+					Username: following.Username,
+				})
+				utils.PanicIfErr(d.Error)
+
+				i.handleCreatedUser(following.Username)
+			} else {
+				utils.PanicIfErr(err)
+			}
+		}
 	}
 
 }

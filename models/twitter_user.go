@@ -3,6 +3,8 @@ package models
 import (
 	"time"
 
+	"github.com/jinzhu/gorm"
+
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
@@ -41,12 +43,12 @@ type TwitterUserRaw struct {
 
 // TwitterUser holds the follow graph info, only relating userNames
 type TwitterUser struct {
-	GormModelWithoutID
+	gorm.Model
 
 	// Meta
-	ID   string
-	URL  string
-	Type string
+	TwitterID string
+	URL       string
+	Type      string
 
 	// User info
 	Name            string
@@ -63,9 +65,9 @@ type TwitterUser struct {
 
 	// Follows
 	Following     int
-	FollowingList []*TwitterUser
+	FollowingList []*TwitterUser `gorm:"many2many:twitter_followings;"`
 	Followers     int
-	FollowersList []*TwitterUser
+	FollowersList []*TwitterUser `gorm:"many2many:twitter_followers;"`
 
 	// Usage stats
 	Tweets     int
@@ -99,9 +101,9 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 	isVerified := utils.ConvertIntToBool(raw.IsVerified)
 
 	return &TwitterUser{
-		ID:   raw.ID,
-		URL:  raw.URL,
-		Type: raw.Type,
+		TwitterID: raw.ID,
+		URL:       raw.URL,
+		Type:      raw.Type,
 
 		Name:            raw.Name,
 		Username:        raw.Username,
