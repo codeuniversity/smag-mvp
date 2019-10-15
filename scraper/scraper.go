@@ -94,7 +94,7 @@ func (s *Scraper) Close() {
 	s.MarkAsClosed()
 }
 
-//ScrapeUserFollowGraph returns the follow information for a userName
+//scrapeUserFollowGraph returns the follow information for a userName
 func (s *Scraper) scrapeUserFollowGraph(userName string) (*models.UserFollowInfo, error) {
 	u := &models.UserFollowInfo{UserName: userName}
 
