@@ -11,6 +11,7 @@ services:
             KAFKA_HOST_PORT: "my-kafka:9092"
             KAFKA_FETCH_TOPIC: "user_names"
             KAFKA_INSERT_TOPIC: "users_scraped"
+            KAFKA_CONSUMER_GROUP: "user_scraper"
 
     tweets_scraper:
         build: .
@@ -22,6 +23,7 @@ services:
             KAFKA_HOST_PORT: "my-kafka:9092"
             KAFKA_FETCH_TOPIC: "user_names"
             KAFKA_INSERT_TOPIC: "tweets_scaped"
+            KAFKA_CONSUMER_GROUP: "tweets_scraper"
 
     zookeeper:
         image: "wurstmeister/zookeeper:latest"

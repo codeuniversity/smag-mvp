@@ -48,13 +48,15 @@ if __name__ == "__main__":
         level=logging.INFO,
     )
 
-    insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "users_scraped")
     fetch_topic = os.getenv("KAFKA_FETCH_TOPIC", "user_names")
+    insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "users_scraped")
+    kafka_consumer_group = os.getenv("KAFKA_CONSUMER_GROUP", "user_scraper")
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
     user_scraper = UserScraper(
         insert_topic=insert_topic,
         fetch_topic=fetch_topic,
+        kafka_consumer_group=kafka_consumer_group,
         kafka_host_port=kafka_host_port,
     )
     user_scraper.consume_scrape_produce()

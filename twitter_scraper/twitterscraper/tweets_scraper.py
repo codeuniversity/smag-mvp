@@ -33,11 +33,13 @@ if __name__ == "__main__":
 
     insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "users_scraped")
     fetch_topic = os.getenv("KAFKA_FETCH_TOPIC", "user_names")
+    kafka_consumer_group = os.getenv("KAFKA_CONSUMER_GROUP", "tweets_scraper")
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
     tweets_scraper = TweetsScraper(
         insert_topic=insert_topic,
         fetch_topic=fetch_topic,
+        kafka_consumer_group=kafka_consumer_group,
         kafka_host_port=kafka_host_port,
     )
     tweets_scraper.consume_scrape_produce()
