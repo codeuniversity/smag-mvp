@@ -14,7 +14,3 @@ type HttpStatusError struct {
 func (e *HttpStatusError) Error() string {
 	return e.S
 }
-
-type BrowserAgent []struct {
-	UserAgents string `json:"useragent"`
-}
