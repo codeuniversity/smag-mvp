@@ -9,7 +9,7 @@ from kafka import KafkaProducer
 def main():
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
-    wait = int(os.getenv("SLEEP_SECONDS", "5"))
+    wait = int(os.getenv("SLEEP_SECONDS", "0"))
     logging.info(f"sleep for {wait} seconds")
     sleep(wait)
 
@@ -24,7 +24,7 @@ def main():
     sleep(wait)
 
     seed_name = os.getenv("SEED_NAME", "urhengula5")
-    insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "twitter-user_names")
+    insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "user_names")
     logging.info(f"Send user_name {seed_name} to kafka/{insert_topic}")
     producer.send(insert_topic, seed_name)
     producer.flush()
