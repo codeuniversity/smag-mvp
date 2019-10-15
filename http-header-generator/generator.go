@@ -12,7 +12,7 @@ type HttpHeaderGenerator struct {
 }
 
 func New() *HttpHeaderGenerator {
-	httpHeader := &HttpHeaderGenerator{}
+	generator := &HttpHeaderGenerator{}
 	data, err := ioutil.ReadFile("useragents.json")
 	if err != nil {
 		panic(err)
@@ -23,8 +23,8 @@ func New() *HttpHeaderGenerator {
 	if err != nil {
 		panic(err)
 	}
-	httpHeader.browserAgent = userAgent
-	return httpHeader
+	generator.browserAgent = userAgent
+	return generator
 }
 
 type BrowserAgent []struct {
