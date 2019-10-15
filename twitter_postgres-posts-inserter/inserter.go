@@ -97,8 +97,9 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	err = createOrUpdate(i.db, &fromPost, filter, post)
 	utils.PanicIfErr(err)
 
-	usersList := append(RetweetUser, post.Mentions...)
-	append(usersList, post.ReplyTo...)
+	var usersList models.TwitterUsersList
+	usersList.create(post.RetweetUser, post.Mentions..., post.ReplyTo...)
+	usersList.removeDuplicate()
 
 	for _, user := range usersList {
 		var toPost models.TwitterUser
