@@ -99,6 +99,8 @@ type ReplyUser struct {
 	Username string `json:"username"`
 }
 
+// ConvertTwitterPost converts the raw TwitterPost structure
+// from kafka into the database model
 func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 	var user *TwitterUser
 	var retweetUser *TwitterUser

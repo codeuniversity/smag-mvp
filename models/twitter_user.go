@@ -8,6 +8,10 @@ import (
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
+// TwitterUserList is a custom type of TwitterUser to be used for easier handling
+// of relation users in twitter inserters
+type TwitterUserList []*TwitterUser
+
 // TwitterUserRaw holds the follow graph info, only relating userNames
 type TwitterUserRaw struct {
 	// Meta
@@ -75,27 +79,26 @@ type TwitterUser struct {
 	MediaCount int
 }
 
+// ConvertTwitterUser converts the raw TwitterUser structure
+// from kafka into the database model
 func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
-	/*
-		followingList := make([]*TwitterUser, len(raw.FollowingList))
-		followersList := make([]*TwitterUser, len(raw.FollowersList))
 
-		for index, item := range raw.FollowingList {
-			followingList[index] = &TwitterUser{
-				Username: item,
-				//^^^ check if item is username using scraper output
-			}
+	followingList := make([]*TwitterUser, len(raw.FollowingList))
+	followersList := make([]*TwitterUser, len(raw.FollowersList))
+
+	for index, item := range raw.FollowingList {
+		followingList[index] = &TwitterUser{
+			Username: item,
 		}
+	}
 
-		for index, item := range raw.FollowingList {
-			followingList[index] = &TwitterUser{
-				Username: item,
-				//^^^ check if item is username using scraper output
-			}
+	for index, item := range raw.FollowingList {
+		followingList[index] = &TwitterUser{
+			Username: item,
 		}
-	*/
+	}
 
-	//joinDate :=  TODO 28 Nov 2019 ... 11:52AM
+	joinDate, _ := utils.ConvertDateStrToTime(raw.JoinDate)
 
 	isPrivate := utils.ConvertIntToBool(raw.IsPrivate)
 	isVerified := utils.ConvertIntToBool(raw.IsVerified)
@@ -111,18 +114,42 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 		Avatar:          raw.Avatar,
 		BackgroundImage: raw.BackgroundImage,
 
-		Location: raw.Location,
-		//JoinDate: joinDate,
+		Location:   raw.Location,
+		JoinDate:   joinDate,
 		IsPrivate:  isPrivate,
 		IsVerified: isVerified,
 
-		Following: raw.Following,
-		//FollowingList: followingList,
-		Followers: raw.Followers,
-		//FollowersList: followersList,
+		Following:     raw.Following,
+		FollowingList: followingList,
+		Followers:     raw.Followers,
+		FollowersList: followersList,
 
 		Tweets:     raw.Tweets,
 		Likes:      raw.Likes,
 		MediaCount: raw.MediaCount,
 	}
+}
+
+func (list *TwitterUserList) Create(slices ...[]*TwitterUser) {
+	for _, slice := range slices {
+		*list = append(*list, slice...)
+	}
+}
+
+func (list *TwitterUserList) RemoveDuplicates() {
+	set := make(map[*TwitterUser]bool)
+	for index := range *list {
+		if !set[(*list)[index]] {
+			set[(*list)[index]] = true
+		}
+	}
+
+	uniqueList := make([]*TwitterUser, len(set))
+	index := 0
+	for user := range set {
+		uniqueList[index] = user
+		index++
+	}
+
+	*list = uniqueList
 }

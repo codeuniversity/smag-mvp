@@ -91,47 +91,32 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 	var err error
 
 	baseUser := models.TwitterUser{}
-	filter := &models.TwitterUser{ID: user.ID}
+	filter := &models.TwitterUser{TwitterID: user.TwitterID}
 
 	err = createOrUpdate(i.db, &baseUser, filter, user)
 	utils.PanicIfErr(err)
 
-	for _, follower := range user.FollowersList {
+	var usersList *models.TwitterUserList
+	usersList.Create(user.FollowersList, user.FollowingList)
+	usersList.RemoveDuplicates()
+
+	for _, relationUser := range *usersList {
 		var userModel models.TwitterUser
 		var d *gorm.DB
-		d = i.db.Where("username = ?", follower.Username).Find(&userModel)
+		d = i.db.Where("username = ?", relationUser.Username).Find(&userModel)
 		if err := d.Error; err != nil {
 			if d.RecordNotFound() == true {
 				d = i.db.Create(&models.TwitterUser{
-					Username: follower.Username,
+					Username: relationUser.Username,
 				})
 				utils.PanicIfErr(d.Error)
 
-				i.handleCreatedUser(follower.Username)
+				i.handleCreatedUser(relationUser.Username)
 			} else {
 				utils.PanicIfErr(err)
 			}
 		}
 	}
-
-	for _, following := range user.FollowingList {
-		var userModel models.TwitterUser
-		var d *gorm.DB
-		d = i.db.Where("username = ?", following.Username).Find(&userModel)
-		if err := d.Error; err != nil {
-			if d.RecordNotFound() == true {
-				d = i.db.Create(&models.TwitterUser{
-					Username: following.Username,
-				})
-				utils.PanicIfErr(d.Error)
-
-				i.handleCreatedUser(following.Username)
-			} else {
-				utils.PanicIfErr(err)
-			}
-		}
-	}
-
 }
 
 func (i *Inserter) handleCreatedUser(userName string) {
