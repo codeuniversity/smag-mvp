@@ -15,10 +15,12 @@ require (
 	github.com/jinzhu/gorm v1.9.11
 	github.com/johnnadratowski/golang-neo4j-bolt-driver v0.0.0-20181101021923-6b24c0085aae
 	github.com/kennygrant/sanitize v1.2.4 // indirect
-	github.com/lib/pq v1.2.0 // indirect
+	github.com/kr/pretty v0.1.0 // indirect
+	github.com/lib/pq v1.2.0
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/segmentio/kafka-go v0.3.2
+	github.com/stretchr/testify v1.4.0
 	github.com/temoto/robotstxt v1.1.1 // indirect
 	golang.org/x/crypto v0.0.0-20191001170739-f9e2070545dc // indirect
 	golang.org/x/net v0.0.0-20191002035440-2ec189313ef0

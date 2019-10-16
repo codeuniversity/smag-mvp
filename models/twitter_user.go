@@ -138,7 +138,7 @@ func (list *TwitterUserList) Create(slices ...[]*TwitterUser) {
 	}
 }
 
-// RemoveDuplicates removes duplicated values from the TwitterUserList
+// RemoveDuplicates removes duplicated users from TwitterUserList
 func (list *TwitterUserList) RemoveDuplicates() {
 	uniqueSlice := make([]*TwitterUser, 0, len(*list))
 	set := make(map[string]bool)
