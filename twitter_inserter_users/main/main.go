@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/service"
-	inserter "github.com/codeuniversity/smag-mvp/twitter_postgres-posts-inserter"
+	inserter "github.com/codeuniversity/smag-mvp/twitter_inserter_users"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
