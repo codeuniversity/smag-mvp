@@ -10,13 +10,15 @@ class ScraperManager:
 
     def __init__(
         self,
-        insert_topic: str,
         fetch_topic: str,
+        insert_topic: str,
+        kafka_consumer_group: str = "scraper_manager",
         kafka_host_port: str = "localhost:9092",
     ):
         self.consumer = KafkaConsumer(
             fetch_topic,
             bootstrap_servers=kafka_host_port,
+            group_id=kafka_consumer_group,
             reconnect_backoff_ms=500,
             reconnect_backoff_max_ms=10000,
         )

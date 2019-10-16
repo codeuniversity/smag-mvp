@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/service"
-	inserter "github.com/codeuniversity/smag-mvp/twitter_postgres-posts-inserter"
+	inserter "github.com/codeuniversity/smag-mvp/twitter_inserter_users"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
@@ -13,7 +13,7 @@ func main() {
 	postgresHost := utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1")
 	postgresPassword := utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", "")
 
-	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetInserterConfig()
+	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetUserDiscoveryInserterConfig()
 
 	if isUserDiscovery {
 		i = inserter.New(

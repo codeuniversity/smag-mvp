@@ -24,8 +24,13 @@ def scrape_user(conf: twint.Config) -> twint.user.user:
 def scrape_follows_list(func, conf: twint.Config) -> list:
     func(conf)
 
-    ret = twint.output.follows_list
+    # if we only scrape user names (set conf.User_full = False) user names are in follows_list
+    # if we scrape profiles of follows (set conf.User_full = True) user objs are in users_list
+    ret = []
+    ret.extend(twint.output.follows_list)
+    ret.extend(twint.output.users_list)
     twint.output.follows_list = []
+    twint.output.users_list = []
     return ret
 
 
@@ -48,13 +53,15 @@ if __name__ == "__main__":
         level=logging.INFO,
     )
 
-    insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "users_scraped")
     fetch_topic = os.getenv("KAFKA_FETCH_TOPIC", "user_names")
+    insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "users_scraped")
+    kafka_consumer_group = os.getenv("KAFKA_CONSUMER_GROUP", "user_scraper")
     kafka_host_port = os.getenv("KAFKA_HOST_PORT", "localhost:9092")
 
     user_scraper = UserScraper(
         insert_topic=insert_topic,
         fetch_topic=fetch_topic,
+        kafka_consumer_group=kafka_consumer_group,
         kafka_host_port=kafka_host_port,
     )
     user_scraper.consume_scrape_produce()

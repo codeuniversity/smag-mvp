@@ -14,108 +14,234 @@ jobs:
       - checkout
       # specify any bash command here prefixed with `run: `
       - run: go test -v ./...
-  insta_scraper-image:
+  scraper-image:
     # specify the version
     executor: job-runner
     environment:
-      INSTA_SCRAPER_IMAGE_NAME: codesmag/insta_scraper
+      SCRAPER_IMAGE_NAME: codesmag/scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta_scraper/Dockerfile -t $INSTA_SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $INSTA_SCRAPER_IMAGE_NAME:latest $INSTA_SCRAPER_IMAGE_NAME:$IMAGE_TAG
-            docker push $INSTA_SCRAPER_IMAGE_NAME:latest
-            docker push $INSTA_SCRAPER_IMAGE_NAME:$IMAGE_TAG
-  insta_postgres-inserter-image:
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  postgres-inserter-image:
     # specify the version
     executor: job-runner
     environment:
-      INSTA_POSTGRES_INSERTER_IMAGE_NAME: codesmag/insta_postgres-inserter
+      SCRAPER_IMAGE_NAME: codesmag/postgres-inserter
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta_postgres-inserter/Dockerfile -t $POSTGRES_INSERTER_IMAGE_NAME .
+          command: docker build -f insta_postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $POSTGRES_INSERTER_IMAGE_NAME:latest $POSTGRES_INSERTER_IMAGE_NAME:$IMAGE_TAG
-            docker push $POSTGRES_INSERTER_IMAGE_NAME:latest
-            docker push $POSTGRES_INSERTER_IMAGE_NAME:$IMAGE_TAG
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  insta-comments-inserter:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-comments-inserter
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-comments-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  insta-comments-scraper:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-comments-scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-comments-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  insta-posts-inserter:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-posts-inserter
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-posts-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+  insta-posts-scraper:
+    # specify the version
+    executor: job-runner
+    environment:
+      SCRAPER_IMAGE_NAME: codesmag/insta-posts-scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f insta-posts-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+            docker push $SCRAPER_IMAGE_NAME:latest
+            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
 
-  neo4j-inserter-image:
+  twitter_scraper:
     # specify the version
     executor: job-runner
     environment:
-      NEO4J_INSERTER_IMAGE_NAME: codesmag/neo4j-inserter
+      TWITTER_SCRAPER_IMAGE: codesmag/twitter_scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f neo4j-inserter/Dockerfile -t $NEO4J_INSERTER_IMAGE_NAME .
+          command: docker build -t $TWITTER_SCRAPER_IMAGE twitter_scraper/
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $NEO4J_INSERTER_IMAGE_NAME:latest $NEO4J_INSERTER_IMAGE_NAME:$IMAGE_TAG
-            docker push $NEO4J_INSERTER_IMAGE_NAME:latest
-            docker push $NEO4J_INSERTER_IMAGE_NAME:$IMAGE_TAG
-  dgraph-inserter-image:
+            docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_SCRAPER_IMAGE:latest
+            docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+  twitter_inserter_users:
     # specify the version
     executor: job-runner
     environment:
-      DGRAPH_INSERTER_IMAGE_NAME: codesmag/dgraph-inserter
+      TWITTER_INSERTER_USERS_IMAGE: codesmag/twitter_inserter_users
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f dgraph-inserter/Dockerfile -t $DGRAPH_INSERTER_IMAGE_NAME .
+          command: docker build -f twitter_inserter_users/Dockerfile -t $TWITTER_INSERTER_USERS_IMAGE .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $DGRAPH_INSERTER_IMAGE_NAME:latest $DGRAPH_INSERTER_IMAGE_NAME:$IMAGE_TAG
-            docker push $DGRAPH_INSERTER_IMAGE_NAME:latest
-            docker push $DGRAPH_INSERTER_IMAGE_NAME:$IMAGE_TAG
+            docker tag $TWITTER_INSERTER_USERS_IMAGE:latest $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_USERS_IMAGE:latest
+            docker push $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+  twitter_inserter_posts:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_INSERTER_POSTS_IMAGE: codesmag/twitter_inserter_posts
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f twitter_inserter_posts/Dockerfile -t $TWITTER_INSERTER_POSTS_IMAGE .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
 
 workflows:
   version: 2
   workflow:
     jobs:
       - tests
-      - insta_scraper-image:
+      - scraper-image:
           requires:
             - tests
           filters:
             branches:
               only: master
-      - insta_postgres-inserter-image:
+      - postgres-inserter-image:
           requires:
             - tests
           filters:
             branches:
               only: master
-      - neo4j-inserter-image:
+      - insta-comments-inserter:
           requires:
             - tests
           filters:
             branches:
               only: master
-      - dgraph-inserter-image:
+      - insta-comments-scraper:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta-posts-scraper:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta-posts-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+
+      - twitter_scraper:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - twitter_inserter_users:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - twitter_inserter_posts:
           requires:
             - tests
           filters:

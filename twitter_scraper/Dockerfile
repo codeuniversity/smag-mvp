@@ -2,11 +2,10 @@ FROM python:3.7-slim
 
 WORKDIR /src
 
-COPY Pipfile Pipfile.lock ./
-RUN pip install pipenv \
-    && pipenv install
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 COPY ./twitterscraper ./twitterscraper
 
-ENTRYPOINT [ "pipenv", "run", "python" ]
+ENTRYPOINT [ "python" ]
 CMD [ "-c", "raise Exception('Please set the CMD to either tweets_scraper.py or user_scraper.py')" ]

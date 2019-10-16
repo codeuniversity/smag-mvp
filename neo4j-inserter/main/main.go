@@ -14,7 +14,7 @@ func main() {
 	neo4jUsername := utils.GetStringFromEnvWithDefault("NEO4J_USERNAME", "neo4j")
 	neo4jPassword := utils.GetStringFromEnvWithDefault("NEO4J_PASSWORD", "123456")
 
-	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetInserterConfig()
+	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetUserDiscoveryInserterConfig()
 
 	if isUserDiscovery {
 		i = inserter.New(
