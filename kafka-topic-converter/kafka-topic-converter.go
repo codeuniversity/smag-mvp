@@ -24,7 +24,7 @@ func New(topicIn *kafa.Reader, topicOut *kafka.Writer) *Converter {
 
 	c.Executor = service.New()
 
-	return i
+	return c
 }
 
 func (c *Converter) Run() {
@@ -36,9 +36,20 @@ func (c *Converter) Run() {
 			break
 		}
 
-		debeziumModel := &models.DebeziumTopic{}
-		err = json.Unmarshal(m, debeziumModel)
-		fmt.Println(debeziumModel)
+		changeStream := &models.DebeziumChangeStream{}
+		err = json.Unmarshal(m.Value, changeStream)
+		if err != nil {
+			fmt.Println(err)
+			break
+		}
+		userName := changeStream.Payload.After.UserName
+		c.kafkaTopicIn.CommitMessages(context.Background(), m)
+
+		c.kafkaTopicOut.WriteMessages(context.Background(), kafka.Message{
+			Value: []byte(userName),
+		})
+
+		fmt.Printf("%s tranfered \n", userName)
 
 	}
 }
