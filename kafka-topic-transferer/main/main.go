@@ -1,21 +1,13 @@
 package main
 
 import (
-	"github.com/codeuniversity/smag-mvp/kafka"
-	conv "github.com/codeuniversity/smag-mvp/ktc"
-	"github.com/codeuniversity/smag-mvp/utils"
+	conv "github.com/codeuniversity/smag-mvp/kafka_topic_transferer"
 )
 
 func main() {
 	converter := &conv.Converter{}
 
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
-	readerConfig := kafka.NewReaderConfig(kafkaAddress, "22", "postgres.public.users")
-	writerConfig := kafka.NewWriterConfig(kafkaAddress, "user_names", true)
-	reader := kafka.NewReader(readerConfig)
-	writer := kafka.NewWriter(writerConfig)
-
-	converter = conv.New(reader, writer)
+	converter = conv.New("postgres.public.users", "user_names")
 
 	converter.Run()
 }

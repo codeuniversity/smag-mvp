@@ -5,24 +5,33 @@ import (
 	"encoding/json"
 	"fmt"
 
+	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
+
 	"github.com/segmentio/kafka-go"
 )
 
 // Transferer represents the Transferer containing all clients it uses
 type Transferer struct {
-	kafkaTopicIn  *kafka.Reader
-	kafkaTopicOut *kafka.Writer
+	fromTopic *kafka.Reader
+	toTopic   *kafka.Writer
 
 	*service.Executor
 }
 
 // New returns an initilized Transferer
-func New(topicIn *kafka.Reader, topicOut *kafka.Writer) *Transferer {
+func New(fromTopic string, toTopic string) *Transferer {
 	c := &Transferer{}
-	c.kafkaTopicIn = topicIn
-	c.kafkaTopicOut = topicOut
+
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
+	readerConfig := kf.NewReaderConfig(kafkaAddress, groupID, fromTopic)
+	writerConfig := kf.NewWriterConfig(kafkaAddress, toTopic, true)
+
+	c.fromTopic = kf.NewReader(readerConfig)
+	c.toTopic = kf.NewWriter(writerConfig)
 
 	c.Executor = service.New()
 
@@ -33,7 +42,7 @@ func New(topicIn *kafka.Reader, topicOut *kafka.Writer) *Transferer {
 func (c *Transferer) Run() {
 	fmt.Println("Start Transferer")
 	for c.IsRunning() {
-		m, err := c.kafkaTopicIn.FetchMessage(context.Background())
+		m, err := c.fromTopic.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
 			break
@@ -46,9 +55,9 @@ func (c *Transferer) Run() {
 			break
 		}
 		userName := changeStream.Payload.After.UserName
-		c.kafkaTopicIn.CommitMessages(context.Background(), m)
+		c.fromTopic.CommitMessages(context.Background(), m)
 
-		c.kafkaTopicOut.WriteMessages(context.Background(), kafka.Message{
+		c.toTopic.WriteMessages(context.Background(), kafka.Message{
 			Value: []byte(userName),
 		})
 
