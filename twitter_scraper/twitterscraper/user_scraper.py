@@ -24,8 +24,13 @@ def scrape_user(conf: twint.Config) -> twint.user.user:
 def scrape_follows_list(func, conf: twint.Config) -> list:
     func(conf)
 
-    ret = twint.output.follows_list
+    # if we only scrape user names (set conf.User_full = False) user names are in follows_list
+    # if we scrape profiles of follows (set conf.User_full = True) user objs are in users_list
+    ret = []
+    ret.extend(twint.output.follows_list)
+    ret.extend(twint.output.users_list)
     twint.output.follows_list = []
+    twint.output.users_list = []
     return ret
 
 
