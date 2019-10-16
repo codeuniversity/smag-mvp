@@ -96,7 +96,10 @@ services:
       POSTGRES_HOST: "postgres"
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_inserter_users"
-      KAFKA_NAME_TOPIC: "twitter-users_scraped"
+      KAFKA_INFO_TOPIC: "twitter-users_scraped"
+      KAFKA_NAME_TOPIC: "twitter-user_names"
+      USER_DISCOVERY: "true"
+      POSTGRES_PASSWORD: "12345678"
   twitter_inserter_posts:
     build:
       context: "."
@@ -106,7 +109,10 @@ services:
       POSTGRES_HOST: "postgres"
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_inserter_posts"
-      KAFKA_NAME_TOPIC: "twitter-posts_scraped"
+      KAFKA_INFO_TOPIC: "twitter-posts_scraped"
+      KAFKA_NAME_TOPIC: "twitter-user_names"
+      USER_DISCOVERY: "true"
+      POSTGRES_PASSWORD: "12345678"
 
   # POSTGRES
   postgres:
@@ -114,18 +120,18 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=12345678
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "12345678"
   connect:
-    image: debezium/connect:0.10
+    image: "debezium/connect:0.10"
     ports:
-      - 8083:8083
+      - "8083:8083"
     environment:
-      - BOOTSTRAP_SERVERS=my-kafka:9092
-      - GROUP_ID=1
-      - CONFIG_STORAGE_TOPIC=my_connect_configs
-      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-      - STATUS_STORAGE_TOPIC=my_connect_statuses
+      BOOTSTRAP_SERVERS: "my-kafka:9092"
+      GROUP_ID: "1"
+      CONFIG_STORAGE_TOPIC: "my_connect_configs"
+      OFFSET_STORAGE_TOPIC: "my_connect_offsets"
+      STATUS_STORAGE_TOPIC: "my_connect_statuses"
   pgadmin:
     image: "dpage/pgadmin4:4.13"
     ports:
