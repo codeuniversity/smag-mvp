@@ -21,34 +21,35 @@ In different terminal windows:
 
 > For the insertes, make sure to set the following environment variables:
 > - `KAFKA_GROUPID`
-> - `KAFKA_NAME_TOPIC` - read from topic
-> - `KAFKA_INFO_TOPIC` - write to topic
+> - `KAFKA_INFO_TOPIC` - read from topic
+> - `KAFKA_NAME_TOPIC` - write to topic
 
-3. Run the dgraph inserter with `go run dgraph-inserter/main/main.go`
-3. Run the neo4j inserter with `go run neo4j-inserter/main/main.go`
-3. Run the postgres inserter with `go run postgres-inserter/main/main.go`
+1. Run the postgres inserter with `go run postgres-inserter/main/main.go`
 
 If this is your first time running this:
 
-1. Set the schema for DGraph with `go run db/reset/main.go`
 1. install [migrate](https://github.com/golang-migrate/migrate) with `brew install golang-migrate` (on mac)
-1. create the database in postgres with `psql -h localhost -U postgres -w -c "create database instascraper;"`
-1. run the migrations with `migrate -database 'postgres://postgres:password@localhost:5432/instascraper?sslmode=disable' -path db/migrations up`
-1. Choose a user_name as a starting point and run `go run cli/main/main.go <user_name>`
+2. create the database in postgres, run the migrations and create the debezium connector with `debezium/start-postgres.sh`
+3. add `127.0.0.1 my-kafka` to your `/etc/hosts` file
+4. Choose a user_name as a starting point and run `go run cli/main/main.go <user_name>`
+
+## Postgres change stream
+
+The debezium connector generates a change stream from all the changes in postgres
+
+To read from this stream you can
+
+- get [kt](https://github.com/fgeller/kt)
+- inspect the topic list in kafka `kt topic`, all topic starting with `postgres` are streams from individual tables
+- consume a topic with, for example `kt consume --topic postgres.public.users`
+
+The messages are quite verbose, since they include their own schema description. The most interesting part is the `value.payload` -> `kt consume --topic postgres.public.users | jq '.value | fromjson | .payload'`
 
 ## Building docker images
 
 ### Scraper
 
 `docker build -t instascraper_scraper -f scraper/Dockerfile .`
-
-### Dgraph Inserter
-
-`docker build -t instascraper_dgraph_inserter -f dgraph-inserter/Dockerfile .`
-
-### neo4j Inserter
-
-`docker build -t instascraper_neo4j_inserter -f neo4j-inserter/Dockerfile .`
 
 ### Postgres Inserter
 

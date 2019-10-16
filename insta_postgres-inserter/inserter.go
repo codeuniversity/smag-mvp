@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/codeuniversity/smag-mvp/utils"
+
 	"github.com/jinzhu/gorm"
 	// necessary for sql :pointup:
 	_ "github.com/jinzhu/gorm/dialects/postgres"
