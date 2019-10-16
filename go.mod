@@ -7,8 +7,8 @@ require (
 	github.com/antchfx/htmlquery v1.0.0 // indirect
 	github.com/antchfx/xmlquery v1.0.0 // indirect
 	github.com/antchfx/xpath v1.0.0 // indirect
-	github.com/denisenkom/go-mssqldb v0.0.0-20191001013358-cfbb681360f0 // indirect
 	github.com/aws/aws-sdk-go v1.25.1
+	github.com/denisenkom/go-mssqldb v0.0.0-20191001013358-cfbb681360f0 // indirect
 	github.com/dgraph-io/dgo v0.0.0-20190801004348-3d281925f1d3
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gocolly/colly v1.2.0
