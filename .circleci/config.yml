@@ -24,7 +24,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -43,7 +43,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
