@@ -1,20 +1,21 @@
-package kafka-topic-converter
+package kafka_topic_converter
 
 import (
-	"fmt"
+	"context"
 	"encoding/json"
-	"github.com/segmentio/kafka-go"
-	"github.com/codeuniversity/smag-mvp/service"
+	"fmt"
+
 	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/segmentio/kafka-go"
 )
 
 type Converter struct {
-	kafkaTopicIn *kafka.Reader
+	kafkaTopicIn  *kafka.Reader
 	kafkaTopicOut *kafka.Writer
 
 	*service.Executor
 }
-
 
 func New(topicIn *kafa.Reader, topicOut *kafka.Writer) *Converter {
 	c := &Converter{}
@@ -26,7 +27,6 @@ func New(topicIn *kafa.Reader, topicOut *kafka.Writer) *Converter {
 	return i
 }
 
-
 func (c *Converter) Run() {
 
 	for c.IsRunning() {
@@ -37,7 +37,7 @@ func (c *Converter) Run() {
 		}
 
 		debeziumModel := &models.DebeziumTopic{}
-		err = json.Unmarshal(m,debeziumModel)
+		err = json.Unmarshal(m, debeziumModel)
 		fmt.Println(debeziumModel)
 
 	}
