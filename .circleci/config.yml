@@ -53,6 +53,64 @@ jobs:
             docker push $POSTGRES_INSERTER_IMAGE_NAME:latest
             docker push $POSTGRES_INSERTER_IMAGE_NAME:$IMAGE_TAG
 
+  twitter_scraper:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_SCRAPER_IMAGE: codesmag/twitter_scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -t $TWITTER_SCRAPER_IMAGE twitter_scraper/
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_SCRAPER_IMAGE:latest
+            docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+  twitter_inserter_users:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_INSERTER_USERS_IMAGE: codesmag/twitter_inserter_users
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f twitter_inserter_users/Dockerfile -t $TWITTER_INSERTER_USERS_IMAGE .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_USERS_IMAGE:latest $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_USERS_IMAGE:latest
+            docker push $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+  twitter_inserter_posts:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_INSERTER_POSTS_IMAGE: codesmag/twitter_inserter_posts
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f twitter_inserter_posts/Dockerfile -t $TWITTER_INSERTER_POSTS_IMAGE .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+
   neo4j-inserter-image:
     # specify the version
     executor: job-runner
