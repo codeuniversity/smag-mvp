@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/codeuniversity/smag-mvp/kafka"
-	conv "github.com/codeuniversity/smag-mvp/kafka-topic-transferer"
+	conv "github.com/codeuniversity/smag-mvp/ktc"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 

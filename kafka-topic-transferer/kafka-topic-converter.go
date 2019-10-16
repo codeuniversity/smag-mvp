@@ -1,4 +1,4 @@
-package kafka_topic_converter
+package ktc
 
 import (
 	"context"
@@ -10,15 +10,17 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-type Converter struct {
+// Transferer represents the Transferer containing all clients it uses
+type Transferer struct {
 	kafkaTopicIn  *kafka.Reader
 	kafkaTopicOut *kafka.Writer
 
 	*service.Executor
 }
 
-func New(topicIn *kafa.Reader, topicOut *kafka.Writer) *Converter {
-	c := &Converter{}
+// New returns an initilized Transferer
+func New(topicIn *kafka.Reader, topicOut *kafka.Writer) *Transferer {
+	c := &Transferer{}
 	c.kafkaTopicIn = topicIn
 	c.kafkaTopicOut = topicOut
 
@@ -27,8 +29,9 @@ func New(topicIn *kafa.Reader, topicOut *kafka.Writer) *Converter {
 	return c
 }
 
-func (c *Converter) Run() {
-
+//Run the Transferer
+func (c *Transferer) Run() {
+	fmt.Println("Start Transferer")
 	for c.IsRunning() {
 		m, err := c.kafkaTopicIn.FetchMessage(context.Background())
 		if err != nil {
