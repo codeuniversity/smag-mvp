@@ -84,6 +84,28 @@ services:
       SEED_NAME: "urhengula5"
       SLEEP_SECONDS: "10"
 
+  # TWITTER INSERTER
+  twitter_inserter_users:
+    build:
+      context: "."
+      dockerfile: "./twitter_inserter_users/Dockerfile"
+    image: "smag-twitter_inserter_users"
+    environment:
+      POSTGRES_HOST: "postgres"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_inserter_users"
+      KAFKA_NAME_TOPIC: "twitter-users_scraped"
+  twitter_inserter_posts:
+    build:
+      context: "."
+      dockerfile: "twitter_inserter_posts/Dockerfile"
+    image: "smag-twitter_inserter_posts"
+    environment:
+      POSTGRES_HOST: "postgres"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_inserter_posts"
+      KAFKA_NAME_TOPIC: "twitter-posts_scraped"
+
   # POSTGRES
   # ports: 5000 - 5999
   postgres:
