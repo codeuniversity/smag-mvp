@@ -67,7 +67,7 @@ func (i *Inserter) Run() {
 			break
 		}
 		fmt.Println("inserting post:", rawPost.Link)
-		post = models.ConvertTwitterPost(rawPost)
+		var post *models.TwitterPost = models.ConvertTwitterPost(rawPost)
 		i.insertPost(post)
 		i.qReader.CommitMessages(context.Background(), m)
 		fmt.Println("commited: ", rawPost.Link)
@@ -97,22 +97,22 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	err = createOrUpdate(i.db, &fromPost, filter, post)
 	utils.PanicIfErr(err)
 
-	var usersList models.TwitterUsersList
-	usersList.create(post.RetweetUser, post.Mentions..., post.ReplyTo...)
-	usersList.removeDuplicate()
+	var usersList *models.TwitterUserList
+	usersList.Create(post.Mentions, post.ReplyTo, []*models.TwitterUser{post.RetweetUser})
+	usersList.RemoveDuplicates()
 
-	for _, user := range usersList {
+	for _, user := range *usersList {
 		var toPost models.TwitterUser
 		var d *gorm.DB
 		d = i.db.Where("username = ?", user.Username).Select("ID").Find(&toPost)
 		if err := d.Error; err != nil {
 			if d.RecordNotFound() == true {
-				d = i.db.Create(&models.User{
-					UserName: user.UserName,
+				d = i.db.Create(&models.TwitterUser{
+					Username: user.Username,
 				})
 				utils.PanicIfErr(d.Error)
 
-				i.handleCreatedUser(user.UserName)
+				i.handleCreatedUser(user.Username)
 			} else {
 				utils.PanicIfErr(err)
 			}
