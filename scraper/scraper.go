@@ -32,7 +32,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	s.infoQWriter = infoQWriter
 	s.errQWriter = errQWriter
 	s.Executor = service.New()
-	s.HttpHeaderGenerator = &http_header_generator.HttpHeaderGenerator{}
+	s.HttpHeaderGenerator = http_header_generator.New()
 	return s
 }
 
