@@ -70,12 +70,12 @@ type TwitterPost struct {
 	Place    string
 
 	// content
-	Cashtags    []string
-	Hashtags    []string
-	Mentions    []*TwitterUser
-	Photos      []string
+	Cashtags    []string       `gorm:"type:varchar(64)[]`
+	Hashtags    []string       `gorm:"type:varchar(64)[]`
+	Mentions    []*TwitterUser `gorm:"many2many:post_mentions`
+	Photos      []string       `gorm:"type:varchar(64)[]`
 	QuoteURL    string
-	ReplyTo     []*TwitterUser
+	ReplyTo     []*TwitterUser `gorm:"many2many:post_replies"`
 	Retweet     bool
 	RetweetDate time.Time
 	RetweetID   string
