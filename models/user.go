@@ -76,3 +76,30 @@ type InstaCommentScrapError struct {
 	PostId string `json:"post_id,omitempty"`
 	Error  string `json:"error,omitempty"`
 }
+
+type DebeziumTopic struct {
+	After struct {
+		AvatarURL interface{} `json:"avatar_url"`
+		Bio       interface{} `json:"bio"`
+		CrawlTs   interface{} `json:"crawl_ts"`
+		ID        int         `json:"id"`
+		RealName  interface{} `json:"real_name"`
+		UserName  string      `json:"user_name"`
+	} `json:"after"`
+	Before interface{} `json:"before"`
+	Op     string      `json:"op"`
+	Source struct {
+		Connector string      `json:"connector"`
+		Db        string      `json:"db"`
+		Lsn       int         `json:"lsn"`
+		Name      string      `json:"name"`
+		Schema    string      `json:"schema"`
+		Snapshot  string      `json:"snapshot"`
+		Table     string      `json:"table"`
+		TsMs      int         `json:"ts_ms"`
+		TxID      int         `json:"txId"`
+		Version   string      `json:"version"`
+		Xmin      interface{} `json:"xmin"`
+	} `json:"source"`
+	TsMs int `json:"ts_ms"`
+}
