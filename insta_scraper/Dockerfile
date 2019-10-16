@@ -2,7 +2,7 @@ FROM golang:1.12 as builder
 WORKDIR /go/src/github.com/codeuniversity/smag-mvp
 COPY go.mod go.sum ./
 RUN GO111MODULE=on go mod download
-COPY ./insta_scraper ./insta_scraper 
+COPY . .
 RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_scraper insta_scraper/main/main.go
 
 FROM alpine

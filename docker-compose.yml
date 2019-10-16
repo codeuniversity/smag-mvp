@@ -42,7 +42,9 @@ services:
 
   # INSTAGRAM SCRAPER
   insta_scraper:
-    build: "insta_scraper/"
+    build:
+      context: "."
+      dockerfile: "insta_scraper/Dockerfile"
     image: "smag-insta_scraper"
     depends_on:
       - "my-kafka"
