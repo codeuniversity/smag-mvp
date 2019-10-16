@@ -1,15 +1,15 @@
-FROM golang:1.12 as builder
-WORKDIR /go/src/github.com/codeuniversity/smag-mvp
+FROM golang:1.13 as builder
+WORKDIR /app
 COPY go.mod .
 COPY go.sum .
-RUN GO111MODULE=on go mod download
-COPY . . 
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_scraper scraper/main/main.go
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o instascraper_scraper scraper/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
-RUN mkdir app
-COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/instascraper_scraper /app
+RUN mkdir /app
 COPY useragents.json /app
+COPY --from=builder /app/instascraper_scraper /app
 WORKDIR /app
 CMD ["./instascraper_scraper"]
