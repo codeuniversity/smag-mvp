@@ -38,7 +38,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 	}
 
 	db, err := gorm.Open("postgres", connectionString)
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 	i.db = db
 
 	db.AutoMigrate(&models.TwitterUser{})
@@ -94,7 +94,7 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 	filter := &models.TwitterUser{TwitterID: user.TwitterID}
 
 	err = createOrUpdate(i.db, &baseUser, filter, user)
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 
 	usersList := models.NewTwitterUserList(user.FollowersList, user.FollowingList)
 	usersList.RemoveDuplicates()
@@ -108,11 +108,11 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 				d = i.db.Create(&models.TwitterUser{
 					Username: relationUser.Username,
 				})
-				utils.PanicIfErr(d.Error)
+				utils.PanicIfNotNil(d.Error)
 
 				i.handleCreatedUser(relationUser.Username)
 			} else {
-				utils.PanicIfErr(err)
+				utils.PanicIfNotNil(err)
 			}
 		}
 	}

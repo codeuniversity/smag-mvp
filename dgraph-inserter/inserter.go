@@ -114,7 +114,7 @@ func (i *Inserter) insertUser(p *models.User) {
 	}
 
 	pb, err := json.Marshal(p)
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 	mu.SetJson = pb
 
 	err = utils.WithRetries(5, func() error {
@@ -122,7 +122,7 @@ func (i *Inserter) insertUser(p *models.User) {
 		_, err = i.dgClient.NewTxn().Mutate(ctx, mu)
 		return err
 	})
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 }
 
 func (i *Inserter) handleCreatedUser(userName, uid string, created bool) {
@@ -182,6 +182,6 @@ func getOrCreateUIDForUserWithRetries(dg *dgo.Dgraph, name string) (uid string, 
 		uid, created, err = getOrCreateUIDForUser(dg, name)
 		return err
 	})
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 	return
 }
