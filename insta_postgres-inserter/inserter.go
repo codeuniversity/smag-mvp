@@ -26,7 +26,7 @@ type Inserter struct {
 	*service.Executor
 }
 
-// New returns an initilized scraper
+// New returns an initilized inserter
 func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
@@ -38,7 +38,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 	}
 
 	db, err := gorm.Open("postgres", connectionString)
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 	i.db = db
 
 	db.AutoMigrate(&models.User{})
@@ -108,43 +108,36 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 }
 
 func (i *Inserter) insertUser(p *models.User) {
-	/*_, err := i.db.Exec(`INSERT INTO users(user_name,real_name, bio, avatar_url, crawl_ts)
-	VALUES($1,$2,$3,$4,$5) ON CONFLICT (user_name) DO UPDATE SET user_name = $1, real_name = $2, bio = $3, avatar_url = $4, crawl_ts = $5`,
-		p.Name, p.RealName, p.Bio, p.AvatarURL, p.CrawledAt)
-	*/
 	var err error
 
 	fromUser := models.User{}
 	filter := &models.User{UserName: p.UserName}
 
 	err = createOrUpdate(i.db, &fromUser, filter, p)
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 
 	for _, follow := range p.Follows {
-		//err := i.db.QueryRow("SELECT id from users where user_name = $1", follow.Name).Scan(&followedID)
 		var toUser models.User
 		var d *gorm.DB
 		d = i.db.Where("user_name = ?", follow.UserName).Select("ID").Find(&toUser)
 		if err := d.Error; err != nil {
-			// err = i.db.QueryRow(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, follow.Name).Scan(&followedID)
 			if d.RecordNotFound() == true {
 				d = i.db.Create(&models.User{
 					UserName: follow.UserName,
 				}).Scan(&toUser)
-				utils.PanicIfErr(d.Error)
+				utils.PanicIfNotNil(d.Error)
 
 				i.handleCreatedUser(follow.UserName)
 			} else {
-				utils.PanicIfErr(err)
+				utils.PanicIfNotNil(err)
 			}
 		}
 
-		//_, err = i.db.Exec(`INSERT INTO follows(from_id, to_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, userID, followedID)
 		err = i.db.Set("gorm:insert_option", "ON CONFLICT DO NOTHING").Create(&models.Follow{
 			From: fromUser.ID,
 			To:   toUser.ID,
 		}).Error
-		utils.PanicIfErr(err)
+		utils.PanicIfNotNil(err)
 	}
 
 }

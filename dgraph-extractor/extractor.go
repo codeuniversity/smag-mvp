@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Extractor represents the scraper containing all clients it uses
+// Extractor represents the extractor containing all clients it uses
 type Extractor struct {
 	qWriter  *kafka.Writer
 	dgClient *dgo.Dgraph
@@ -61,7 +61,7 @@ func (i *Extractor) Run() {
 			fmt.Println("skipping user with id ", i.currentID, " because he was not crawled")
 		} else {
 			message, err := json.Marshal(info)
-			utils.PanicIfErr(err)
+			utils.PanicIfNotNil(err)
 			fmt.Println("writing: ", i.currentID, " ", info.UserName)
 			i.qWriter.WriteMessages(context.Background(), kafka.Message{Value: message})
 		}

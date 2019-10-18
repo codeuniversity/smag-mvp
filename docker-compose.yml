@@ -74,17 +74,6 @@ services:
       KAFKA_HOST_PORT: "my-kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-tweets_scaped"
-  kafka-seed:
-    build: "twitter_scraper/"
-    image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.insert_seed"]
-    depends_on:
-      - "my-kafka"
-    environment:
-      KAFKA_HOST_PORT: "my-kafka:9092"
-      KAFKA_INSERT_TOPIC: "twitter-user_names"
-      SEED_NAME: "urhengula5"
-      SLEEP_SECONDS: "10"
 
   # TWITTER INSERTER
   twitter_inserter_users:

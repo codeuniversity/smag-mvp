@@ -3,10 +3,11 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/segmentio/kafka-go"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/segmentio/kafka-go"
 
 	"github.com/dgraph-io/dgo"
 	"github.com/dgraph-io/dgo/protos/api"
@@ -84,8 +85,16 @@ func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) bool {
 	return envBool
 }
 
-// PanicIfErr panics if err != nil
-func PanicIfErr(err error) {
+// PanicIfNotNil panics if err != nil
+func PanicIfNotNil(err error) {
+	if err != nil {
+		//TODO: graceful shutdown
+		panic(err)
+	}
+}
+
+// MustBeNil panics if err != nil
+func MustBeNil(err error) {
 	if err != nil {
 		panic(err)
 	}

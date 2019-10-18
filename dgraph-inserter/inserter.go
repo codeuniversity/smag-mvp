@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Inserter represents the scraper containing all clients it uses
+// Inserter represents the inserter containing all clients it uses
 type Inserter struct {
 	qReader  *kafka.Reader
 	qWriter  *kafka.Writer
@@ -26,7 +26,7 @@ type Inserter struct {
 	*service.Executor
 }
 
-// New returns an initilized scraper
+// New returns an initilized inserter
 func New(dgraphAddress string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
@@ -114,7 +114,7 @@ func (i *Inserter) insertUser(p *models.User) {
 	}
 
 	pb, err := json.Marshal(p)
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 	mu.SetJson = pb
 
 	err = utils.WithRetries(5, func() error {
@@ -122,7 +122,7 @@ func (i *Inserter) insertUser(p *models.User) {
 		_, err = i.dgClient.NewTxn().Mutate(ctx, mu)
 		return err
 	})
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 }
 
 func (i *Inserter) handleCreatedUser(userName, uid string, created bool) {
@@ -182,6 +182,6 @@ func getOrCreateUIDForUserWithRetries(dg *dgo.Dgraph, name string) (uid string, 
 		uid, created, err = getOrCreateUIDForUser(dg, name)
 		return err
 	})
-	utils.PanicIfErr(err)
+	utils.PanicIfNotNil(err)
 	return
 }
