@@ -8,7 +8,6 @@ import (
 
 func TestTwitterUserList(t *testing.T) {
 	list := &TwitterUserList{}
-	assert.Equal(t, len(*list), 0, "should not contain any elements before create")
 
 	slice1 := []*TwitterUser{
 		&TwitterUser{
@@ -32,7 +31,7 @@ func TestTwitterUserList(t *testing.T) {
 	}
 
 	// Create functionality
-	list.Create(slice1, slice2)
+	list = NewTwitterUserList(slice1, slice2)
 	assert.Equal(t, len(*list), 5, "should contain content of both slices with duplicates")
 
 	// RemoveDuplicates functionality

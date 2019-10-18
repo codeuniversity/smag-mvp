@@ -133,7 +133,7 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 // NewTwitterUserList converts multiple TwitterUser slices into a single custom
 // TwitterUserList structure
 func NewTwitterUserList(slices ...[]*TwitterUser) *TwitterUserList {
-	var list *TwitterUserList
+	list := &TwitterUserList{}
 
 	for _, slice := range slices {
 		*list = append(*list, slice...)
