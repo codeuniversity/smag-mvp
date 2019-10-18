@@ -79,7 +79,7 @@ func (e *Executor) MarkAsClosed() {
 	e.closedChan <- struct{}{}
 }
 
-// WaitUntilClosed waits until the Close func call of the inserter is finished
+// WaitUntilClosed waits until the Close func call of the executor is finished
 func (e *Executor) WaitUntilClosed() {
 	<-e.closedChan
 }
