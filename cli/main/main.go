@@ -11,14 +11,30 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 2 {
-		fmt.Println("Please provide a username as the first argument")
+	if len(os.Args) < 3 {
+		fmt.Println("Usage: go run cli/main/main.go <instagram|twitter> <username>")
 		return
 	}
-	userNameArg := os.Args[1]
+
+	platformArg := os.Args[1]
+	userNameArg := os.Args[2]
+
+	var topic string
+	switch platformArg {
+	case "instagram":
+		topic = "user_names"
+		break
+	case "twitter":
+		topic = "twitter-user_names"
+		break
+	default:
+		fmt.Printf("Invalid platform option: %s\n", platformArg)
+		return
+	}
+
 	w := kafka.NewWriter(kafka.WriterConfig{
 		Brokers:  []string{"localhost:9092"},
-		Topic:    "user_names",
+		Topic:    topic,
 		Balancer: &kafka.LeastBytes{},
 	})
 	defer w.Close()
