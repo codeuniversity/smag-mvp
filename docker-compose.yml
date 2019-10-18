@@ -111,6 +111,7 @@ services:
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "12345678"
+      POSTGRES_DB: "instascraper"
   connect:
     image: "debezium/connect:0.10"
     ports:
@@ -128,3 +129,11 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: "my_awesome_email@email.com"
       PGADMIN_DEFAULT_PASSWORD: "does_not_matter"
+  migrate-postgres:
+    build:
+      context: "."
+      dockerfile: "debezium/Dockerfile"
+    depends_on: 
+      - "postgres"
+    environment:
+      POSTGRES_DB: "instascraper"
