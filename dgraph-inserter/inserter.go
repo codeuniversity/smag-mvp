@@ -17,7 +17,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Inserter represents the scraper containing all clients it uses
+// Inserter represents the inserter containing all clients it uses
 type Inserter struct {
 	qReader  *kafka.Reader
 	qWriter  *kafka.Writer
@@ -26,7 +26,7 @@ type Inserter struct {
 	*service.Executor
 }
 
-// New returns an initilized scraper
+// New returns an initilized inserter
 func New(dgraphAddress string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader

@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc"
 )
 
-// Extractor represents the scraper containing all clients it uses
+// Extractor represents the extractor containing all clients it uses
 type Extractor struct {
 	qWriter  *kafka.Writer
 	dgClient *dgo.Dgraph
