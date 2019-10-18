@@ -96,8 +96,7 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 	err = createOrUpdate(i.db, &baseUser, filter, user)
 	utils.PanicIfErr(err)
 
-	var usersList *models.TwitterUserList
-	usersList.Create(user.FollowersList, user.FollowingList)
+	usersList := models.NewTwitterUserList(user.FollowersList, user.FollowingList)
 	usersList.RemoveDuplicates()
 
 	for _, relationUser := range *usersList {

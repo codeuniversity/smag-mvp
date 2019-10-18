@@ -130,12 +130,16 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 	}
 }
 
-// Create converts multiple TwitterUser slices into a single custom
-// TwitterUserList slice
-func (list *TwitterUserList) Create(slices ...[]*TwitterUser) {
+// NewTwitterUserList converts multiple TwitterUser slices into a single custom
+// TwitterUserList structure
+func NewTwitterUserList(slices ...[]*TwitterUser) *TwitterUserList {
+	var list *TwitterUserList
+
 	for _, slice := range slices {
 		*list = append(*list, slice...)
 	}
+
+	return list
 }
 
 // RemoveDuplicates removes duplicated users from TwitterUserList
