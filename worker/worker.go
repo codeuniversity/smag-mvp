@@ -33,7 +33,7 @@ func (w *Worker) Close() {
 }
 
 func (w *Worker) shutdown() {
-	log.Println("closing", w.name)
+	log.Println("stopping", w.name)
 	w.executor.Stop()
 	log.Println("waiting for work to stop")
 	w.executor.WaitUntilStopped(time.Second * 3)
@@ -55,7 +55,7 @@ func (w *Worker) work() {
 	defer w.Close()
 
 	defer func() {
-		log.Println(w.name, " is done here")
+		log.Println(w.name, "is done here")
 		w.executor.MarkAsStopped()
 	}()
 

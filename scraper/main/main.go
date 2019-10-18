@@ -15,7 +15,7 @@ func main() {
 		kafka.NewWriter(errWriterConfig),
 	)
 	service.CloseOnSignal(s)
-	go s.Run()
+	waitUntilDone := s.Start()
 
-	s.WaitUntilClosed()
+	waitUntilDone()
 }
