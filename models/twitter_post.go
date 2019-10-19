@@ -3,6 +3,8 @@ package models
 import (
 	"strconv"
 	"time"
+
+	"github.com/lib/pq"
 )
 
 // TwitterPostRaw is the struct containing all raw twitter post fields
@@ -54,10 +56,10 @@ type TwitterPostRaw struct {
 
 // TwitterPost is the struct containing all processed twitter post fields
 type TwitterPost struct {
-	GormModelWithoutID
+	ID int
 
 	// meta
-	ID             int
+	PostIdentifier int
 	ConversationID string
 	Link           string
 	Type           string
@@ -70,10 +72,10 @@ type TwitterPost struct {
 	Place    string
 
 	// content
-	Cashtags    []string       `gorm:"type:varchar(64)[]`
-	Hashtags    []string       `gorm:"type:varchar(64)[]`
-	Mentions    []*TwitterUser `gorm:"many2many:post_mentions`
-	Photos      []string       `gorm:"type:varchar(64)[]`
+	Cashtags    pq.StringArray `gorm:"type:varchar(64)[]"`
+	Hashtags    pq.StringArray `gorm:"type:varchar(64)[]"`
+	Mentions    []*TwitterUser `gorm:"many2many:post_mentions"`
+	Photos      pq.StringArray `gorm:"type:varchar(64)[]"`
 	QuoteURL    string
 	ReplyTo     []*TwitterUser `gorm:"many2many:post_replies"`
 	Retweet     bool
@@ -81,7 +83,7 @@ type TwitterPost struct {
 	RetweetID   string
 	Source      string
 	Tweet       string
-	URLs        []string
+	URLs        pq.StringArray `gorm:"type:varchar(64)[]"`
 	Video       int
 
 	// reactions
@@ -116,20 +118,20 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 
 	for index, item := range raw.ReplyTo {
 		replyTo[index] = &TwitterUser{
-			TwitterID: item.UserID,
-			Username:  item.Username,
+			UserIdentifier: item.UserID,
+			Username:       item.Username,
 		}
 	}
 
 	user = &TwitterUser{
-		TwitterID: raw.UserIDstr,
-		Username:  raw.UserName,
+		UserIdentifier: raw.UserIDstr,
+		Username:       raw.UserName,
 	}
 
 	if raw.UserRt != "" {
 		retweetUser = &TwitterUser{
-			TwitterID: raw.UserRtID,
-			Username:  raw.UserRt,
+			UserIdentifier: raw.UserRtID,
+			Username:       raw.UserRt,
 		}
 	}
 
@@ -141,7 +143,7 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 	retweetCount, _ := strconv.Atoi(raw.RetweetCount)
 
 	return &TwitterPost{
-		ID:             raw.ID,
+		PostIdentifier: raw.ID,
 		ConversationID: raw.ConversationID,
 		Link:           raw.Link,
 		Type:           raw.Type,

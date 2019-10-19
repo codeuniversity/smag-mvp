@@ -50,9 +50,9 @@ type TwitterUser struct {
 	gorm.Model
 
 	// Meta
-	TwitterID string
-	URL       string
-	Type      string
+	UserIdentifier string
+	URL            string
+	Type           string
 
 	// User info
 	Name            string
@@ -69,9 +69,9 @@ type TwitterUser struct {
 
 	// Follows
 	Following     int
-	FollowingList []*TwitterUser `gorm:"many2many:twitter_followings;"`
+	FollowingList []*TwitterUser `gorm:"many2many:twitter_followings;association_jointable_foreignkey:following_user_id"`
 	Followers     int
-	FollowersList []*TwitterUser `gorm:"many2many:twitter_followers;"`
+	FollowersList []*TwitterUser `gorm:"many2many:twitter_followers;association_jointable_foreignkey:followers_user_id"`
 
 	// Usage stats
 	Tweets     int
@@ -104,9 +104,9 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 	isVerified := utils.ConvertIntToBool(raw.IsVerified)
 
 	return &TwitterUser{
-		TwitterID: raw.ID,
-		URL:       raw.URL,
-		Type:      raw.Type,
+		UserIdentifier: raw.ID,
+		URL:            raw.URL,
+		Type:           raw.Type,
 
 		Name:            raw.Name,
 		Username:        raw.Username,

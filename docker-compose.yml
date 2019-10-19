@@ -52,6 +52,10 @@ services:
       - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "user_postgres_inserter"
+      KAFKA_NAME_TOPIC: "user_names"
+      KAFKA_INFO_TOPIC: "user_follow_infos"
+      KAFKA_ERR_TOPIC: "insta_user_scaper_err"
 
   # TWITTER SCRAPER
   twitter_scraper-users:

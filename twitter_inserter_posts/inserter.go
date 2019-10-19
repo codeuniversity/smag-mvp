@@ -92,7 +92,7 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	var err error
 
 	fromPost := models.TwitterPost{}
-	filter := &models.TwitterPost{ID: post.ID}
+	filter := &models.TwitterPost{PostIdentifier: post.PostIdentifier}
 
 	err = createOrUpdate(i.db, &fromPost, filter, post)
 	utils.PanicIfNotNil(err)
