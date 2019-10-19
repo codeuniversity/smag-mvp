@@ -8,5 +8,10 @@ gen-client:
 
 init-db:
 	docker-compose up -d postgres connect my-kafka
-	sleep 5
+	sleep 10
 	docker-compose up migrate-postgres
+
+run:
+	docker-compose up -d my-kafka postgres
+	sleep 5
+	docker-compose up
