@@ -7,8 +7,6 @@ import (
 )
 
 func TestTwitterUserList(t *testing.T) {
-	list := &TwitterUserList{}
-
 	slice1 := []*TwitterUser{
 		&TwitterUser{
 			Username: "muesli",
@@ -31,11 +29,12 @@ func TestTwitterUserList(t *testing.T) {
 	}
 
 	t.Run("create new TwitterUserList slice from sub-slices", func(t *testing.T) {
-		list = NewTwitterUserList(slice1, slice2)
+		list := NewTwitterUserList(slice1, slice2)
 		assert.Equal(t, len(*list), 5, "should contain content of both slices with duplicates")
 	})
 
 	t.Run("remove all duplicated TwitterUser elements by username", func(t *testing.T) {
+		list := NewTwitterUserList(slice1, slice2)
 		list.RemoveDuplicates()
 		assert.Equal(t, len(*list), 3, "should only include unique elements")
 	})
