@@ -11,7 +11,7 @@ type UserFollowInfo struct {
 	CrawlTs    int      `json:"crawl_ts"`
 }
 
-// User is the struct containing all user fields, used for serializing users to dgraph
+// User is the struct containing all user fields, used for saving users to the database
 type User struct {
 	UID       string  `json:"uid,omitempty"`
 	Name      string  `json:"name,omitempty"`
