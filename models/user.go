@@ -14,7 +14,7 @@ type UserFollowInfo struct {
 	CrawlTs    int      `json:"crawl_ts" gorm:"column:crawl_ts"`
 }
 
-// User is the struct containing all user fields, used for serializing users to dgraph
+// User is the struct containing all user fields, used for saving users to the database
 type User struct {
 	gorm.Model
 	UID       string  `json:"uid,omitempty"`

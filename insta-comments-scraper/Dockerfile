@@ -1,15 +1,15 @@
 FROM golang:1.13 as builder
-WORKDIR /go/src/github.com/codeuniversity/smag-mvp
+WORKDIR /app
 COPY go.mod .
 COPY go.sum .
-RUN GO111MODULE=on go mod download
+RUN go mod download
 COPY . .
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o insta_comments_scraper insta-comments-scraper/main/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o insta_comments_scraper insta-comments-scraper/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
-RUN mkdir app
-COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/insta_comments_scraper /app
-COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/useragents.json /app
+RUN mkdir /app
+COPY useragents.json /app
+COPY --from=builder /app/insta_comments_scraper /app
 WORKDIR /app
 CMD ["./insta_comments_scraper"]

@@ -1,13 +1,12 @@
-FROM golang:1.12 as builder
-WORKDIR /go/src/github.com/codeuniversity/smag-mvp
+FROM golang:1.13 as builder
+WORKDIR /app
 COPY go.mod go.sum ./
-RUN GO111MODULE=on go mod download
+RUN go mod download
 COPY . . 
-RUN GO111MODULE=on CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o twitter_users_inserter twitter_inserter_users/main/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o twitter_users_inserter twitter_inserter_users/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
-RUN mkdir app
-COPY --from=builder /go/src/github.com/codeuniversity/smag-mvp/twitter_users_inserter /app
 WORKDIR /app
+COPY --from=builder /app/twitter_users_inserter .
 CMD ["./twitter_users_inserter"]
