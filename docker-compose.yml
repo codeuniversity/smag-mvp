@@ -18,7 +18,7 @@ services:
         user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1,
         twitter-user_names:4:1,twitter-users_scraped:4:1,twitter-posts_scraped:4:1,
         reached_limit:4:1,renewed_elastic_ip:4:1,renewing_elastic_ip_errors:4:1,
-        user_post:4:1,user_instagram-scrape_errors:4:1,insta_comments_info:4:1,post_comment_insta_scraper_errors:4:1,
+        user_post:4:1,user_instagram-scrape_errors:4:1,insta_comments_info:4:1,post_comment_insta_scraper_errors:4:1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_LISTENERS: PLAINTEXT://:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://my-kafka:9092
