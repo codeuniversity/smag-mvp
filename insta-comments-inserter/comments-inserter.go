@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
-	"time"
 )
 
 type InstaCommentInserter struct {
@@ -115,13 +116,13 @@ func (c *InstaCommentInserter) insertComment(p *models.InstaComment) error {
 	if err != nil {
 		return err
 	}
-	postID, err := c.findOrCreatePost(p.PostId)
+	postID, err := c.findOrCreatePost(p.PostID)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = c.db.Exec(`INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.Id, p.Text, ownerUserID)
+	_, err = c.db.Exec(`INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.ID, p.Text, ownerUserID)
 
 	if err != nil {
 		return err
@@ -130,6 +131,7 @@ func (c *InstaCommentInserter) insertComment(p *models.InstaComment) error {
 	return nil
 }
 
+// Close ...
 func (c *InstaCommentInserter) Close() {
 	c.Stop()
 	c.WaitUntilStopped(time.Second * 3)

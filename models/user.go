@@ -22,46 +22,38 @@ type User struct {
 	CrawledAt int     `json:"crawled_at,omitempty"`
 }
 
-type RenewingAddresses struct {
-	InstanceId string   `json:"instanceId"`
-	LocalIps   []string `json:"localIps"`
-}
-
 // ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
 type ScrapeError struct {
 	Name  string `json:"name,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
-// ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
-type AwsServiceError struct {
-	InstanceId string `json:"name,omitempty"`
-	Error      string `json:"error,omitempty"`
-}
-
-// ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
+// InstagramScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
 type InstagramScrapeError struct {
 	Name  string `json:"name,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
+// InstaComment os a comment on instagram
 type InstaComment struct {
-	Id            string `json:"id"`
+	ID            string `json:"id"`
 	Text          string `json:"text"`
 	CreatedAt     int    `json:"created_at"`
-	PostId        string `json:"post_id"`
+	PostID        string `json:"post_id"`
 	ShortCode     string `json:"short_code"`
 	OwnerUsername string `json:"owner_username"`
 }
 
+// InstagramPost is a Post on instagram
 type InstagramPost struct {
-	PostId     string `json:"post_id"`
+	PostID     string `json:"post_id"`
 	ShortCode  string `json:"short_code"`
-	UserId     string `json:"user_id"`
-	PictureUrl string `json:"picture_url"`
+	UserID     string `json:"user_id"`
+	PictureURL string `json:"picture_url"`
 }
 
+// InstaCommentScrapError s are written to the error topic of the scraper when even after retries we can't scrape the comments
 type InstaCommentScrapError struct {
-	PostId string `json:"post_id,omitempty"`
+	PostID string `json:"post_id,omitempty"`
 	Error  string `json:"error,omitempty"`
 }
