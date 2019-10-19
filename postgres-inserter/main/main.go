@@ -32,7 +32,6 @@ func main() {
 	}
 
 	service.CloseOnSignal(i)
-	go i.Run()
-
-	i.WaitUntilClosed()
+	waitUntilDone := i.Start()
+	waitUntilDone()
 }
