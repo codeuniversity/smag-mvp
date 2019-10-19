@@ -24,7 +24,12 @@ type GrpcServer struct {
 // NewGrpcServer returns initilized gRPC Server
 func NewGrpcServer(grpcPort int) *GrpcServer {
 	postgresHost := utils.GetStringFromEnvWithDefault("GRPC_POSTGRES_HOST", "127.0.0.1")
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
+	postgresPassword := utils.GetStringFromEnvWithDefault("GRPC_POSTGRES_PASSWORD", "")
+	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
+	if postgresPassword != "" {
+		connectionString += " " + "password=" + postgresPassword
+	}
+	db, err := sql.Open("postgres", connectionString)
 	if err != nil {
 		panic(err)
 	}
