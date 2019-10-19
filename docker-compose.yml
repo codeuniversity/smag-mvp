@@ -22,7 +22,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   # GRPC
-  # ports: 4000 - 4999
+
   envoy-proxy:
     build: "./api/envoy-proxy"
     depends_on:
@@ -35,8 +35,9 @@ services:
       dockerfile: "./api/grpcserver/Dockerfile"
     environment:
       GRPC_POSTGRES_HOST: "postgres"
+      GRPC_POSTGRES_PASSWORD: "12345678"
     ports:
-      - "4100:10000"
+      - "10000:10000"
 
   # POSTGRES
   postgres:
