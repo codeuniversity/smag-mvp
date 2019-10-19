@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/jinzhu/gorm"
-	// necessary for sql :pointup:
+	// necessary for gorm :pointup:
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/codeuniversity/smag-mvp/models"
