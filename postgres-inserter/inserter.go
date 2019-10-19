@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/utils"
 	"time"
+
+	"github.com/codeuniversity/smag-mvp/utils"
 
 	// necessary for sql :pointup:
 	_ "github.com/lib/pq"
@@ -87,8 +88,7 @@ func (i *Inserter) Close() {
 	i.MarkAsClosed()
 }
 
-// InsertUserFollowInfo inserts the user follow info into dgraph, while writting userNames that don't exist in the graph yet
-// into the specified kafka topic
+// InsertUserFollowInfo inserts the user follow info into postgres
 func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	p := &models.User{
 		Name:      followInfo.UserName,
