@@ -7,6 +7,6 @@ gen-client:
 --grpc-web_out=import_style=commonjs,mode=grpcwebtext:api/proto/client
 
 init-db:
-	psql -h localhost -U postgres -w -c "create database instascraper;"
-	migrate -database 'postgres://postgres:password@localhost:5432/instascraper?sslmode=disable' -path db/migrations up
-
+	docker-compose up -d postgres connect my-kafka
+	sleep 5
+	docker-compose up migrate-postgres
