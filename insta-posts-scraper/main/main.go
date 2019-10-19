@@ -12,7 +12,7 @@ func main() {
 	s := insta_posts_scraper.New(kafka.NewReader(nameReaderConfig), kafka.NewWriter(infoWriterConfig), kafka.NewWriter(errWriterConfig))
 
 	service.CloseOnSignal(s)
-	go s.Run()
+	waitUntilClosed := s.Start()
 
-	s.WaitUntilClosed()
+	waitUntilClosed()
 }
