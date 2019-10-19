@@ -2,8 +2,13 @@ package worker
 
 import (
 	"errors"
+	"time"
 
 	"github.com/codeuniversity/smag-mvp/service"
+)
+
+const (
+	defaultStopTimeout = 5 * time.Second
 )
 
 // Builder is for configuring a worker
@@ -11,6 +16,7 @@ type Builder struct {
 	name          string
 	step          func() error
 	shutdownHooks []shutdownHook
+	stopTimeout   time.Duration
 }
 
 // WithName sets the worker name (required)
@@ -35,17 +41,30 @@ func (b Builder) AddShutdownHook(hookName string, hook func() error) Builder {
 	return b
 }
 
+// WithStopTimeout changes the timeout used when stopping the worker loop. If not set, uses defaultStopTimeout
+func (b Builder) WithStopTimeout(t time.Duration) Builder {
+	b.stopTimeout = t
+	return b
+}
+
 // Build a Worker with the given configuration
 func (b Builder) Build() (*Worker, error) {
 	if !b.valid() {
 		return nil, errors.New("could not build worker: both name and work step have to be set")
 	}
-	return &Worker{
+	w := &Worker{
 		executor:      service.New(),
 		name:          b.name,
 		step:          b.step,
 		shutdownHooks: b.shutdownHooks,
-	}, nil
+		stopTimeout:   b.stopTimeout,
+	}
+
+	if w.stopTimeout == 0 {
+		w.stopTimeout = defaultStopTimeout
+	}
+
+	return w, nil
 }
 
 // MustBuild a Worker with the given configuration. Panics if not all required config is given

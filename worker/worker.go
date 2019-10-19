@@ -16,6 +16,8 @@ type Worker struct {
 	step          func() error
 	shutdownHooks []shutdownHook
 
+	stopTimeout time.Duration
+
 	shutdownOnce sync.Once
 }
 
@@ -36,7 +38,7 @@ func (w *Worker) shutdown() {
 	log.Println("stopping", w.name)
 	w.executor.Stop()
 	log.Println("waiting for work to stop")
-	w.executor.WaitUntilStopped(time.Second * 3)
+	w.executor.WaitUntilStopped(w.stopTimeout)
 
 	log.Println("calling shutdown hooks")
 	for _, hook := range w.shutdownHooks {

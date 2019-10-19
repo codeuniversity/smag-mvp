@@ -36,7 +36,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	s.HttpHeaderGenerator = http_header_generator.New()
 
 	s.Worker = worker.Builder{}.WithName("insta_scraper").
-		WithWorkStep(s.RunStep).
+		WithWorkStep(s.runStep).
 		AddShutdownHook("nameQReader", nameQReader.Close).
 		AddShutdownHook("infoQWriter", infoQWriter.Close).
 		AddShutdownHook("errQWriter", errQWriter.Close).
@@ -44,8 +44,8 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	return s
 }
 
-// RunStep the scraper
-func (s *Scraper) RunStep() error {
+// runStep the scraper
+func (s *Scraper) runStep() error {
 	fmt.Println("fetching")
 	m, err := s.nameQReader.FetchMessage(context.Background())
 	if err != nil {
