@@ -62,7 +62,7 @@ class ScraperManager:
 
         ret = []
         for consumer_list in partition_dict.values():
-            names = [json.loads(consumer.value) for consumer in consumer_list]
+            names = [consumer.value.decode("utf-8") for consumer in consumer_list]
             ret.extend(names)
         return ret
 
