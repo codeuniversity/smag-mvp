@@ -39,7 +39,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
-	i.db = db.Debug()
+	i.db = db
 
 	db.AutoMigrate(&models.TwitterUser{})
 
