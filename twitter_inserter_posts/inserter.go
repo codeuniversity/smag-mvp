@@ -107,18 +107,18 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	for _, relationUser := range *usersList {
 		var queryUser models.TwitterUser
 		var d *gorm.DB
-		d = i.db.Where("username = ?", relationUser.Username).Select("ID").Find(&queryUser)
-		if err := d.Error; err != nil {
-			if d.RecordNotFound() == true {
-				d = i.db.Create(&models.TwitterUser{
-					Username: relationUser.Username,
-				})
-				utils.PanicIfNotNil(d.Error)
 
-				i.handleCreatedUser(relationUser.Username)
-			} else {
-				utils.PanicIfNotNil(err)
-			}
+		d = i.db.Where("username = ?", relationUser.Username).Find(&queryUser)
+		utils.PanicIfNotNil(d.Error)
+
+		if queryUser.Username == "" {
+			fmt.Printf("Didn't find record for %v\n", relationUser.Username)
+			d = i.db.Create(&models.TwitterUser{
+				Username: relationUser.Username,
+			})
+			utils.PanicIfNotNil(d.Error)
+
+			i.handleCreatedUser(relationUser.Username)
 		}
 	}
 
