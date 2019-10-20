@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/codeuniversity/smag-mvp/insta-comments-inserter"
+	inserter "github.com/codeuniversity/smag-mvp/insta_comments-inserter"
 	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
@@ -13,10 +13,10 @@ func main() {
 
 	qReaderConfig, qWriterConfig, _ := kafka.GetUserDiscoveryInserterConfig()
 
-	s := insta_comments_inserter.New(postgresHost, postgresPassword, kafka.NewReader(qReaderConfig), kafka.NewWriter(qWriterConfig))
+	s := inserter.New(postgresHost, postgresPassword, kafka.NewReader(qReaderConfig), kafka.NewWriter(qWriterConfig))
 
 	service.CloseOnSignal(s)
-	go s.Run()
+	waitUntilClosed := s.Start()
 
-	s.WaitUntilClosed()
+	waitUntilClosed()
 }

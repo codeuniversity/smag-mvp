@@ -11,8 +11,8 @@ import (
 
 	"github.com/codeuniversity/smag-mvp/models"
 	client "github.com/codeuniversity/smag-mvp/scraper-client"
+	"github.com/codeuniversity/smag-mvp/worker"
 
-	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -22,82 +22,85 @@ const (
 
 // PostCommentScraper scrapes the comments under post
 type PostCommentScraper struct {
+	*worker.Worker
+
 	postIDQReader       *kafka.Reader
 	commentsInfoQWriter *kafka.Writer
 	errQWriter          *kafka.Writer
-	*service.Executor
+
 	httpClient client.ScraperClient
 }
 
 // New returns an initialized PostCommentScraper
-func New(postReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
-	p := &PostCommentScraper{}
-	p.postIDQReader = postReader
-	p.commentsInfoQWriter = commentsInfoQWriter
-	p.errQWriter = errQWriter
-	p.Executor = service.New()
-	p.httpClient = client.NewSimpleScraperClient()
-	return p
+func New(postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
+	s := &PostCommentScraper{}
+	s.postIDQReader = postIDQReader
+	s.commentsInfoQWriter = commentsInfoQWriter
+	s.errQWriter = errQWriter
+
+	s.httpClient = client.NewSimpleScraperClient()
+
+	s.Worker = worker.Builder{}.WithName("insta_comments_scraper").
+		WithWorkStep(s.runStep).
+		AddShutdownHook("postIDQReader", postIDQReader.Close).
+		AddShutdownHook("commentsInfoQWriter", commentsInfoQWriter.Close).
+		AddShutdownHook("errQWriter", errQWriter.Close).
+		MustBuild()
+
+	return s
 }
 
-// Run ...
-func (p *PostCommentScraper) Run() {
-	defer func() {
-		p.MarkAsStopped()
-	}()
+func (s *PostCommentScraper) runStep() error {
+	message, err := s.postIDQReader.FetchMessage(context.Background())
 
-	fmt.Println("starting Instagram post-scraper")
-	counter := 0
-	for p.IsRunning() {
-
-		message, err := p.postIDQReader.FetchMessage(context.Background())
-
-		fmt.Println("New Message")
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		var post models.InstagramPost
-		err = json.Unmarshal(message.Value, &post)
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		fmt.Println("ShortCode: ", post.ShortCode)
-		counter++
-		postsComments, err := p.scrapeComments(post.ShortCode)
-
-		if err != nil {
-			errorMessage := models.InstaCommentScrapError{
-				PostID: post.PostID,
-				Error:  err.Error(),
-			}
-
-			errorMessageJSON, err := json.Marshal(errorMessage)
-			if err != nil {
-				panic(err)
-			}
-			p.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
-		} else {
-			err = p.sendComments(postsComments, post)
-			if err != nil {
-				panic(err)
-			}
-		}
-		p.postIDQReader.CommitMessages(context.Background(), message)
-		counter++
-
-		time.Sleep(time.Millisecond * 900)
+	fmt.Println("New Message")
+	if err != nil {
+		return err
 	}
+
+	var post models.InstagramPost
+	err = json.Unmarshal(message.Value, &post)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("ShortCode: ", post.ShortCode)
+
+	postsComments, err := s.scrapeComments(post.ShortCode)
+
+	if err != nil {
+		errorMessage := models.InstaCommentScrapError{
+			PostID: post.PostID,
+			Error:  err.Error(),
+		}
+
+		errorMessageJSON, err := json.Marshal(errorMessage)
+		if err != nil {
+			panic(err)
+		}
+		err = s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
+		if err != nil {
+			return err
+		}
+	} else {
+		err = s.sendComments(postsComments, post)
+		if err != nil {
+			return err
+		}
+	}
+	if err != nil {
+		return err
+	}
+
+	time.Sleep(time.Millisecond * 900)
+	return s.postIDQReader.CommitMessages(context.Background(), message)
 }
 
-func (p *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComments, error) {
+func (s *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComments, error) {
 	var postsComments *instaPostComments
-	err := p.httpClient.WithRetries(3, func() error {
+	err := s.httpClient.WithRetries(3, func() error {
 		time.Sleep(1400 * time.Millisecond)
-		instaPostComments, err := p.scrapePostComment(shortCode)
+		instaPostComments, err := s.scrapePostComment(shortCode)
 
 		if err != nil {
 			return err
@@ -109,7 +112,7 @@ func (p *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComment
 	return postsComments, err
 }
 
-func (p *PostCommentScraper) sendComments(postsComments *instaPostComments, postID models.InstagramPost) error {
+func (s *PostCommentScraper) sendComments(postsComments *instaPostComments, postID models.InstagramPost) error {
 	fmt.Println("sendComments: ", len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	messages := make([]kafka.Message, 0, len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
@@ -133,10 +136,10 @@ func (p *PostCommentScraper) sendComments(postsComments *instaPostComments, post
 			messages = append(messages, m)
 		}
 	}
-	return p.commentsInfoQWriter.WriteMessages(context.Background(), messages...)
+	return s.commentsInfoQWriter.WriteMessages(context.Background(), messages...)
 }
 
-func (p *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComments, error) {
+func (s *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComments, error) {
 	var instaPostComment instaPostComments
 	type Variables struct {
 		Shortcode           string `json:"shortcode"`
@@ -160,7 +163,7 @@ func (p *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComme
 	if err != nil {
 		return instaPostComment, err
 	}
-	response, err := p.httpClient.Do(request)
+	response, err := s.httpClient.Do(request)
 	if err != nil {
 		return instaPostComment, err
 	}
@@ -177,15 +180,4 @@ func (p *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComme
 		return instaPostComment, err
 	}
 	return instaPostComment, nil
-}
-
-// Close ...
-func (p *PostCommentScraper) Close() {
-	p.Stop()
-	p.WaitUntilStopped(time.Second * 3)
-
-	p.postIDQReader.Close()
-	p.commentsInfoQWriter.Close()
-	p.errQWriter.Close()
-	p.MarkAsClosed()
 }
