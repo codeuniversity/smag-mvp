@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	http_header_generator "github.com/codeuniversity/smag-mvp/http-header-generator"
+	http_header_generator "github.com/codeuniversity/smag-mvp/http_header-generator"
 	"github.com/codeuniversity/smag-mvp/worker"
 
 	"github.com/codeuniversity/smag-mvp/models"
@@ -24,7 +24,7 @@ type Scraper struct {
 	nameQReader *kafka.Reader
 	infoQWriter *kafka.Writer
 	errQWriter  *kafka.Writer
-	*http_header_generator.HttpHeaderGenerator
+	*http_header_generator.HTTPHeaderGenerator
 }
 
 // New returns an initilized scraper
@@ -33,7 +33,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	s.nameQReader = nameQReader
 	s.infoQWriter = infoQWriter
 	s.errQWriter = errQWriter
-	s.HttpHeaderGenerator = http_header_generator.New()
+	s.HTTPHeaderGenerator = http_header_generator.New()
 
 	s.Worker = worker.Builder{}.WithName("insta_scraper").
 		WithWorkStep(s.runStep).
