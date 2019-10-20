@@ -14,4 +14,5 @@ init-db:
 run:
 	docker-compose up -d my-kafka postgres
 	sleep 5
-	docker-compose up
+	docker-compose up -d
+	docker-compose logs -f
