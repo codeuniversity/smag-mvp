@@ -97,7 +97,11 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	err = createOrUpdate(i.db, &fromPost, filter, post)
 	utils.PanicIfNotNil(err)
 
-	usersList := models.NewTwitterUserList(post.Mentions, post.ReplyTo, []*models.TwitterUser{post.RetweetUser})
+	newUserLists := [][]*models.TwitterUser{post.Mentions, post.ReplyTo}
+	if post.RetweetUser != nil {
+		newUserLists = append(newUserLists, []*models.TwitterUser{post.RetweetUser})
+	}
+	usersList := models.NewTwitterUserList(newUserLists...)
 	usersList.RemoveDuplicates()
 
 	for _, user := range *usersList {
