@@ -64,7 +64,7 @@ func (i *Inserter) Run() {
 			fmt.Println(err)
 			break
 		}
-		fmt.Println("inserting: ", info.Username)
+		fmt.Println("inserting user: ", info.Username)
 		i.insertUser(models.ConvertTwitterUser(info))
 		i.qReader.CommitMessages(context.Background(), m)
 		fmt.Println("commited: ", info.Username)
@@ -98,27 +98,32 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 	usersList.RemoveDuplicates()
 
 	for _, relationUser := range *usersList {
-		var userModel models.TwitterUser
-		var d *gorm.DB
-		d = i.db.Where("username = ?", relationUser.Username).Find(&userModel)
-		if err := d.Error; err != nil {
-			if d.RecordNotFound() == true {
-				d = i.db.Create(&models.TwitterUser{
-					Username: relationUser.Username,
-				})
-				utils.PanicIfNotNil(d.Error)
+		fmt.Printf("\nHandle user %v\n%v\n", relationUser.Username, relationUser)
 
-				i.handleCreatedUser(relationUser.Username)
-			} else {
-				utils.PanicIfNotNil(err)
-			}
+		var queryUser models.TwitterUser
+
+		err := i.db.Where(relationUser).Find(&queryUser).Error
+		utils.PanicIfNotNil(err)
+
+		fmt.Println("Query resulted in:\n", queryUser)
+		if queryUser.Username == "" {
+			fmt.Printf("Didn't find record for %v\n", relationUser.Username)
+			err = i.db.Create(&models.TwitterUser{
+				Username: relationUser.Username,
+			}).Error
+			utils.PanicIfNotNil(err)
+
+			i.handleCreatedUser(relationUser.Username)
 		}
+
+		fmt.Println("Done handling.")
 	}
 }
 
 func (i *Inserter) handleCreatedUser(userName string) {
 	// if qWriter is nil, user discovery is disabled
 	if i.qWriter != nil {
+		fmt.Printf("Send %v to kafka/%v\n", userName, i.qWriter.Stats().Topic)
 		i.qWriter.WriteMessages(context.Background(), kafka.Message{
 			Value: []byte(userName),
 		})
@@ -129,16 +134,20 @@ func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 	var err error
 
 	tx := db.Begin()
+
 	if tx.Where(where).First(out).RecordNotFound() {
+		// If the record does'nt exist it gets created
+		fmt.Println("Insert user ", update, " into postgres")
 		err = tx.Create(update).Scan(out).Error
 	} else {
+		// Else it gets upated
+		fmt.Println("Update user ", update, " in postgres")
 		err = tx.Model(out).Update(update).Scan(out).Error
 	}
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
-	tx.Commit()
 
-	return nil
+	return tx.Commit().Error
 }
