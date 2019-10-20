@@ -106,17 +106,17 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 		fmt.Printf("\nHandle user %v\n%v\n", relationUser.Username, relationUser)
 
 		var queryUser models.TwitterUser
-		var d *gorm.DB
 
-		d = i.db.Where("username = ?", relationUser.Username).Find(&queryUser)
-		utils.PanicIfNotNil(d.Error)
+		err = i.db.Where(relationUser).Find(&queryUser).Error
+		utils.PanicIfNotNil(err)
 
+		fmt.Println("Query resulted in: ", queryUser)
 		if queryUser.Username == "" {
 			fmt.Printf("Didn't find record for %v\n", relationUser.Username)
-			d = i.db.Create(&models.TwitterUser{
+			err = i.db.Create(&models.TwitterUser{
 				Username: relationUser.Username,
-			})
-			utils.PanicIfNotNil(d.Error)
+			}).Error
+			utils.PanicIfNotNil(err)
 
 			i.handleCreatedUser(relationUser.Username)
 		}
@@ -150,7 +150,6 @@ func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 		fmt.Println("Update post ", update, " in postgres")
 		err = tx.Model(out).Update(update).Scan(out).Error
 	}
-
 	if err != nil {
 		tx.Rollback()
 		return err
