@@ -58,7 +58,7 @@ services:
       KAFKA_ERR_TOPIC: "insta_user_scaper_err"
 
   # TWITTER SCRAPER
-  twitter_scraper-users:
+  twitter_scraper_users:
     build: "twitter_scraper/"
     image: "smag-twitter_scraper"
     command: ["-m", "twitterscraper.user_scraper"]
@@ -68,7 +68,7 @@ services:
       KAFKA_HOST_PORT: "my-kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-users_scraped"
-  twitter_scraper-tweets:
+  twitter_scraper_posts:
     build: "twitter_scraper/"
     image: "smag-twitter_scraper"
     command: ["-m", "twitterscraper.tweets_scraper"]
@@ -77,7 +77,7 @@ services:
     environment:
       KAFKA_HOST_PORT: "my-kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
-      KAFKA_INSERT_TOPIC: "twitter-tweets_scaped"
+      KAFKA_INSERT_TOPIC: "twitter-posts_scraped"
 
   # TWITTER INSERTER
   twitter_inserter_users:
@@ -87,12 +87,12 @@ services:
     image: "smag-twitter_inserter_users"
     environment:
       POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_inserter_users"
       KAFKA_INFO_TOPIC: "twitter-users_scraped"
       KAFKA_NAME_TOPIC: "twitter-user_names"
       USER_DISCOVERY: "true"
-      POSTGRES_PASSWORD: "12345678"
   twitter_inserter_posts:
     build:
       context: "."
@@ -100,12 +100,12 @@ services:
     image: "smag-twitter_inserter_posts"
     environment:
       POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_inserter_posts"
       KAFKA_INFO_TOPIC: "twitter-posts_scraped"
       KAFKA_NAME_TOPIC: "twitter-user_names"
       USER_DISCOVERY: "true"
-      POSTGRES_PASSWORD: "12345678"
 
   # POSTGRES
   postgres:
@@ -137,7 +137,7 @@ services:
     build:
       context: "."
       dockerfile: "debezium/Dockerfile"
-    depends_on: 
+    depends_on:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
