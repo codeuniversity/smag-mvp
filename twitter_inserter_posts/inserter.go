@@ -49,9 +49,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 
 // Run the inserter
 func (i *Inserter) Run() {
-	defer func() {
-		i.MarkAsStopped()
-	}()
+	defer i.MarkAsStopped()
 
 	fmt.Println("starting twitter postgres posts inserter")
 	for i.IsRunning() {
