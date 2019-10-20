@@ -146,7 +146,6 @@ func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 		tx.Rollback()
 		return err
 	}
-	tx.Commit()
 
-	return nil
+	return tx.Commit().Error
 }
