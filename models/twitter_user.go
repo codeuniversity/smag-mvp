@@ -92,8 +92,8 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 		}
 	}
 
-	for index, item := range raw.FollowingList {
-		followingList[index] = &TwitterUser{
+	for index, item := range raw.FollowersList {
+		followersList[index] = &TwitterUser{
 			Username: item,
 		}
 	}
