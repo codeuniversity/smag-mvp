@@ -166,7 +166,7 @@ func (i *InstaPostsScraper) scrapeAccountInfo(username string) (instagramAccount
 		return userAccountInfo, err
 	}
 	if response.StatusCode != 200 {
-		return userAccountInfo, &scraper_client.HttpStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return userAccountInfo, &scraper_client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -207,7 +207,7 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userID string, endCursor string) 
 		return media, err
 	}
 	if response.StatusCode != 200 {
-		return media, &scraper_client.HttpStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return media, &scraper_client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)

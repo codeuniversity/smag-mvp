@@ -1,4 +1,4 @@
-package insta_comments_inserter
+package inserter
 
 import (
 	"context"
@@ -10,10 +10,13 @@ import (
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
+
+	// necessary for "database/sql"
 	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 )
 
+// InstaCommentInserter inserts comments into postgres
 type InstaCommentInserter struct {
 	commentsQReader *kafka.Reader
 	userQWriter     *kafka.Writer
@@ -21,6 +24,7 @@ type InstaCommentInserter struct {
 	*service.Executor
 }
 
+// New returns an initialized InstaCommentInserter
 func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, userQWriter *kafka.Writer) *InstaCommentInserter {
 	p := &InstaCommentInserter{}
 	p.commentsQReader = commentsQReader
@@ -40,6 +44,7 @@ func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, u
 	return p
 }
 
+// Run ...
 func (c *InstaCommentInserter) Run() {
 	defer func() {
 		c.MarkAsStopped()
@@ -89,8 +94,8 @@ func (c *InstaCommentInserter) findOrCreateUser(username string) (userID int, er
 	return userID, nil
 }
 
-func (c *InstaCommentInserter) findOrCreatePost(postId string) (postID int, err error) {
-	err = c.db.QueryRow("Select id from posts where post_id = $1", postId).Scan(&postID)
+func (c *InstaCommentInserter) findOrCreatePost(externalPostID string) (postID int, err error) {
+	err = c.db.QueryRow("Select id from posts where post_id = $1", externalPostID).Scan(&postID)
 
 	if err != nil {
 		if err != sql.ErrNoRows {
@@ -98,7 +103,7 @@ func (c *InstaCommentInserter) findOrCreatePost(postId string) (postID int, err 
 		}
 
 		var insertedUserID int
-		err := c.db.QueryRow(`INSERT INTO posts(post_id) VALUES($1) RETURNING id`, postId).Scan(&insertedUserID)
+		err := c.db.QueryRow(`INSERT INTO posts(post_id) VALUES($1) RETURNING id`, externalPostID).Scan(&insertedUserID)
 		if err != nil {
 			return 0, err
 		}
