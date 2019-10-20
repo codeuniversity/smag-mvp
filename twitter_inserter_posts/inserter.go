@@ -70,7 +70,7 @@ func (i *Inserter) Run() {
 		var post *models.TwitterPost = models.ConvertTwitterPost(rawPost)
 		i.insertPost(post)
 		i.qReader.CommitMessages(context.Background(), m)
-		fmt.Println("commited: ", rawPost.Link)
+		fmt.Println("commited: ", rawPost.Link, "\n")
 	}
 }
 
@@ -105,6 +105,8 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	usersList.RemoveDuplicates()
 
 	for _, relationUser := range *usersList {
+		fmt.Printf("\nHandle user %v\n%v\n", relationUser.Username, relationUser)
+
 		var queryUser models.TwitterUser
 		var d *gorm.DB
 
@@ -120,6 +122,8 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 
 			i.handleCreatedUser(relationUser.Username)
 		}
+
+		fmt.Println("Done handling.")
 	}
 
 }
@@ -127,6 +131,7 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 func (i *Inserter) handleCreatedUser(userName string) {
 	// if qWriter is nil, user discovery is disabled
 	if i.qWriter != nil {
+		fmt.Printf("Send %v to kafka/%v\n", userName, i.qWriter.Stats().Topic)
 		i.qWriter.WriteMessages(context.Background(), kafka.Message{
 			Value: []byte(userName),
 		})
@@ -137,11 +142,17 @@ func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 	var err error
 
 	tx := db.Begin()
+
 	if tx.Where(where).First(out).RecordNotFound() {
+		// If the record does'nt exist it gets created
+		fmt.Println("Insert post ", update, " into postgres")
 		err = tx.Create(update).Scan(out).Error
 	} else {
+		// Else it gets upated
+		fmt.Println("Update post ", update, " in postgres")
 		err = tx.Model(out).Update(update).Scan(out).Error
 	}
+
 	if err != nil {
 		tx.Rollback()
 		return err
