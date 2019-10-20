@@ -91,10 +91,10 @@ func (i *Inserter) Close() {
 func (i *Inserter) insertPost(post *models.TwitterPost) {
 	var err error
 
-	fromPost := models.TwitterPost{}
+	fromPost := &models.TwitterPost{}
 	filter := &models.TwitterPost{PostIdentifier: post.PostIdentifier}
 
-	err = createOrUpdate(i.db, &fromPost, filter, post)
+	err = createOrUpdate(i.db, fromPost, filter, post)
 	utils.PanicIfNotNil(err)
 
 	newUserLists := [][]*models.TwitterUser{post.Mentions, post.ReplyTo}
