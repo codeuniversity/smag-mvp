@@ -104,18 +104,18 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	usersList := models.NewTwitterUserList(newUserLists...)
 	usersList.RemoveDuplicates()
 
-	for _, user := range *usersList {
-		var toPost models.TwitterUser
+	for _, relationUser := range *usersList {
+		var queryUser models.TwitterUser
 		var d *gorm.DB
-		d = i.db.Where("username = ?", user.Username).Select("ID").Find(&toPost)
+		d = i.db.Where("username = ?", relationUser.Username).Select("ID").Find(&queryUser)
 		if err := d.Error; err != nil {
 			if d.RecordNotFound() == true {
 				d = i.db.Create(&models.TwitterUser{
-					Username: user.Username,
+					Username: relationUser.Username,
 				})
 				utils.PanicIfNotNil(d.Error)
 
-				i.handleCreatedUser(user.Username)
+				i.handleCreatedUser(relationUser.Username)
 			} else {
 				utils.PanicIfNotNil(err)
 			}
