@@ -89,7 +89,7 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 	var err error
 
 	baseUser := models.TwitterUser{}
-	filter := &models.TwitterUser{UserIdentifier: user.UserIdentifier}
+	filter := &models.TwitterUser{Username: user.Username}
 
 	err = createOrUpdate(i.db, &baseUser, filter, user)
 	utils.PanicIfNotNil(err)
