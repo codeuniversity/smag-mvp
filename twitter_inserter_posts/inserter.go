@@ -68,7 +68,7 @@ func (i *Inserter) Run() {
 		var post *models.TwitterPost = models.ConvertTwitterPost(rawPost)
 		i.insertPost(post)
 		i.qReader.CommitMessages(context.Background(), m)
-		fmt.Println("commited: ", rawPost.Link, "\n")
+		fmt.Println("commited: ", rawPost.Link)
 	}
 }
 
@@ -96,8 +96,13 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	utils.PanicIfNotNil(err)
 
 	newUserLists := [][]*models.TwitterUser{post.Mentions, post.ReplyTo}
-	if post.RetweetUser != nil {
-		newUserLists = append(newUserLists, []*models.TwitterUser{post.RetweetUser})
+	if post.RetweetUserID != "" {
+		newUserLists = append(newUserLists, []*models.TwitterUser{
+			&models.TwitterUser{
+				UserIdentifier: post.RetweetUserID,
+				Username:       post.RetweetUsername,
+			},
+		})
 	}
 	usersList := models.NewTwitterUserList(newUserLists...)
 	usersList.RemoveDuplicates()
@@ -107,7 +112,7 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 
 		var queryUser models.TwitterUser
 
-		err = i.db.Where(relationUser).Find(&queryUser).Error
+		err = i.db.Where("username = ?", relationUser.Username).Find(&queryUser).Error
 		utils.PanicIfNotNil(err)
 
 		fmt.Println("Query resulted in: ", queryUser)
@@ -143,7 +148,7 @@ func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 
 	if tx.Where(where).First(out).RecordNotFound() {
 		// If the record does'nt exist it gets created
-		fmt.Println("Insert post ", update, " into postgres")
+		fmt.Printf("Insert post %+v into postgres\n", update)
 		err = tx.Create(update).Scan(out).Error
 	} else {
 		// Else it gets upated

@@ -102,7 +102,7 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 
 		var queryUser models.TwitterUser
 
-		err := i.db.Where(relationUser).Find(&queryUser).Error
+		err := i.db.Where("username = ?", relationUser.Username).Find(&queryUser).Error
 		utils.PanicIfNotNil(err)
 
 		fmt.Println("Query resulted in:\n", queryUser)

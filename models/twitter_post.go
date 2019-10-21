@@ -59,7 +59,7 @@ type TwitterPost struct {
 	ID int
 
 	// meta
-	PostIdentifier int
+	PostIdentifier uint64
 	ConversationID string
 	Link           string
 	Type           string
@@ -79,7 +79,7 @@ type TwitterPost struct {
 	QuoteURL    string
 	ReplyTo     []*TwitterUser `gorm:"many2many:post_replies"`
 	Retweet     bool
-	RetweetDate time.Time
+	RetweetDate string
 	RetweetID   string
 	Source      string
 	Tweet       string
@@ -91,8 +91,10 @@ type TwitterPost struct {
 	RepliesCount int
 	RetweetCount int
 
-	User        *TwitterUser `gorm:"foreignkey:Username"`
-	RetweetUser *TwitterUser `gorm:"foreignkey:Username"`
+	UserID          string
+	Username        string
+	RetweetUserID   string
+	RetweetUsername string
 }
 
 // ReplyUser abc
@@ -104,9 +106,6 @@ type ReplyUser struct {
 // ConvertTwitterPost converts the raw TwitterPost structure
 // from kafka into the database model
 func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
-	var user *TwitterUser
-	var retweetUser *TwitterUser
-
 	mentions := make([]*TwitterUser, len(raw.Mentions))
 	replyTo := make([]*TwitterUser, len(raw.ReplyTo))
 
@@ -123,27 +122,14 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 		}
 	}
 
-	user = &TwitterUser{
-		UserIdentifier: raw.UserIDstr,
-		Username:       raw.UserName,
-	}
-
-	if raw.UserRt != "" {
-		retweetUser = &TwitterUser{
-			UserIdentifier: raw.UserRtID,
-			Username:       raw.UserRt,
-		}
-	}
-
 	dateTime := time.Unix(int64(raw.DateTime/1000), 0)
-	//retweetDate := time.Unix()
 
 	likesCount, _ := strconv.Atoi(raw.LikesCount)
 	repliesCount, _ := strconv.Atoi(raw.RepliesCount)
 	retweetCount, _ := strconv.Atoi(raw.RetweetCount)
 
 	return &TwitterPost{
-		PostIdentifier: raw.ID,
+		PostIdentifier: uint64(raw.ID),
 		ConversationID: raw.ConversationID,
 		Link:           raw.Link,
 		Type:           raw.Type,
@@ -161,7 +147,7 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 		QuoteURL: raw.QuoteURL,
 		ReplyTo:  replyTo,
 		Retweet:  raw.Retweet,
-		//RetweetDate: retweetDate,
+		//RetweetDate: raw.RetweetDate,
 		RetweetID: raw.RetweetID,
 		Source:    raw.Source,
 		Tweet:     raw.Tweet,
@@ -172,7 +158,9 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 		RepliesCount: repliesCount,
 		RetweetCount: retweetCount,
 
-		User:        user,
-		RetweetUser: retweetUser,
+		UserID:          raw.UserIDstr,
+		Username:        raw.UserName,
+		RetweetUserID:   raw.UserRtID,
+		RetweetUsername: raw.UserRt,
 	}
 }
