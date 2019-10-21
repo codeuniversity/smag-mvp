@@ -1,4 +1,4 @@
-package kafka_topic_transferer
+package transferer
 
 import (
 	"context"
