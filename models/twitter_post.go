@@ -91,8 +91,8 @@ type TwitterPost struct {
 	RepliesCount int
 	RetweetCount int
 
-	User        *TwitterUser
-	RetweetUser *TwitterUser
+	User        *TwitterUser `gorm:"foreignkey:Username"`
+	RetweetUser *TwitterUser `gorm:"foreignkey:Username"`
 }
 
 // ReplyUser abc
