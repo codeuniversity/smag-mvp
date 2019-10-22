@@ -24,7 +24,7 @@ If this is your first time running this:
 ### scraper in docker
 
 ```bash
-$ docker-compose up
+$ make run
 ```
 
 ### scraper locally
