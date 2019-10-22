@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/models"
@@ -23,19 +24,19 @@ type Transferer struct {
 
 // New returns an initilized Transferer
 func New(fromTopic string, toTopic string) *Transferer {
-	c := &Transferer{}
+	t := &Transferer{}
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	readerConfig := kf.NewReaderConfig(kafkaAddress, groupID, fromTopic)
 	writerConfig := kf.NewWriterConfig(kafkaAddress, toTopic, true)
 
-	c.fromTopic = kf.NewReader(readerConfig)
-	c.toTopic = kf.NewWriter(writerConfig)
+	t.fromTopic = kf.NewReader(readerConfig)
+	t.toTopic = kf.NewWriter(writerConfig)
 
-	c.Executor = service.New()
+	t.Executor = service.New()
 
-	return c
+	return t
 }
 
 //Run the Transferer
@@ -57,11 +58,28 @@ func (c *Transferer) Run() {
 		userName := changeStream.Payload.After.UserName
 		c.fromTopic.CommitMessages(context.Background(), m)
 
-		c.toTopic.WriteMessages(context.Background(), kafka.Message{
-			Value: []byte(userName),
-		})
+		// checks if user was created or updated
+		if changeStream.Payload.Op == "c" {
+			c.toTopic.WriteMessages(context.Background(), kafka.Message{
+				Value: []byte(userName),
+			})
 
-		fmt.Printf("%s tranfered \n", userName)
+			fmt.Printf("%s tranfered \n", userName)
+
+		} else {
+			fmt.Printf("%s updated \n", userName)
+		}
 
 	}
+}
+
+//Close the transferer
+func (t *Transferer) Close() {
+	t.Stop()
+	t.WaitUntilStopped(time.Second * 3)
+
+	t.fromTopic.Close()
+	t.toTopic.Close()
+
+	t.MarkAsClosed()
 }
