@@ -2,6 +2,7 @@ package models
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/lib/pq"
@@ -109,16 +110,16 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 	mentions := make([]*TwitterUser, len(raw.Mentions))
 	replyTo := make([]*TwitterUser, len(raw.ReplyTo))
 
-	for index, item := range raw.Mentions {
+	for index, username := range raw.Mentions {
 		mentions[index] = &TwitterUser{
-			Username: item,
+			Username: strings.ToLower(username),
 		}
 	}
 
-	for index, item := range raw.ReplyTo {
+	for index, replyUser := range raw.ReplyTo {
 		replyTo[index] = &TwitterUser{
-			UserIdentifier: item.UserID,
-			Username:       item.Username,
+			UserIdentifier: replyUser.UserID,
+			Username:       strings.ToLower(replyUser.Username),
 		}
 	}
 
@@ -140,27 +141,27 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 		Near:     raw.Near,
 		Place:    raw.Place,
 
-		Cashtags: raw.Cashtags,
-		Hashtags: raw.Hashtags,
-		Mentions: mentions,
-		Photos:   raw.Photos,
-		QuoteURL: raw.QuoteURL,
-		ReplyTo:  replyTo,
-		Retweet:  raw.Retweet,
-		//RetweetDate: raw.RetweetDate,
-		RetweetID: raw.RetweetID,
-		Source:    raw.Source,
-		Tweet:     raw.Tweet,
-		URLs:      raw.URLs,
-		Video:     raw.Video,
+		Cashtags:    raw.Cashtags,
+		Hashtags:    raw.Hashtags,
+		Mentions:    mentions,
+		Photos:      raw.Photos,
+		QuoteURL:    raw.QuoteURL,
+		ReplyTo:     replyTo,
+		Retweet:     raw.Retweet,
+		RetweetDate: raw.RetweetDate,
+		RetweetID:   raw.RetweetID,
+		Source:      raw.Source,
+		Tweet:       raw.Tweet,
+		URLs:        raw.URLs,
+		Video:       raw.Video,
 
 		LikesCount:   likesCount,
 		RepliesCount: repliesCount,
 		RetweetCount: retweetCount,
 
 		UserID:          raw.UserIDstr,
-		Username:        raw.UserName,
+		Username:        strings.ToLower(raw.UserName),
 		RetweetUserID:   raw.UserRtID,
-		RetweetUsername: raw.UserRt,
+		RetweetUsername: strings.ToLower(raw.UserRt),
 	}
 }

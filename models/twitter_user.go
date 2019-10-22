@@ -1,6 +1,7 @@
 package models
 
 import (
+	"strings"
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/utils"
@@ -84,15 +85,15 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 	followingList := make([]*TwitterUser, len(raw.FollowingList))
 	followersList := make([]*TwitterUser, len(raw.FollowersList))
 
-	for index, item := range raw.FollowingList {
+	for index, username := range raw.FollowingList {
 		followingList[index] = &TwitterUser{
-			Username: item,
+			Username: strings.ToLower(username),
 		}
 	}
 
-	for index, item := range raw.FollowersList {
+	for index, username := range raw.FollowersList {
 		followersList[index] = &TwitterUser{
-			Username: item,
+			Username: strings.ToLower(username),
 		}
 	}
 
@@ -107,7 +108,7 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 		Type:           raw.Type,
 
 		Name:            raw.Name,
-		Username:        raw.Username,
+		Username:        strings.ToLower(raw.Username),
 		Bio:             raw.Bio,
 		Avatar:          raw.Avatar,
 		BackgroundImage: raw.BackgroundImage,
