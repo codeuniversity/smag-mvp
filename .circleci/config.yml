@@ -128,7 +128,25 @@ jobs:
             docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
             docker push $SCRAPER_IMAGE_NAME:latest
             docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-
+  postgres-setup:
+    # specify the version
+    executor: job-runner
+    environment:
+      SETUP_IMAGE_NAME: codesmag/postgres-setup
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f debezium/Dockerfile -t $SETUP_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SETUP_IMAGE_NAME:latest $SETUP_IMAGE_NAME:$IMAGE_TAG
+            docker push $SETUP_IMAGE_NAME:latest
+            docker push $SETUP_IMAGE_NAME:$IMAGE_TAG
 workflows:
   version: 2
   workflow:
@@ -167,6 +185,10 @@ workflows:
       - insta-posts-inserter:
           requires:
             - tests
+          filters:
+            branches:
+              only: master
+      - postgres-setup:
           filters:
             branches:
               only: master
