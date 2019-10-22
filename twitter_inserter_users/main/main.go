@@ -2,8 +2,8 @@ package main
 
 import (
 	"github.com/codeuniversity/smag-mvp/kafka"
-	inserter "github.com/codeuniversity/smag-mvp/postgres-inserter"
 	"github.com/codeuniversity/smag-mvp/service"
+	inserter "github.com/codeuniversity/smag-mvp/twitter_inserter_users"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 

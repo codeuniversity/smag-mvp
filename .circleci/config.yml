@@ -24,7 +24,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -43,7 +43,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -128,6 +128,27 @@ jobs:
             docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
             docker push $SCRAPER_IMAGE_NAME:latest
             docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+
+  twitter_scraper:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_SCRAPER_IMAGE: codesmag/twitter_scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -t $TWITTER_SCRAPER_IMAGE twitter_scraper/
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+
   postgres-setup:
     # specify the version
     executor: job-runner
@@ -144,9 +165,48 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SETUP_IMAGE_NAME:latest $SETUP_IMAGE_NAME:$IMAGE_TAG
-            docker push $SETUP_IMAGE_NAME:latest
-            docker push $SETUP_IMAGE_NAME:$IMAGE_TAG
+            docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_SCRAPER_IMAGE:latest
+            docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+  twitter_inserter_users:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_INSERTER_USERS_IMAGE: codesmag/twitter_inserter_users
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f twitter_inserter_users/Dockerfile -t $TWITTER_INSERTER_USERS_IMAGE .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_USERS_IMAGE:latest $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_USERS_IMAGE:latest
+            docker push $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+  twitter_inserter_posts:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_INSERTER_POSTS_IMAGE: codesmag/twitter_inserter_posts
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f twitter_inserter_posts/Dockerfile -t $TWITTER_INSERTER_POSTS_IMAGE .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+
 workflows:
   version: 2
   workflow:
@@ -188,6 +248,21 @@ workflows:
           filters:
             branches:
               only: master
+      - twitter_scraper:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - twitter_inserter_users:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - twitter_inserter_posts:
+          requires:
+            - tests
       - postgres-setup:
           filters:
             branches:

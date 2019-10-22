@@ -2,18 +2,17 @@ package inserter
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"time"
 
-	"github.com/codeuniversity/smag-mvp/utils"
-
-	// necessary for sql :pointup:
-	_ "github.com/lib/pq"
+	"github.com/jinzhu/gorm"
+	// necessary for gorm :pointup:
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -23,11 +22,11 @@ type Inserter struct {
 	qReader *kafka.Reader
 	qWriter *kafka.Writer
 
-	db *sql.DB
+	db *gorm.DB
 	*service.Executor
 }
 
-// New returns an initilized scraper
+// New returns an initilized inserter
 func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
@@ -38,11 +37,11 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 		connectionString += " " + "password=" + postgresPassword
 	}
 
-	db, err := sql.Open("postgres", connectionString)
-	if err != nil {
-		panic(err)
-	}
+	db, err := gorm.Open("postgres", connectionString)
+	utils.PanicIfNotNil(err)
 	i.db = db
+
+	db.AutoMigrate(&models.User{})
 
 	i.Executor = service.New()
 	return i
@@ -91,7 +90,7 @@ func (i *Inserter) Close() {
 // InsertUserFollowInfo inserts the user follow info into postgres
 func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 	p := &models.User{
-		Name:      followInfo.UserName,
+		UserName:  followInfo.UserName,
 		RealName:  followInfo.RealName,
 		AvatarURL: followInfo.AvatarURL,
 		Bio:       followInfo.Bio,
@@ -100,39 +99,71 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 
 	for _, following := range followInfo.Followings {
 		p.Follows = append(p.Follows, &models.User{
-			Name: following,
+			UserName: following,
 		})
 	}
 
 	i.insertUser(p)
 }
 
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
+func (i *Inserter) insertUser(p *models.User) {
+	var err error
+
+	fromUser := models.User{}
+	filter := &models.User{UserName: p.UserName}
+
+	err = createOrUpdate(i.db, &fromUser, filter, p)
+	utils.PanicIfNotNil(err)
+
+	for _, follow := range p.Follows {
+		var toUser models.User
+		var d *gorm.DB
+		d = i.db.Where("user_name = ?", follow.UserName).Select("ID").Find(&toUser)
+		if err := d.Error; err != nil {
+			if d.RecordNotFound() == true {
+				d = i.db.Create(&models.User{
+					UserName: follow.UserName,
+				}).Scan(&toUser)
+				utils.PanicIfNotNil(d.Error)
+
+				i.handleCreatedUser(follow.UserName)
+			} else {
+				utils.PanicIfNotNil(err)
+			}
+		}
+
+		err = i.db.Set("gorm:insert_option", "ON CONFLICT DO NOTHING").Create(&models.Follow{
+			From: fromUser.ID,
+			To:   toUser.ID,
+		}).Error
+		utils.PanicIfNotNil(err)
+	}
+
+}
+
+func (i *Inserter) handleCreatedUser(userName string) {
+	// if qWriter is nil, user discovery is disabled
+	if i.qWriter != nil {
+		i.qWriter.WriteMessages(context.Background(), kafka.Message{
+			Value: []byte(userName),
+		})
 	}
 }
 
-func (i *Inserter) insertUser(p *models.User) {
-	_, err := i.db.Exec(`INSERT INTO users(user_name,real_name, bio, avatar_url, crawl_ts)
-	VALUES($1,$2,$3,$4,$5) ON CONFLICT (user_name) DO UPDATE SET user_name = $1, real_name = $2, bio = $3, avatar_url = $4, crawl_ts = $5`,
-		p.Name, p.RealName, p.Bio, p.AvatarURL, p.CrawledAt)
-	handleErr(err)
-	var userID int
-	i.db.QueryRow("SELECT id from users where user_name = $1", p.Name).Scan(&userID)
+func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {
+	var err error
 
-	for _, follow := range p.Follows {
-		var followedID int
-		err := i.db.QueryRow("SELECT id from users where user_name = $1", follow.Name).Scan(&followedID)
-		if err != nil {
-			err = i.db.QueryRow(`INSERT INTO users(user_name)
-		VALUES($1) RETURNING id`, follow.Name).
-				Scan(&followedID)
-			handleErr(err)
-			utils.HandleCreatedUser(i.qWriter, follow.Name)
-		}
-
-		_, err = i.db.Exec(`INSERT INTO follows(from_id, to_id) VALUES ($1, $2) ON CONFLICT DO NOTHING`, userID, followedID)
-		handleErr(err)
+	tx := db.Begin()
+	if tx.Where(where).First(out).RecordNotFound() {
+		err = tx.Create(update).Scan(out).Error
+	} else {
+		err = tx.Model(out).Update(update).Scan(out).Error
 	}
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+
+	return nil
 }

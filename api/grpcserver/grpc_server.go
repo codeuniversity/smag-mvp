@@ -25,9 +25,7 @@ type GrpcServer struct {
 func NewGrpcServer(grpcPort int) *GrpcServer {
 	postgresHost := utils.GetStringFromEnvWithDefault("GRPC_POSTGRES_HOST", "127.0.0.1")
 	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
-	if err != nil {
-		panic(err)
-	}
+	utils.PanicIfNotNil(err)
 
 	return &GrpcServer{
 		grpcPort: grpcPort,
