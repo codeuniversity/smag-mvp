@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto;
+
+service RouteGuide {
+    rpc renewElasticIp(RenewingElasticIp) returns (renewedElasticResult) {}
+}
+
+message renewedElasticResult {
+    bool isRenewed = 1;
+}
+
+message RenewingElasticIp {
+    string instanceId = 1;
+    string node = 2;
+    string pod = 3;
+    string pod_ip = 4;
+}
