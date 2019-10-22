@@ -51,7 +51,10 @@ class ScraperManager:
         logging.info(f"New users received: {new_users}")
 
         for user_name in new_users:
-            self.scrape_and_produce(user_name)
+            try:
+                self.scrape_and_produce(user_name)
+            except Exception:
+                logging.error(f"Couldn't scraper user {user_name}")
 
     def consume(self, blocking: bool = True) -> dict:
         timeout_ms = float("inf") if blocking is True else 0
