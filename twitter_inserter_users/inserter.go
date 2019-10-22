@@ -98,21 +98,15 @@ func (i *Inserter) insertUser(user *models.TwitterUser) {
 	usersList.RemoveDuplicates()
 
 	for _, relationUser := range *usersList {
-		fmt.Printf("\nHandle user %v\n%v\n", relationUser.Username, relationUser)
+		fmt.Printf("\nHandle user %v\n%+v\n", relationUser.Username, relationUser)
 
 		var queryUser models.TwitterUser
 
 		err := i.db.Where("username = ?", relationUser.Username).Find(&queryUser).Error
 		utils.PanicIfNotNil(err)
 
-		fmt.Println("Query resulted in:\n", queryUser)
-		if queryUser.Username == "" {
-			fmt.Printf("Didn't find record for %v\n", relationUser.Username)
-			err = i.db.Create(&models.TwitterUser{
-				Username: relationUser.Username,
-			}).Error
-			utils.PanicIfNotNil(err)
-
+		fmt.Printf("Query resulted in:\n%+v\n", queryUser)
+		if queryUser.URL == "" {
 			i.handleCreatedUser(relationUser.Username)
 		}
 
