@@ -138,7 +138,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f debezium/Dockerfile -t $SETUP_IMAGE_NAME .
+          command: docker build -f debezium/kubernetes/Dockerfile -t $SETUP_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
