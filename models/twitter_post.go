@@ -118,8 +118,7 @@ func ConvertTwitterPost(raw *TwitterPostRaw) *TwitterPost {
 
 	for index, replyUser := range raw.ReplyTo {
 		replyTo[index] = &TwitterUser{
-			UserIdentifier: replyUser.UserID,
-			Username:       strings.ToLower(replyUser.Username),
+			Username: strings.ToLower(replyUser.Username),
 		}
 	}
 

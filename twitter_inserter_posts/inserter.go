@@ -99,8 +99,7 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	if post.RetweetUserID != "" {
 		newUserLists = append(newUserLists, []*models.TwitterUser{
 			&models.TwitterUser{
-				UserIdentifier: post.RetweetUserID,
-				Username:       post.RetweetUsername,
+				Username: post.RetweetUsername,
 			},
 		})
 	}
