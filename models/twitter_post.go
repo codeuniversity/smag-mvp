@@ -56,10 +56,10 @@ type TwitterPostRaw struct {
 
 // TwitterPost is the struct containing all processed twitter post fields
 type TwitterPost struct {
-	ID int
+	GormModelWithoutID
 
 	// meta
-	PostIdentifier uint64
+	PostIdentifier uint64 `gorm:"primary_key"`
 	ConversationID string
 	Link           string
 	Type           string

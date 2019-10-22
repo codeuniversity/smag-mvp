@@ -3,8 +3,6 @@ package models
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
-
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
@@ -47,7 +45,7 @@ type TwitterUserRaw struct {
 
 // TwitterUser holds the follow graph info, only relating userNames
 type TwitterUser struct {
-	gorm.Model
+	GormModelWithoutID
 
 	// Meta
 	UserIdentifier string
@@ -56,7 +54,7 @@ type TwitterUser struct {
 
 	// User info
 	Name            string
-	Username        string
+	Username        string `gorm:"primary_key"`
 	Bio             string
 	Avatar          string
 	BackgroundImage string
