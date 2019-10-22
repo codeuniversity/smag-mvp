@@ -51,24 +51,29 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 func (i *Inserter) Run() {
 	defer i.MarkAsStopped()
 
-	fmt.Println("starting twitter postgres posts inserter")
+	fmt.Println("starting inserter")
 	for i.IsRunning() {
 		m, err := i.qReader.FetchMessage(context.Background())
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
+
 		rawPost := &models.TwitterPostRaw{}
+
 		err = json.Unmarshal(m.Value, rawPost)
 		if err != nil {
 			fmt.Println(err)
 			break
 		}
-		fmt.Println("inserting post:", rawPost.Link)
-		var post *models.TwitterPost = models.ConvertTwitterPost(rawPost)
+
+		post := models.ConvertTwitterPost(rawPost)
+		fmt.Println("inserting post:", post.Link)
+
 		i.insertPost(post)
 		i.qReader.CommitMessages(context.Background(), m)
-		fmt.Println("commited: ", rawPost.Link)
+
+		fmt.Println("commited: ", post.Link)
 	}
 }
 
@@ -107,20 +112,15 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 	usersList.RemoveDuplicates()
 
 	for _, relationUser := range *usersList {
-		fmt.Printf("\nHandle user %v\n%+v\n", relationUser.Username, relationUser)
 
-		var queryUser models.TwitterUser
+		queryUser := models.TwitterUser{}
 
-		err = i.db.Where("username = ?", relationUser.Username).Find(&queryUser).Error
+		err = i.db.Where("username = ?", relationUser.Username).First(&queryUser).Error
 		utils.PanicIfNotNil(err)
 
-		fmt.Printf("Query resulted in: %+v\n", queryUser)
-		if queryUser.URL == "" {
-			fmt.Printf("Didn't find record for %v\n", relationUser.Username)
+		if queryUser.UserIdentifier == "" {
 			i.handleCreatedUser(relationUser.Username)
 		}
-
-		fmt.Println("Done handling.")
 	}
 
 }
@@ -128,7 +128,6 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 func (i *Inserter) handleCreatedUser(userName string) {
 	// if qWriter is nil, user discovery is disabled
 	if i.qWriter != nil {
-		fmt.Printf("Send %v to kafka/%v\n", userName, i.qWriter.Stats().Topic)
 		i.qWriter.WriteMessages(context.Background(), kafka.Message{
 			Value: []byte(userName),
 		})
@@ -142,11 +141,9 @@ func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 
 	if tx.Where(where).First(out).RecordNotFound() {
 		// If the record does'nt exist it gets created
-		fmt.Printf("Insert post %+v into postgres\n", update)
 		err = tx.Create(update).Scan(out).Error
 	} else {
 		// Else it gets upated
-		fmt.Println("Update post ", update, " in postgres")
 		err = tx.Model(out).Update(update).Scan(out).Error
 	}
 	if err != nil {
