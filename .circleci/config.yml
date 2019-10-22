@@ -145,6 +145,26 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+
+  postgres-setup:
+    # specify the version
+    executor: job-runner
+    environment:
+      SETUP_IMAGE_NAME: codesmag/postgres-setup
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f debezium/kubernetes/Dockerfile -t $SETUP_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
             docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
             docker push $TWITTER_SCRAPER_IMAGE:latest
             docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
@@ -228,7 +248,6 @@ workflows:
           filters:
             branches:
               only: master
-
       - twitter_scraper:
           requires:
             - tests
@@ -244,6 +263,7 @@ workflows:
       - twitter_inserter_posts:
           requires:
             - tests
+      - postgres-setup:
           filters:
             branches:
               only: master
