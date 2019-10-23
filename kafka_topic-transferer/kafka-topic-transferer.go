@@ -8,7 +8,6 @@ import (
 	"time"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
-	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
 
@@ -17,10 +16,10 @@ import (
 
 // Transferer represents the Transferer containing all clients it uses
 type Transferer struct {
+	*worker.Worker
+
 	fromTopic *kafka.Reader
 	toTopic   *kafka.Writer
-
-	*worker.Worker
 }
 
 // New returns an initilized Transferer
@@ -35,7 +34,7 @@ func New(fromTopic string, toTopic string) *Transferer {
 	t.fromTopic = kf.NewReader(readerConfig)
 	t.toTopic = kf.NewWriter(writerConfig)
 
-	b := worker.Builder{}.WithName("kafka-topic-transferer").
+	b := worker.Builder{}.WithName("kafka_topic_transferer").
 		WithWorkStep(t.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("fromTopic", t.fromTopic.Close).
@@ -48,13 +47,12 @@ func New(fromTopic string, toTopic string) *Transferer {
 
 //Run the Transferer
 func (t *Transferer) runStep() error {
-	fmt.Println("Start Transferer")
 	m, err := t.fromTopic.FetchMessage(context.Background())
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
 
-	changeMessage := &models.ChangeMessage{}
+	changeMessage := &changeMessage{}
 	err = json.Unmarshal(m.Value, changeMessage)
 	if err != nil {
 		fmt.Println(err)
@@ -63,16 +61,16 @@ func (t *Transferer) runStep() error {
 	userName := changeMessage.Payload.After.UserName
 	t.fromTopic.CommitMessages(context.Background(), m)
 
-	// checks if user was created or updated
+	// checks if user was created
 	if changeMessage.Payload.Op == "c" {
 		t.toTopic.WriteMessages(context.Background(), kafka.Message{
 			Value: []byte(userName),
 		})
 
-		log.Printf("%s tranfered \n", userName)
+		log.Println(userName, "transfered")
 
 	} else {
-		log.Printf("%s updated \n", userName)
+		log.Println(userName, "updated")
 	}
 	return nil
 

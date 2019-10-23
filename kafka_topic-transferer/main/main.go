@@ -11,7 +11,7 @@ func main() {
 	t = transferer.New("postgres.public.users", "user_names")
 
 	service.CloseOnSignal(t)
-	WaitUntilClosed := t.Start()
+	waitUntilClosed := t.Start()
 
-	WaitUntilClosed()
+	waitUntilClosed()
 }
