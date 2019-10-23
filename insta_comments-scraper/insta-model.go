@@ -1,4 +1,4 @@
-package insta_comments_scraper
+package scraper
 
 type instaPostComments struct {
 	Data struct {

@@ -13,16 +13,25 @@ func main() {
 	postgresHost := utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1")
 	postgresPassword := utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", "")
 
-	qReaderConfig := kafka.GetInserterConfigNew()
+	qReaderConfig, qWriterConfig, isUserDiscovery := kafka.GetUserDiscoveryInserterConfig()
 
-	i = inserter.New(
-		postgresHost,
-		postgresPassword,
-		kafka.NewReader(qReaderConfig),
-	)
+	if isUserDiscovery {
+		i = inserter.New(
+			postgresHost,
+			postgresPassword,
+			kafka.NewReader(qReaderConfig),
+			kafka.NewWriter(qWriterConfig),
+		)
+	} else {
+		i = inserter.New(
+			postgresHost,
+			postgresPassword,
+			kafka.NewReader(qReaderConfig),
+			nil,
+		)
+	}
 
 	service.CloseOnSignal(i)
-	go i.Run()
-
-	i.WaitUntilClosed()
+	waitUntilDone := i.Start()
+	waitUntilDone()
 }
