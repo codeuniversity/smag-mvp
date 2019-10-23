@@ -1,9 +1,10 @@
-PGPASSWORD=12345678 psql -h localhost -U postgres -w -c "create database instascraper;"
+#!/bin/bash
 
-migrate -database 'postgres://postgres:12345678@localhost:5432/instascraper?sslmode=disable' -path db/migrations up
+echo "# MIGRATE DATABASE"
+/migrate -database "postgres://postgres:12345678@postgres:5432/${POSTGRES_DB}?sslmode=disable" -path db/migrations up
 
+echo "# PREPARE DEBEZIUM"
 curl -i -X POST -H "Accept:application/json" \
   -H  "Content-Type:application/json" \
-  http://localhost:8083/connectors/ \
+  http://connect:8083/connectors/ \
   -d @debezium/register-postgres.json
-

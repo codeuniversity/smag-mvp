@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "twitter_scraper"
+version = "0.1.0"
+description = ""
+authors = ["Urhengulas <johann.hemmann@code.berlin>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+twint = "^2.1.2"
+kafka-python = "^1.4.7"
+
+[tool.poetry.dev-dependencies]
+pylint = "^2.4.2"
+autopep8 = "^1.4.4"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"

@@ -67,3 +67,31 @@ func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) bool {
 
 	return envBool
 }
+
+// PanicIfNotNil panics if err != nil
+func PanicIfNotNil(err error) {
+	if err != nil {
+		//TODO: graceful shutdown
+		panic(err)
+	}
+}
+
+// MustBeNil panics if err != nil
+func MustBeNil(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+// ConvertIntToBool converts an integer to a bool (binary)
+func ConvertIntToBool(value int) bool {
+	if value == 1 {
+		return true
+	}
+	return false
+}
+
+// ConvertDateStrToTime converts a dateStr to a time.Time obj
+func ConvertDateStrToTime(dateStr string) (time.Time, error) {
+	return time.Parse("02 Jan 2006", dateStr)
+}

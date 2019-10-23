@@ -1,4 +1,4 @@
-package scraper
+package insta_scraper
 
 import (
 	"context"
@@ -161,10 +161,4 @@ func (s *Scraper) getUserInfoIn(url string) (info *scrapedInfo, err error) {
 	}
 
 	return
-}
-
-func handleErr(err error) {
-	if err != nil {
-		panic(err)
-	}
 }
