@@ -14,7 +14,7 @@ func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
+	rTopic := utils.MustGetStringFromEnv("KAFKA_INSTA_POSTS_TOPIC")
 	qReaderConfig := kafka.NewReaderConfig(kafkaAddress, groupID, rTopic)
 
 	i := inserter.New(postgresHost, postgresPassword, kafka.NewReader(qReaderConfig))

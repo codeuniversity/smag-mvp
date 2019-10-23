@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	nameReaderConfig, infoWriterConfig, errWriterConfig := kafka.GetScraperConfig()
+	nameReaderConfig, infoWriterConfig, errWriterConfig := kafka.GetInstaPostsScraperConfig()
 
 	s := scraper.New(kafka.NewReader(nameReaderConfig), kafka.NewWriter(infoWriterConfig), kafka.NewWriter(errWriterConfig))
 
