@@ -1,7 +1,8 @@
 import React, { Component } from "react";
-import Form from "./Form.js";
-import Title from "./Title.js";
-import Results from "./Results.js";
+import Form from "./components/Form";
+import Title from "./components/Title";
+import Results from "./components/Results";
+import auth from "./Auth";
 import "./index.css";
 import {
   User,
@@ -43,23 +44,15 @@ class App extends Component {
     });
   };
   render() {
-    console.log(this.state.users);
-    const results = this.state.users.map(function(result) {
-      return (
-        <div>
-          {result.realname}
-          {result.bio}
-          <img src={result.avatarurl} />
-        </div>
-      );
-    });
     return (
       <div className="container">
         <div className="column">
           <Title />
           <Form onSubmit={this.handleSubmit} />
         </div>
-        <div>{results}</div>
+        <div>
+          <Results results={this.state.users} />
+        </div>
       </div>
     );
   }

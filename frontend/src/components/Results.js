@@ -1,9 +1,30 @@
-import React, { userdata } from "react";
-class Results extends React.Component {
-  render() {
-    return <h1>Results</h1>;
+import React, { Component } from "react";
+import App, { result, users, userdata, user } from "../App";
 
-    /*function generateTableHead(table, data) {
+export class Results extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      users: []
+    };
+  }
+  render() {
+    console.log(this.props.results);
+    //return <div>Test</div>;
+    const results = this.state.users.map(function(result) {
+      return (
+        <div>
+          {this.result.realname}
+          {this.result.bio}
+          <img src={this.result.avatarurl} />
+        </div>
+      );
+    });
+    return <div>{this.state.results}</div>;
+  }
+}
+export default Results;
+/*function generateTableHead(table, data) {
       let thead = table.createTHead();
       let row = thead.insertRow();
       for (let key of data) {
@@ -27,6 +48,3 @@ class Results extends React.Component {
     let data = Object.keys(userdata[0]);
     generateTableHead(table, data);
     generateTable(table, userdata);*/
-  }
-}
-export default Results;
