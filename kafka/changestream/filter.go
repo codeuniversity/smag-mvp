@@ -7,7 +7,6 @@ import (
 	"time"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
-	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
 
 	"github.com/segmentio/kafka-go"
@@ -30,10 +29,8 @@ type Filter struct {
 type FilterFunc func(*ChangeMessage) ([]kafka.Message, error)
 
 // NewFilter returns an initilized Filter
-func NewFilter(changesTopic, filteredTopic string, filter FilterFunc) *Filter {
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
-	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	readerConfig := kf.NewReaderConfig(kafkaAddress, groupID, changesTopic)
+func NewFilter(kafkaAddress, kafkaGroupID, changesTopic, filteredTopic string, filter FilterFunc) *Filter {
+	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 	writerConfig := kf.NewWriterConfig(kafkaAddress, filteredTopic, true)
 
 	f := &Filter{

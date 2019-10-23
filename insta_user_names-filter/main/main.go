@@ -3,10 +3,16 @@ package main
 import (
 	filter "github.com/codeuniversity/smag-mvp/insta_user_names-filter"
 	"github.com/codeuniversity/smag-mvp/service"
+	"github.com/codeuniversity/smag-mvp/utils"
 )
 
 func main() {
-	f := filter.New("postgres.public.users", "user_names")
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
+	changesTopic := utils.GetStringFromEnvWithDefault("CHANGES_TOPIC", "postgres.public.users")
+	namesTopic := utils.GetStringFromEnvWithDefault("NAMES_TOPIC", "user_names")
+
+	f := filter.New(kafkaAddress, groupID, changesTopic, namesTopic)
 
 	service.CloseOnSignal(f)
 	waitUntilClosed := f.Start()

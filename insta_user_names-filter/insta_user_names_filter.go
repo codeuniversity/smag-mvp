@@ -18,9 +18,9 @@ type UserNamesFilter struct {
 }
 
 // New returns an initilized UserNamesFilter
-func New(changesTopic, userNameTopic string) *UserNamesFilter {
+func New(kafkaAddress, kafkaGroupID, changesTopic, userNameTopic string) *UserNamesFilter {
 	t := &UserNamesFilter{
-		Filter: changestream.NewFilter(changesTopic, userNameTopic, filterChange),
+		Filter: changestream.NewFilter(kafkaAddress, kafkaGroupID, changesTopic, userNameTopic, filterChange),
 	}
 
 	return t
