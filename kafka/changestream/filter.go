@@ -42,8 +42,8 @@ func NewFilter(kafkaAddress, kafkaGroupID, changesTopic, filteredTopic string, f
 	b := worker.Builder{}.WithName(fmt.Sprintf("changestream_filter[%s->%s]", changesTopic, filteredTopic)).
 		WithWorkStep(f.runStep).
 		WithStopTimeout(10*time.Second).
-		AddShutdownHook("fromTopic", f.changesReader.Close).
-		AddShutdownHook("toTopic", f.filteredWriter.Close)
+		AddShutdownHook("changesReader", f.changesReader.Close).
+		AddShutdownHook("filteredWriter", f.filteredWriter.Close)
 
 	f.Worker = b.MustBuild()
 
