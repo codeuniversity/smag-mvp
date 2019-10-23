@@ -61,6 +61,8 @@ func (w *Worker) work() {
 		w.executor.MarkAsStopped()
 	}()
 
+	log.Println("starting", w.name)
+
 	for w.executor.IsRunning() {
 		err := w.callHookWithRecover(w.step)
 		if err != nil {
