@@ -43,7 +43,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 	db.AutoMigrate(&models.User{})
 	i.db = db
 
-	b := worker.Builder{}.WithName("postgres_inserter").
+	b := worker.Builder{}.WithName("insta_postgres_inserter").
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("qReader", qReader.Close).

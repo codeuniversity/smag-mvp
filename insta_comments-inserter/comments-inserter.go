@@ -42,7 +42,7 @@ func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, u
 	}
 	i.db = db
 
-	b := worker.Builder{}.WithName("postgres_inserter").
+	b := worker.Builder{}.WithName("insta_comments_inserter").
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("commentsQReader", commentsQReader.Close).
