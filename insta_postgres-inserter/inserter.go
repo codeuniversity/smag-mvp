@@ -11,19 +11,20 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/codeuniversity/smag-mvp/models"
-	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
+	"github.com/codeuniversity/smag-mvp/worker"
 
 	"github.com/segmentio/kafka-go"
 )
 
 // Inserter represents the scraper containing all clients it uses
 type Inserter struct {
+	*worker.Worker
+
 	qReader *kafka.Reader
 	qWriter *kafka.Writer
 
 	db *gorm.DB
-	*service.Executor
 }
 
 // New returns an initilized inserter
@@ -39,56 +40,49 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
+	db.AutoMigrate(&models.User{})
 	i.db = db
 
-	db.AutoMigrate(&models.User{})
+	b := worker.Builder{}.WithName("insta_postgres_inserter").
+		WithWorkStep(i.runStep).
+		WithStopTimeout(10*time.Second).
+		AddShutdownHook("qReader", qReader.Close).
+		AddShutdownHook("postgres_client", db.Close)
 
-	i.Executor = service.New()
+	if qWriter != nil {
+		b = b.AddShutdownHook("qWriter", qWriter.Close)
+	}
+
+	i.Worker = b.MustBuild()
+
 	return i
 }
 
-// Run the inserter
-func (i *Inserter) Run() {
-	defer func() {
-		i.MarkAsStopped()
-	}()
-
-	fmt.Println("starting inserter")
-	for i.IsRunning() {
-		m, err := i.qReader.FetchMessage(context.Background())
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		info := &models.UserFollowInfo{}
-		err = json.Unmarshal(m.Value, info)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		fmt.Println("inserting: ", info.UserName)
-		i.InsertUserFollowInfo(info)
-		i.qReader.CommitMessages(context.Background(), m)
-		fmt.Println("commited: ", info.UserName)
+// runStep the inserter
+func (i *Inserter) runStep() error {
+	m, err := i.qReader.FetchMessage(context.Background())
+	if err != nil {
+		return err
 	}
-}
-
-// Close the inserter
-func (i *Inserter) Close() {
-	i.Stop()
-	i.WaitUntilStopped(time.Second * 3)
-
-	i.db.Close()
-	i.qReader.Close()
-	if i.qWriter != nil {
-		i.qWriter.Close()
+	info := &models.UserFollowInfo{}
+	err = json.Unmarshal(m.Value, info)
+	if err != nil {
+		return err
+	}
+	fmt.Println("inserting: ", info.UserName)
+	err = i.InsertUserFollowInfo(info)
+	if err != nil {
+		return err
 	}
 
-	i.MarkAsClosed()
+	i.qReader.CommitMessages(context.Background(), m)
+	fmt.Println("commited: ", info.UserName)
+
+	return nil
 }
 
 // InsertUserFollowInfo inserts the user follow info into postgres
-func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
+func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) error {
 	p := &models.User{
 		UserName:  followInfo.UserName,
 		RealName:  followInfo.RealName,
@@ -103,17 +97,17 @@ func (i *Inserter) InsertUserFollowInfo(followInfo *models.UserFollowInfo) {
 		})
 	}
 
-	i.insertUser(p)
+	return i.insertUser(p)
 }
 
-func (i *Inserter) insertUser(p *models.User) {
-	var err error
-
+func (i *Inserter) insertUser(p *models.User) error {
 	fromUser := models.User{}
 	filter := &models.User{UserName: p.UserName}
 
-	err = createOrUpdate(i.db, &fromUser, filter, p)
-	utils.PanicIfNotNil(err)
+	err := createOrUpdate(i.db, &fromUser, filter, p)
+	if err != nil {
+		return err
+	}
 
 	for _, follow := range p.Follows {
 		var toUser models.User
@@ -124,11 +118,15 @@ func (i *Inserter) insertUser(p *models.User) {
 				d = i.db.Create(&models.User{
 					UserName: follow.UserName,
 				}).Scan(&toUser)
-				utils.PanicIfNotNil(d.Error)
+				if d.Error != nil {
+					return d.Error
+				}
 
 				i.handleCreatedUser(follow.UserName)
 			} else {
-				utils.PanicIfNotNil(err)
+				if err != nil {
+					return err
+				}
 			}
 		}
 
@@ -136,9 +134,11 @@ func (i *Inserter) insertUser(p *models.User) {
 			From: fromUser.ID,
 			To:   toUser.ID,
 		}).Error
-		utils.PanicIfNotNil(err)
+		if err != nil {
+			return err
+		}
 	}
-
+	return nil
 }
 
 func (i *Inserter) handleCreatedUser(userName string) {

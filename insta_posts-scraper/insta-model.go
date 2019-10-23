@@ -1,4 +1,4 @@
-package insta_posts_scraper
+package scraper
 
 type instagramAccountInfo struct {
 	LoggingPageID         string `json:"logging_page_id"`
@@ -126,7 +126,7 @@ type instagramAccountInfo struct {
 	ToastContentOnLoad interface{} `json:"toast_content_on_load"`
 }
 
-type InstagramMedia struct {
+type instagramMedia struct {
 	Data struct {
 		User struct {
 			EdgeOwnerToTimelineMedia struct {
@@ -245,66 +245,6 @@ type InstagramMedia struct {
 									} `json:"dash_info"`
 									VideoURL       string `json:"video_url"`
 									VideoViewCount int    `json:"video_view_count"`
-								} `json:"node,omitempty"`
-								Node2 struct {
-									Typename   string `json:"__typename"`
-									ID         string `json:"id"`
-									Dimensions struct {
-										Height int `json:"height"`
-										Width  int `json:"width"`
-									} `json:"dimensions"`
-									DisplayURL       string `json:"display_url"`
-									DisplayResources []struct {
-										Src          string `json:"src"`
-										ConfigWidth  int    `json:"config_width"`
-										ConfigHeight int    `json:"config_height"`
-									} `json:"display_resources"`
-									IsVideo               bool   `json:"is_video"`
-									TrackingToken         string `json:"tracking_token"`
-									EdgeMediaToTaggedUser struct {
-										Edges []interface{} `json:"edges"`
-									} `json:"edge_media_to_tagged_user"`
-									AccessibilityCaption interface{} `json:"accessibility_caption"`
-								} `json:"node,omitempty"`
-								Node struct {
-									Typename   string `json:"__typename"`
-									ID         string `json:"id"`
-									Dimensions struct {
-										Height int `json:"height"`
-										Width  int `json:"width"`
-									} `json:"dimensions"`
-									DisplayURL       string `json:"display_url"`
-									DisplayResources []struct {
-										Src          string `json:"src"`
-										ConfigWidth  int    `json:"config_width"`
-										ConfigHeight int    `json:"config_height"`
-									} `json:"display_resources"`
-									IsVideo               bool   `json:"is_video"`
-									TrackingToken         string `json:"tracking_token"`
-									EdgeMediaToTaggedUser struct {
-										Edges []interface{} `json:"edges"`
-									} `json:"edge_media_to_tagged_user"`
-									AccessibilityCaption interface{} `json:"accessibility_caption"`
-								} `json:"node,omitempty"`
-								Node3 struct {
-									Typename   string `json:"__typename"`
-									ID         string `json:"id"`
-									Dimensions struct {
-										Height int `json:"height"`
-										Width  int `json:"width"`
-									} `json:"dimensions"`
-									DisplayURL       string `json:"display_url"`
-									DisplayResources []struct {
-										Src          string `json:"src"`
-										ConfigWidth  int    `json:"config_width"`
-										ConfigHeight int    `json:"config_height"`
-									} `json:"display_resources"`
-									IsVideo               bool   `json:"is_video"`
-									TrackingToken         string `json:"tracking_token"`
-									EdgeMediaToTaggedUser struct {
-										Edges []interface{} `json:"edges"`
-									} `json:"edge_media_to_tagged_user"`
-									AccessibilityCaption interface{} `json:"accessibility_caption"`
 								} `json:"node,omitempty"`
 							} `json:"edges"`
 						} `json:"edge_sidecar_to_children"`

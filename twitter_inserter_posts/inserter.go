@@ -11,22 +11,23 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/codeuniversity/smag-mvp/models"
-	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
+	"github.com/codeuniversity/smag-mvp/worker"
 
 	"github.com/segmentio/kafka-go"
 )
 
-// Inserter represents the scraper containing all clients it uses
+// Inserter represents the inserter containing all clients it uses
 type Inserter struct {
+	*worker.Worker
+
 	qReader *kafka.Reader
 	qWriter *kafka.Writer
 
 	db *gorm.DB
-	*service.Executor
 }
 
-// New returns an initilized scraper
+// New returns an initilized inserter
 func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
@@ -43,62 +44,53 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 
 	db.AutoMigrate(&models.TwitterPost{})
 
-	i.Executor = service.New()
+	b := worker.Builder{}.WithName("twitter_inserter_posts").
+		WithWorkStep(i.runStep).
+		WithStopTimeout(10*time.Second).
+		AddShutdownHook("qReader", qReader.Close).
+		AddShutdownHook("postgres_client", db.Close)
+
+	if qWriter != nil {
+		b = b.AddShutdownHook("qWriter", qWriter.Close)
+	}
+
+	i.Worker = b.MustBuild()
+
 	return i
 }
 
 // Run the inserter
-func (i *Inserter) Run() {
-	defer i.MarkAsStopped()
-
-	fmt.Println("starting inserter")
-	for i.IsRunning() {
-		m, err := i.qReader.FetchMessage(context.Background())
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		rawPost := &models.TwitterPostRaw{}
-
-		err = json.Unmarshal(m.Value, rawPost)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		post := models.ConvertTwitterPost(rawPost)
-		fmt.Println("inserting post:", post.Link)
-
-		i.insertPost(post)
-		i.qReader.CommitMessages(context.Background(), m)
-
-		fmt.Println("commited: ", post.Link)
-	}
-}
-
-// Close the inserter
-func (i *Inserter) Close() {
-	i.Stop()
-	i.WaitUntilStopped(time.Second * 3)
-
-	i.db.Close()
-	i.qReader.Close()
-	if i.qWriter != nil {
-		i.qWriter.Close()
+func (i *Inserter) runStep() error {
+	m, err := i.qReader.FetchMessage(context.Background())
+	if err != nil {
+		return err
 	}
 
-	i.MarkAsClosed()
+	rawPost := &models.TwitterPostRaw{}
+
+	err = json.Unmarshal(m.Value, rawPost)
+	if err != nil {
+		return err
+	}
+
+	post := models.ConvertTwitterPost(rawPost)
+	fmt.Println("inserting post:", post.Link)
+
+	err = i.insertPost(post)
+	if err != nil {
+		return err
+	}
+	return i.qReader.CommitMessages(context.Background(), m)
 }
 
-func (i *Inserter) insertPost(post *models.TwitterPost) {
-	var err error
-
+func (i *Inserter) insertPost(post *models.TwitterPost) error {
 	fromPost := &models.TwitterPost{}
 	filter := &models.TwitterPost{PostIdentifier: post.PostIdentifier}
 
-	err = createOrUpdate(i.db, fromPost, filter, post)
-	utils.PanicIfNotNil(err)
+	err := createOrUpdate(i.db, fromPost, filter, post)
+	if err != nil {
+		return err
+	}
 
 	newUserLists := [][]*models.TwitterUser{post.Mentions, post.ReplyTo}
 	if post.RetweetUserID != "" {
@@ -116,22 +108,12 @@ func (i *Inserter) insertPost(post *models.TwitterPost) {
 		queryUser := models.TwitterUser{}
 
 		err = i.db.Where("username = ?", relationUser.Username).First(&queryUser).Error
-		utils.PanicIfNotNil(err)
-
-		if queryUser.UserIdentifier == "" {
-			i.handleCreatedUser(relationUser.Username)
+		if err != nil {
+			return err
 		}
 	}
 
-}
-
-func (i *Inserter) handleCreatedUser(userName string) {
-	// if qWriter is nil, user discovery is disabled
-	if i.qWriter != nil {
-		i.qWriter.WriteMessages(context.Background(), kafka.Message{
-			Value: []byte(userName),
-		})
-	}
+	return nil
 }
 
 func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {

@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/http-header-generator"
 	"strings"
 	"time"
 
+	http_header_generator "github.com/codeuniversity/smag-mvp/http_header-generator"
+	"github.com/codeuniversity/smag-mvp/worker"
+
 	"github.com/codeuniversity/smag-mvp/models"
-	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 
 	"github.com/gocolly/colly"
@@ -18,11 +19,12 @@ import (
 
 // Scraper represents the scraper containing all clients it uses
 type Scraper struct {
+	*worker.Worker
+
 	nameQReader *kafka.Reader
 	infoQWriter *kafka.Writer
 	errQWriter  *kafka.Writer
-	*service.Executor
-	*http_header_generator.HttpHeaderGenerator
+	*http_header_generator.HTTPHeaderGenerator
 }
 
 // New returns an initilized scraper
@@ -31,67 +33,52 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	s.nameQReader = nameQReader
 	s.infoQWriter = infoQWriter
 	s.errQWriter = errQWriter
-	s.Executor = service.New()
-	s.HttpHeaderGenerator = http_header_generator.New()
+	s.HTTPHeaderGenerator = http_header_generator.New()
+
+	s.Worker = worker.Builder{}.WithName("insta_scraper").
+		WithWorkStep(s.runStep).
+		AddShutdownHook("nameQReader", nameQReader.Close).
+		AddShutdownHook("infoQWriter", infoQWriter.Close).
+		AddShutdownHook("errQWriter", errQWriter.Close).
+		MustBuild()
 	return s
 }
 
-// Run the scraper
-func (s *Scraper) Run() {
-	defer func() {
-		s.MarkAsStopped()
-	}()
-
-	fmt.Println("starting scraper")
-	for s.IsRunning() {
-		fmt.Println("fetching")
-		m, err := s.nameQReader.FetchMessage(context.Background())
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		userName := string(m.Value)
-		followInfo, err := s.scrapeUserFollowGraph(userName)
-		if err != nil {
-			fmt.Println(err)
-			errMessage := &models.ScrapeError{
-				Name:  userName,
-				Error: err.Error(),
-			}
-			serializedErr, err := json.Marshal(errMessage)
-			if err != nil {
-				fmt.Println(err)
-				break
-			}
-			s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
-			s.nameQReader.CommitMessages(context.Background(), m)
-			continue
-		}
-		serializedFollowInfo, err := json.Marshal(followInfo)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		err = s.infoQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedFollowInfo})
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		s.nameQReader.CommitMessages(context.Background(), m)
+// runStep the scraper
+func (s *Scraper) runStep() error {
+	fmt.Println("fetching")
+	m, err := s.nameQReader.FetchMessage(context.Background())
+	if err != nil {
+		return err
 	}
-}
 
-// Close the scraper
-func (s *Scraper) Close() {
-	s.Stop()
-	s.WaitUntilStopped(time.Second * 3)
+	userName := string(m.Value)
+	followInfo, err := s.scrapeUserFollowGraph(userName)
+	if err != nil {
+		fmt.Println(err)
+		errMessage := &models.ScrapeError{
+			Name:  userName,
+			Error: err.Error(),
+		}
+		serializedErr, serializationErr := json.Marshal(errMessage)
+		if serializationErr != nil {
+			return serializationErr
+		}
+		s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+		s.nameQReader.CommitMessages(context.Background(), m)
+		return err
+	}
+	serializedFollowInfo, err := json.Marshal(followInfo)
+	if err != nil {
+		return err
+	}
+	err = s.infoQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedFollowInfo})
+	if err != nil {
+		return err
+	}
+	s.nameQReader.CommitMessages(context.Background(), m)
 
-	s.nameQReader.Close()
-	s.infoQWriter.Close()
-	s.errQWriter.Close()
-
-	s.MarkAsClosed()
+	return nil
 }
 
 //scrapeUserFollowGraph returns the follow information for a userName

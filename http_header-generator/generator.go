@@ -1,4 +1,4 @@
-package http_header_generator
+package generator
 
 import (
 	"encoding/json"
@@ -7,17 +7,19 @@ import (
 	"net/http"
 )
 
-type HttpHeaderGenerator struct {
-	browserAgent BrowserAgent
+// HTTPHeaderGenerator generates headers for http requests for scraping
+type HTTPHeaderGenerator struct {
+	browserAgent browserAgent
 }
 
-func New() *HttpHeaderGenerator {
-	generator := &HttpHeaderGenerator{}
+// New returns an initialized HTTPHeaderGenerator
+func New() *HTTPHeaderGenerator {
+	generator := &HTTPHeaderGenerator{}
 	data, err := ioutil.ReadFile("useragents.json")
 	if err != nil {
 		panic(err)
 	}
-	var userAgent BrowserAgent
+	var userAgent browserAgent
 	err = json.Unmarshal(data, &userAgent)
 
 	if err != nil {
@@ -27,11 +29,12 @@ func New() *HttpHeaderGenerator {
 	return generator
 }
 
-type BrowserAgent []struct {
+type browserAgent []struct {
 	UserAgents string `json:"useragent"`
 }
 
-func (h *HttpHeaderGenerator) AddHeaders(header *http.Header) {
+// AddHeaders ads the generated headers to the request headers
+func (h *HTTPHeaderGenerator) AddHeaders(header *http.Header) {
 	header.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3")
 	header.Add("Accept-Charset", "utf-8")
 	header.Add("Accept-Language", "de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7")
@@ -40,7 +43,8 @@ func (h *HttpHeaderGenerator) AddHeaders(header *http.Header) {
 	header.Add("User-Agent", h.GetRandomUserAgent())
 }
 
-func (h *HttpHeaderGenerator) GetRandomUserAgent() string {
+// GetRandomUserAgent returns a random user agent
+func (h *HTTPHeaderGenerator) GetRandomUserAgent() string {
 	randomNumber := rand.Intn(len(h.browserAgent))
 	return h.browserAgent[randomNumber].UserAgents
 }
