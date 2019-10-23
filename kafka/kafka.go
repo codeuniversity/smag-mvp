@@ -87,25 +87,8 @@ func GetUserDiscoveryInserterConfig() (*ReaderConfig, *WriterConfig, bool) {
 	return readerConfig, writerConfig, isUserDiscovery
 }
 
-//GetInserterConfig still lives until all inserters are switched to the kafka-topic-transferer
-func GetInserterConfig() (*ReaderConfig, *WriterConfig) {
-	var readerConfig *ReaderConfig
-	var writerConfig *WriterConfig
-	var wTopic string
-
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
-
-	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
-	wTopic = utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
-	writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
-	readerConfig = NewReaderConfig(kafkaAddress, groupID, rTopic)
-
-	return readerConfig, writerConfig
-}
-
-//GetInserterConfigNew returns the Reader topics from kafka for Inserters
-func GetInserterConfigNew() *ReaderConfig {
+//GetInserterConfig returns the Reader topics from kafka for Inserters
+func GetInserterConfig() *ReaderConfig {
 	var readerConfig *ReaderConfig
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
