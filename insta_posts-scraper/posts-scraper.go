@@ -231,6 +231,7 @@ func (i *InstaPostsScraper) sendUserInfoPostsID(instagramAccountInfo *instagramA
 				PostID:     element.Node.ID,
 				ShortCode:  element.Node.Shortcode,
 				UserID:     userID,
+				UserName:   username,
 				PictureURL: element.Node.DisplayURL}
 
 			instagramPostJSON, err := json.Marshal(instagramPost)

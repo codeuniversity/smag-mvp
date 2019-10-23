@@ -93,7 +93,7 @@ func (i *InstaPostInserter) findOrCreateUser(username string) (userID int, err e
 }
 
 func (i *InstaPostInserter) insertPost(post models.InstagramPost) error {
-	userID, err := i.findOrCreateUser(post.UserID)
+	userID, err := i.findOrCreateUser(post.UserName)
 	if err != nil {
 		return err
 	}
