@@ -165,9 +165,9 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
-            docker push $TWITTER_SCRAPER_IMAGE:latest
-            docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+            docker tag $SETUP_IMAGE_NAME:latest $SETUP_IMAGE_NAME:$IMAGE_TAG
+            docker push $SETUP_IMAGE_NAME:latest
+            docker push $SETUP_IMAGE_NAME:$IMAGE_TAG
   twitter_inserter_users:
     # specify the version
     executor: job-runner
