@@ -121,3 +121,24 @@ func GetScraperConfig() (*ReaderConfig, *WriterConfig, *WriterConfig) {
 
 	return nameReaderConfig, infoWriterConfig, errWriterConfig
 }
+
+// GetInstaPostsScraperConfig is a convenience function for gathering the necessary
+// kafka configuration for the insta posts golang scrapers
+func GetInstaPostsScraperConfig() (*ReaderConfig, *WriterConfig, *WriterConfig) {
+	var nameReaderConfig *ReaderConfig
+	var infoWriterConfig *WriterConfig
+	var errWriterConfig *WriterConfig
+
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+
+	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
+	nameTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
+	postsTopic := utils.MustGetStringFromEnv("KAFKA_INSTA_POSTS_TOPIC")
+	errTopic := utils.MustGetStringFromEnv("KAFKA_ERR_TOPIC")
+
+	nameReaderConfig = NewReaderConfig(kafkaAddress, groupID, nameTopic)
+	infoWriterConfig = NewWriterConfig(kafkaAddress, postsTopic, true)
+	errWriterConfig = NewWriterConfig(kafkaAddress, errTopic, false)
+
+	return nameReaderConfig, infoWriterConfig, errWriterConfig
+}
