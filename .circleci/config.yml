@@ -263,6 +263,9 @@ workflows:
       - twitter_inserter_posts:
           requires:
             - tests
+          filters:
+            branches:
+              only: master
       - postgres-setup:
           filters:
             branches:
