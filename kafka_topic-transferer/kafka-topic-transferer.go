@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/models"
-	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
+	"github.com/codeuniversity/smag-mvp/worker"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -19,7 +20,7 @@ type Transferer struct {
 	fromTopic *kafka.Reader
 	toTopic   *kafka.Writer
 
-	*service.Executor
+	*worker.Worker
 }
 
 // New returns an initilized Transferer
@@ -34,52 +35,45 @@ func New(fromTopic string, toTopic string) *Transferer {
 	t.fromTopic = kf.NewReader(readerConfig)
 	t.toTopic = kf.NewWriter(writerConfig)
 
-	t.Executor = service.New()
+	b := worker.Builder{}.WithName("kafka-topic-transferer").
+		WithWorkStep(t.runStep).
+		WithStopTimeout(10*time.Second).
+		AddShutdownHook("fromTopic", t.fromTopic.Close).
+		AddShutdownHook("toTopic", t.toTopic.Close)
+
+	t.Worker = b.MustBuild()
 
 	return t
 }
 
 //Run the Transferer
-func (c *Transferer) Run() {
+func (t *Transferer) runStep() error {
 	fmt.Println("Start Transferer")
-	for c.IsRunning() {
-		m, err := c.fromTopic.FetchMessage(context.Background())
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-
-		changeStream := &models.DebeziumChangeStream{}
-		err = json.Unmarshal(m.Value, changeStream)
-		if err != nil {
-			fmt.Println(err)
-			break
-		}
-		userName := changeStream.Payload.After.UserName
-		c.fromTopic.CommitMessages(context.Background(), m)
-
-		// checks if user was created or updated
-		if changeStream.Payload.Op == "c" {
-			c.toTopic.WriteMessages(context.Background(), kafka.Message{
-				Value: []byte(userName),
-			})
-
-			fmt.Printf("%s tranfered \n", userName)
-
-		} else {
-			fmt.Printf("%s updated \n", userName)
-		}
-
+	m, err := t.fromTopic.FetchMessage(context.Background())
+	if err != nil {
+		fmt.Println(err)
 	}
-}
 
-//Close the transferer
-func (t *Transferer) Close() {
-	t.Stop()
-	t.WaitUntilStopped(time.Second * 3)
+	changeMessage := &models.ChangeMessage{}
+	err = json.Unmarshal(m.Value, changeMessage)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	userName := changeMessage.Payload.After.UserName
+	t.fromTopic.CommitMessages(context.Background(), m)
 
-	t.fromTopic.Close()
-	t.toTopic.Close()
+	// checks if user was created or updated
+	if changeMessage.Payload.Op == "c" {
+		t.toTopic.WriteMessages(context.Background(), kafka.Message{
+			Value: []byte(userName),
+		})
 
-	t.MarkAsClosed()
+		log.Printf("%s tranfered \n", userName)
+
+	} else {
+		log.Printf("%s updated \n", userName)
+	}
+	return nil
+
 }

@@ -69,7 +69,7 @@ type InstaCommentScrapError struct {
 	Error  string `json:"error,omitempty"`
 }
 
-type DebeziumChangeStream struct {
+type ChangeMessage struct {
 	Schema struct {
 		Type   string `json:"type"`
 		Fields []struct {
