@@ -145,9 +145,9 @@ jobs:
           command: |
             echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
-            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
-            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+            docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_SCRAPER_IMAGE:latest
+            docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
 
   postgres-setup:
     # specify the version
