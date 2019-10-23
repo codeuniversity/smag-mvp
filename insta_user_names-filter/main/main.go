@@ -6,12 +6,10 @@ import (
 )
 
 func main() {
-	var t *filter.Transferer
+	f := filter.New("postgres.public.users", "user_names")
 
-	t = filter.New("postgres.public.users", "user_names")
-
-	service.CloseOnSignal(t)
-	waitUntilClosed := t.Start()
+	service.CloseOnSignal(f)
+	waitUntilClosed := f.Start()
 
 	waitUntilClosed()
 }
