@@ -87,20 +87,18 @@ func GetUserDiscoveryInserterConfig() (*ReaderConfig, *WriterConfig, bool) {
 	return readerConfig, writerConfig, isUserDiscovery
 }
 
-func GetInserterConfig() (*ReaderConfig, *WriterConfig) {
+//GetInserterConfig returns the Reader topics from kafka for Inserters
+func GetInserterConfig() *ReaderConfig {
 	var readerConfig *ReaderConfig
-	var writerConfig *WriterConfig
-	var wTopic string
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
-	wTopic = utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
-	writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
+	rTopic := utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
+
 	readerConfig = NewReaderConfig(kafkaAddress, groupID, rTopic)
 
-	return readerConfig, writerConfig
+	return readerConfig
 }
 
 // GetScraperConfig is a convenience function for gathering the necessary
