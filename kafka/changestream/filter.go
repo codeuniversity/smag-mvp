@@ -50,7 +50,6 @@ func NewFilter(kafkaAddress, kafkaGroupID, changesTopic, filteredTopic string, f
 	return f
 }
 
-//Run the Transferer
 func (t *Filter) runStep() error {
 	m, err := t.changesReader.FetchMessage(context.Background())
 	if err != nil {
