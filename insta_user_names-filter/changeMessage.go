@@ -1,4 +1,4 @@
-package transferer
+package filter
 
 type changeMessage struct {
 	Schema struct {

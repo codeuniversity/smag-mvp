@@ -1,4 +1,4 @@
-package transferer
+package filter
 
 import (
 	"context"
@@ -14,17 +14,17 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Transferer represents the Transferer containing all clients it uses
-type Transferer struct {
+// Filter represents the Filter containing all clients it uses
+type Filter struct {
 	*worker.Worker
 
 	fromTopic *kafka.Reader
 	toTopic   *kafka.Writer
 }
 
-// New returns an initilized Transferer
-func New(fromTopic string, toTopic string) *Transferer {
-	t := &Transferer{}
+// New returns an initilized Filter
+func New(fromTopic string, toTopic string) *Filter {
+	t := &Filter{}
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
@@ -45,8 +45,7 @@ func New(fromTopic string, toTopic string) *Transferer {
 	return t
 }
 
-//Run the Transferer
-func (t *Transferer) runStep() error {
+func (t *Filter) runStep() error {
 	m, err := t.fromTopic.FetchMessage(context.Background())
 	if err != nil {
 		return err
