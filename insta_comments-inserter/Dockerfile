@@ -4,7 +4,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o insta_comments_inserter insta-comments-inserter/main/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o insta_comments_inserter insta_comments-inserter/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
