@@ -81,8 +81,25 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	u := &proto.User{}
 	fmt.Println(username)
 
-	row := s.db.QueryRow("SELECT user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName)
+	err := s.db.QueryRow("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+	if err != nil {
+		panic(err)
+	}
 
-	row.Scan(&u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+	rows, err := s.db.Query("Select follows.to_id as id, users.user_name from follows  join users on follows.to_id=users.id where follows.from_id=$1", u.Id)
+	if err != nil {
+		panic(err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		followingUser := proto.User{}
+
+		rows.Scan(&followingUser.Id, &followingUser.UserName)
+
+		u.Followings = append(u.Followings, &followingUser)
+
+	}
+
 	return u, nil
 }
