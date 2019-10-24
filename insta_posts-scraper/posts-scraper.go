@@ -252,11 +252,17 @@ func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia,
 	for _, element := range accountMedia.Data.User.EdgeOwnerToTimelineMedia.Edges {
 		if element.Node.ID != "" {
 
+			var postsTaggedUsers []string
+			for _, element := range element.Node.EdgeMediaToTaggedUser.Edges {
+				postsTaggedUsers = append(postsTaggedUsers, element.Node.User.Username)
+			}
+
 			instagramPost := models.InstagramPost{
-				PostID:     element.Node.ID,
-				ShortCode:  element.Node.Shortcode,
-				UserID:     userID,
-				PictureURL: element.Node.DisplayURL,
+				PostID:      element.Node.ID,
+				ShortCode:   element.Node.Shortcode,
+				UserID:      userID,
+				PictureURL:  element.Node.DisplayURL,
+				TaggedUsers: postsTaggedUsers,
 			}
 
 			instagramPostJSON, err := json.Marshal(instagramPost)

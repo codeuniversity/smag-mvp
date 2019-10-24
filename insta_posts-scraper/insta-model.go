@@ -152,7 +152,19 @@ type instagramMedia struct {
 						IsVideo               bool   `json:"is_video"`
 						TrackingToken         string `json:"tracking_token"`
 						EdgeMediaToTaggedUser struct {
-							Edges []interface{} `json:"edges"`
+							Edges []struct {
+								Node struct {
+									User struct {
+										FullName      string `json:"full_name"`
+										ID            string `json:"id"`
+										IsVerified    bool   `json:"is_verified"`
+										ProfilePicURL string `json:"profile_pic_url"`
+										Username      string `json:"username"`
+									} `json:"user"`
+									X float64 `json:"x"`
+									Y float64 `json:"y"`
+								} `json:"node"`
+							} `json:"edges"`
 						} `json:"edge_media_to_tagged_user"`
 						AccessibilityCaption interface{} `json:"accessibility_caption"`
 						EdgeMediaToCaption   struct {
