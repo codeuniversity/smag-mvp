@@ -87,20 +87,18 @@ func GetUserDiscoveryInserterConfig() (*ReaderConfig, *WriterConfig, bool) {
 	return readerConfig, writerConfig, isUserDiscovery
 }
 
-func GetInserterConfig() (*ReaderConfig, *WriterConfig) {
+//GetInserterConfig returns the Reader topics from kafka for Inserters
+func GetInserterConfig() *ReaderConfig {
 	var readerConfig *ReaderConfig
-	var writerConfig *WriterConfig
-	var wTopic string
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
-	wTopic = utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
-	writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
+	rTopic := utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
+
 	readerConfig = NewReaderConfig(kafkaAddress, groupID, rTopic)
 
-	return readerConfig, writerConfig
+	return readerConfig
 }
 
 // GetScraperConfig is a convenience function for gathering the necessary
@@ -119,6 +117,27 @@ func GetScraperConfig() (*ReaderConfig, *WriterConfig, *WriterConfig) {
 
 	nameReaderConfig = NewReaderConfig(kafkaAddress, groupID, nameTopic)
 	infoWriterConfig = NewWriterConfig(kafkaAddress, infoTopic, true)
+	errWriterConfig = NewWriterConfig(kafkaAddress, errTopic, false)
+
+	return nameReaderConfig, infoWriterConfig, errWriterConfig
+}
+
+// GetInstaPostsScraperConfig is a convenience function for gathering the necessary
+// kafka configuration for the insta posts golang scrapers
+func GetInstaPostsScraperConfig() (*ReaderConfig, *WriterConfig, *WriterConfig) {
+	var nameReaderConfig *ReaderConfig
+	var infoWriterConfig *WriterConfig
+	var errWriterConfig *WriterConfig
+
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+
+	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
+	nameTopic := utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
+	postsTopic := utils.MustGetStringFromEnv("KAFKA_INSTA_POSTS_TOPIC")
+	errTopic := utils.MustGetStringFromEnv("KAFKA_ERR_TOPIC")
+
+	nameReaderConfig = NewReaderConfig(kafkaAddress, groupID, nameTopic)
+	infoWriterConfig = NewWriterConfig(kafkaAddress, postsTopic, true)
 	errWriterConfig = NewWriterConfig(kafkaAddress, errTopic, false)
 
 	return nameReaderConfig, infoWriterConfig, errWriterConfig
