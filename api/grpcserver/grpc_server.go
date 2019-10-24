@@ -22,9 +22,8 @@ type GrpcServer struct {
 }
 
 // NewGrpcServer returns initilized gRPC Server
-func NewGrpcServer(grpcPort int) *GrpcServer {
-	postgresHost := utils.GetStringFromEnvWithDefault("GRPC_POSTGRES_HOST", "127.0.0.1")
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost))
+func NewGrpcServer(postgresHost string, postgresPassword string, grpcPort int) *GrpcServer {
+	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable password=%s", postgresHost, postgresPassword))
 	utils.PanicIfNotNil(err)
 
 	return &GrpcServer{
@@ -53,7 +52,7 @@ func (s *GrpcServer) Listen() {
 //GetAllUsersLikeUsername returns a List of users that are like the given username
 func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserSearchRequest) (*proto.UserSearchResponse, error) {
 	response := &proto.UserSearchResponse{}
-	rows, err := s.db.Query("SELECT user_name, real_name, bio, avatar_url FROM users WHERE LOWER(user_name) LIKE LOWER($1)", fmt.Sprintf("%%%s%%", username.UserName))
+	rows, err := s.db.Query("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE LOWER(user_name) LIKE LOWER($1)", fmt.Sprintf("%%%s%%", username.UserName))
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
@@ -63,7 +62,7 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 	for rows.Next() {
 		u := proto.User{}
 
-		rows.Scan(&u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+		rows.Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 
 		// TODO: error handling
 		response.UserList = append(response.UserList, &u)
