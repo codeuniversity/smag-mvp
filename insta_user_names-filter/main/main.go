@@ -9,8 +9,8 @@ import (
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	changesTopic := utils.GetStringFromEnvWithDefault("CHANGES_TOPIC", "postgres.public.users")
-	namesTopic := utils.GetStringFromEnvWithDefault("NAMES_TOPIC", "user_names")
+	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.users")
+	namesTopic := utils.GetStringFromEnvWithDefault("KAFKA_NAME_TOPIC", "user_names")
 
 	f := filter.New(kafkaAddress, groupID, changesTopic, namesTopic)
 
