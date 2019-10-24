@@ -1,4 +1,4 @@
-package insta_scraper
+package insta_user_scraper
 
 import (
 	"context"
@@ -35,7 +35,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	s.errQWriter = errQWriter
 	s.HTTPHeaderGenerator = http_header_generator.New()
 
-	s.Worker = worker.Builder{}.WithName("insta_scraper").
+	s.Worker = worker.Builder{}.WithName("insta_user-scraper").
 		WithWorkStep(s.runStep).
 		AddShutdownHook("nameQReader", nameQReader.Close).
 		AddShutdownHook("infoQWriter", infoQWriter.Close).

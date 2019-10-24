@@ -1,7 +1,7 @@
 package main
 
 import (
-	scraper "github.com/codeuniversity/smag-mvp/insta_scraper"
+	scraper "github.com/codeuniversity/smag-mvp/insta_user-scraper"
 	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/service"
 )
