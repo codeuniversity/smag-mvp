@@ -10,6 +10,7 @@ import {
 } from "./protofiles/usersearch_pb.js";
 import { UserSearchServiceClient } from "./protofiles/usersearch_grpc_web_pb";
 import { withRouter } from "react-router";
+import PropTypes from "prop-types";
 
 // eslint-disable-next-line
 
@@ -38,8 +39,12 @@ class App extends Component {
         username: user.getUserName(),
         realname: user.getRealName()
       }));
+      this.props.history.push({
+        pathname: "/results",
+        state: { results: userdata }
+      });
 
-      this.setState({ users: userdata });
+      //this.setState({ users: userdata });
     });
   };
   render() {
@@ -49,12 +54,18 @@ class App extends Component {
           <Title />
           <Form onSubmit={this.handleSubmit} />
         </div>
-        <div>
-          <Results results={this.state.users} />
-        </div>
       </div>
     );
   }
 }
+
+App.propTypes = {
+  history: PropTypes.shape({
+    push: PropTypes.shape({
+      pathname: PropTypes.string,
+      state: PropTypes.object
+    })
+  })
+};
 
 export default withRouter(App);

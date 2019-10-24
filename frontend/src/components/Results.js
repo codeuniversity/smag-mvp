@@ -1,18 +1,17 @@
 import React, { Component } from "react";
 import App, { users, userdata, user } from "../App";
+import { withRouter } from "react-router";
 
 export class Results extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      users: []
+      users: this.props.location.state.results
     };
   }
 
   render() {
-    console.log(this.props.results);
-    //return <div>Test</div>;
-    const results = this.props.results.map(function(result) {
+    const results = this.state.users.map(function(result) {
       return (
         <div>
           {result.realname}
@@ -24,7 +23,7 @@ export class Results extends React.Component {
     return <div>{results}</div>;
   }
 }
-export default Results;
+export default withRouter(Results);
 /*function generateTableHead(table, data) {
       let thead = table.createTHead();
       let row = thead.insertRow();
