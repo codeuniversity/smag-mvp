@@ -262,6 +262,7 @@ func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia,
 				PostID:      element.Node.ID,
 				ShortCode:   element.Node.Shortcode,
 				UserID:      userID,
+				UserName:    username,
 				PictureURL:  element.Node.DisplayURL,
 				TaggedUsers: postsTaggedUsers,
 			}
