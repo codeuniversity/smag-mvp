@@ -12,7 +12,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Filter is responsible for reading a the change stream,
+// Filter is responsible for reading the change stream,
 // filtering out the events that are not interesting to us
 // and writing new messages based on the changes to the filtered topic
 type Filter struct {
