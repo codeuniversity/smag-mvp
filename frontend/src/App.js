@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import Form from "./components/Form";
 import Title from "./components/Title";
 import Results from "./components/Results";
-import auth from "./Auth";
 import "./index.css";
 import {
   User,

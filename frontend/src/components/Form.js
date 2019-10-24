@@ -1,6 +1,5 @@
 import React, { Component, useState } from "react";
 import { withRouter, history } from "react-router";
-import auth from "../Auth";
 
 // import {onSubmit} from './App';
 

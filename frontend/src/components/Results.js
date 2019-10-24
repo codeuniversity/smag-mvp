@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import App, { result, users, userdata, user } from "../App";
+import App, { users, userdata, user } from "../App";
 
 export class Results extends React.Component {
   constructor(props) {
@@ -8,19 +8,20 @@ export class Results extends React.Component {
       users: []
     };
   }
+
   render() {
     console.log(this.props.results);
     //return <div>Test</div>;
-    const results = this.state.users.map(function(result) {
+    const results = this.props.results.map(function(result) {
       return (
         <div>
-          {this.result.realname}
-          {this.result.bio}
-          <img src={this.result.avatarurl} />
+          {result.realname}
+          {result.bio}
+          <img src={result.avatarurl} />
         </div>
       );
     });
-    return <div>{this.state.results}</div>;
+    return <div>{results}</div>;
   }
 }
 export default Results;
