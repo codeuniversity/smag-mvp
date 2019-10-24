@@ -3,7 +3,7 @@ version: 2.1
 executors:
   job-runner:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     environment:
       GO111MODULE: "on"
@@ -18,13 +18,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/scraper
+      SCRAPER_IMAGE_NAME: codesmag/insta_user-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta_scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_user-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -37,7 +37,7 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/postgres-inserter
+      SCRAPER_IMAGE_NAME: codesmag/insta_postgres-inserter
     steps:
       - checkout
       - setup_remote_docker
@@ -56,13 +56,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta-comments-inserter
+      SCRAPER_IMAGE_NAME: codesmag/insta_comments-inserter
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-comments-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_comments-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -75,13 +75,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta-comments-scraper
+      SCRAPER_IMAGE_NAME: codesmag/insta_comments-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-comments-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_comments-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -100,7 +100,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-posts-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_posts-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -113,13 +113,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta-posts-scraper
+      SCRAPER_IMAGE_NAME: codesmag/insta_posts-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-posts-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_posts-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
