@@ -62,12 +62,17 @@ func (i *InstaPostInserter) runStep() error {
 		return err
 	}
 
-	err = i.insertPost(post)
+	postId, err := i.insertPost(post)
 
 	if err != nil {
-		return fmt.Errorf("comments inserter failed %s ", err)
+		return fmt.Errorf("posts inserter insertPost() failed %s ", err)
 	}
 
+	err = i.insertTaggedUser(postId, post.TaggedUsers)
+
+	if err != nil {
+		return fmt.Errorf("posts inserter insertTaggedUser() failed %s ", err)
+	}
 	fmt.Println("Insert Post: ", post.ShortCode)
 	return i.postQReader.CommitMessages(context.Background(), message)
 }
@@ -92,12 +97,42 @@ func (i *InstaPostInserter) findOrCreateUser(username string) (userID int, err e
 	return userID, nil
 }
 
-func (i *InstaPostInserter) insertPost(post models.InstagramPost) error {
-	userID, err := i.findOrCreateUser(post.UserName)
-	if err != nil {
-		return err
+func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUsers []string) error {
+	if taggedUsers == nil {
+		return nil
 	}
 
-	_, err = i.db.Exec(`INSERT INTO posts(user_id, post_id, short_code, picture_url) VALUES($1,$2,$3,$4) ON CONFLICT(post_id) DO UPDATE SET short_code=$2, picture_url=$4`, userID, post.PostID, post.ShortCode, post.PictureURL)
-	return err
+	for _, username := range taggedUsers {
+
+		userID, err := i.findOrCreateUser(username)
+
+		if err != nil {
+			return err
+		}
+		err = i.db.QueryRow("Select id from post_tagged_users where post_id=$1 AND user_id= $2", postId, userID).Scan()
+		if err == sql.ErrNoRows {
+			_, err = i.db.Exec("Insert INTO post_tagged_users(post_id,user_id) VALUES($1,$2)", postId, userID)
+			if err != nil {
+				return err
+			}
+		} else if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (i *InstaPostInserter) insertPost(post models.InstagramPost) (int, error) {
+	userID, err := i.findOrCreateUser(post.UserName)
+	if err != nil {
+		return 0, err
+	}
+
+	var postID int
+	err = i.db.QueryRow(`INSERT INTO posts(user_id, post_id, short_code, picture_url) VALUES($1,$2,$3,$4) ON CONFLICT(post_id) DO UPDATE SET short_code=$2, picture_url=$4 RETURNING id`, userID, post.PostID, post.ShortCode, post.PictureURL).Scan(&postID)
+	if err != nil {
+		return 0, err
+	}
+
+	return postID, nil
 }
