@@ -97,12 +97,12 @@ func (i *InstaPostInserter) findOrCreateUser(username string) (userID int, err e
 	return userID, nil
 }
 
-func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUser []string) error {
-	if taggedUser == nil {
+func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUsers []string) error {
+	if taggedUsers == nil {
 		return nil
 	}
 
-	for _, username := range taggedUser {
+	for _, username := range taggedUsers {
 
 		userID, err := i.findOrCreateUser(username)
 
