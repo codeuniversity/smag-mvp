@@ -14,7 +14,11 @@ services:
     depends_on:
       - "zookeeper"
     environment:
-      KAFKA_CREATE_TOPICS: "user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1,reached_limit:4:1,renewed_elastic_ip:4:1,renewing_elastic_ip_errors:4:1,user_post:4:1,user_instagram-scrape_errors:4:1,insta_comments_info:4:1,post_comment_insta_scraper_errors:4:1"
+      KAFKA_CREATE_TOPICS: >
+        user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1,
+        twitter-user_names:4:1,twitter-users_scraped:4:1,twitter-posts_scraped:4:1,
+        reached_limit:4:1,renewed_elastic_ip:4:1,renewing_elastic_ip_errors:4:1,
+        user_post:4:1,user_instagram-scrape_errors:4:1,insta_comments_info:4:1,post_comment_insta_scraper_errors:4:1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_LISTENERS: PLAINTEXT://:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://my-kafka:9092
@@ -38,24 +42,90 @@ services:
     ports:
       - "4100:10000"
 
+  # INSTAGRAM SCRAPER
+  insta_user-scraper:
+    build:
+      context: "."
+      dockerfile: "insta_user-scraper/Dockerfile"
+    image: "smag-insta_user-scraper"
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "user_postgres_inserter"
+      KAFKA_NAME_TOPIC: "user_names"
+      KAFKA_INFO_TOPIC: "user_follow_infos"
+      KAFKA_ERR_TOPIC: "insta_user_scaper_err"
+
+  # TWITTER SCRAPER
+  twitter_scraper_users:
+    build: "twitter_scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.user_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_HOST_PORT: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter-user_names"
+      KAFKA_INSERT_TOPIC: "twitter-users_scraped"
+  twitter_scraper_posts:
+    build: "twitter_scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.tweets_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_HOST_PORT: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter-user_names"
+      KAFKA_INSERT_TOPIC: "twitter-posts_scraped"
+
+  # TWITTER INSERTER
+  twitter_inserter_users:
+    build:
+      context: "."
+      dockerfile: "./twitter_inserter_users/Dockerfile"
+    image: "smag-twitter_inserter_users"
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_inserter_users"
+      KAFKA_INFO_TOPIC: "twitter-users_scraped"
+      KAFKA_NAME_TOPIC: "twitter-user_names"
+      USER_DISCOVERY: "true"
+  twitter_inserter_posts:
+    build:
+      context: "."
+      dockerfile: "twitter_inserter_posts/Dockerfile"
+    image: "smag-twitter_inserter_posts"
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_inserter_posts"
+      KAFKA_INFO_TOPIC: "twitter-posts_scraped"
+      KAFKA_NAME_TOPIC: "twitter-user_names"
+      USER_DISCOVERY: "true"
+
   # POSTGRES
   postgres:
     image: "debezium/postgres:11"
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=12345678
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      POSTGRES_DB: "instascraper"
   connect:
-    image: debezium/connect:0.10
+    image: "debezium/connect:0.10"
     ports:
-      - 8083:8083
+      - "8083:8083"
     environment:
-      - BOOTSTRAP_SERVERS=my-kafka:9092
-      - GROUP_ID=1
-      - CONFIG_STORAGE_TOPIC=my_connect_configs
-      - OFFSET_STORAGE_TOPIC=my_connect_offsets
-      - STATUS_STORAGE_TOPIC=my_connect_statuses
+      BOOTSTRAP_SERVERS: "my-kafka:9092"
+      GROUP_ID: "1"
+      CONFIG_STORAGE_TOPIC: "my_connect_configs"
+      OFFSET_STORAGE_TOPIC: "my_connect_offsets"
+      STATUS_STORAGE_TOPIC: "my_connect_statuses"
   pgadmin:
     image: "dpage/pgadmin4:4.13"
     ports:
@@ -63,3 +133,11 @@ services:
     environment:
       PGADMIN_DEFAULT_EMAIL: "my_awesome_email@email.com"
       PGADMIN_DEFAULT_PASSWORD: "does_not_matter"
+  migrate-postgres:
+    build:
+      context: "."
+      dockerfile: "debezium/Dockerfile"
+    depends_on:
+      - "postgres"
+    environment:
+      POSTGRES_DB: "instascraper"

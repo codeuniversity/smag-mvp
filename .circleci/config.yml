@@ -3,7 +3,7 @@ version: 2.1
 executors:
   job-runner:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
     working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     environment:
       GO111MODULE: "on"
@@ -18,13 +18,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/scraper
+      SCRAPER_IMAGE_NAME: codesmag/insta_user-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_user-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -37,13 +37,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/postgres-inserter
+      SCRAPER_IMAGE_NAME: codesmag/insta_postgres-inserter
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -56,13 +56,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta-comments-inserter
+      SCRAPER_IMAGE_NAME: codesmag/insta_comments-inserter
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-comments-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_comments-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -75,13 +75,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta-comments-scraper
+      SCRAPER_IMAGE_NAME: codesmag/insta_comments-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-comments-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_comments-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -100,7 +100,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-posts-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_posts-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -113,13 +113,13 @@ jobs:
     # specify the version
     executor: job-runner
     environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta-posts-scraper
+      SCRAPER_IMAGE_NAME: codesmag/insta_posts-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -f insta-posts-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          command: docker build -f insta_posts-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
       - run:
           name: Publish Docker Image to Docker Hub
           command: |
@@ -128,6 +128,84 @@ jobs:
             docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
             docker push $SCRAPER_IMAGE_NAME:latest
             docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+
+  twitter_scraper:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_SCRAPER_IMAGE: codesmag/twitter_scraper
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -t $TWITTER_SCRAPER_IMAGE twitter_scraper/
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_SCRAPER_IMAGE:latest
+            docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+
+  postgres-setup:
+    # specify the version
+    executor: job-runner
+    environment:
+      SETUP_IMAGE_NAME: codesmag/postgres-setup
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f debezium/kubernetes/Dockerfile -t $SETUP_IMAGE_NAME .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $SETUP_IMAGE_NAME:latest $SETUP_IMAGE_NAME:$IMAGE_TAG
+            docker push $SETUP_IMAGE_NAME:latest
+            docker push $SETUP_IMAGE_NAME:$IMAGE_TAG
+  twitter_inserter_users:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_INSERTER_USERS_IMAGE: codesmag/twitter_inserter_users
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f twitter_inserter_users/Dockerfile -t $TWITTER_INSERTER_USERS_IMAGE .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_USERS_IMAGE:latest $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_USERS_IMAGE:latest
+            docker push $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
+  twitter_inserter_posts:
+    # specify the version
+    executor: job-runner
+    environment:
+      TWITTER_INSERTER_POSTS_IMAGE: codesmag/twitter_inserter_posts
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build Docker Image
+          command: docker build -f twitter_inserter_posts/Dockerfile -t $TWITTER_INSERTER_POSTS_IMAGE .
+      - run:
+          name: Publish Docker Image to Docker Hub
+          command: |
+            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
+            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
+            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
 
 workflows:
   version: 2
@@ -167,6 +245,28 @@ workflows:
       - insta-posts-inserter:
           requires:
             - tests
+          filters:
+            branches:
+              only: master
+      - twitter_scraper:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - twitter_inserter_users:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - twitter_inserter_posts:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - postgres-setup:
           filters:
             branches:
               only: master
