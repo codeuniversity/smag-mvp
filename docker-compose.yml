@@ -25,7 +25,16 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  # GRPC
+  minio:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    environment:
+      - "MINIO_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE"
+      - "MINIO_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    command: "server /data"
+
+    # GRPC
   # ports: 4000 - 4999
   envoy-proxy:
     build: "./api/envoy-proxy"
