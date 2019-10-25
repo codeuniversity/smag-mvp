@@ -30,8 +30,8 @@ services:
     ports:
       - 9000:9000
     environment:
-      - "MINIO_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE"
-      - "MINIO_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
+      MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     command: "server /data"
 
     # GRPC
@@ -106,7 +106,25 @@ services:
       KAFKA_GROUPID: "insta_post-pictures-filter"
       KAFKA_CHANGE_TOPIC: "postgres.public.posts"
       KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
-
+  insta_pics-downloader:
+    build:
+      context: "."
+      dockerfile: "insta_pics-downloader/Dockerfile"
+    depends_on:
+      - "my-kafka"
+      - "postgres"
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_pics_downloader"
+      KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
+      S3_BUCKET_NAME: "instapics"
+      S3_REGION: "eu-west-1"
+      S3_ENDOINT: "minio:9000"
+      S3_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+      S3_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      S3_USE_SSL: "false"
   # TWITTER SCRAPER
   twitter_scraper_users:
     build: "twitter_scraper/"
