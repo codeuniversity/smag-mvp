@@ -98,13 +98,21 @@ func (i *InstaPostInserter) findOrCreateUser(username string) (userID int, err e
 }
 
 func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUser []string) error {
-	for userId := range taggedUser {
-		err := i.db.QueryRow("Select id from post_tagged_users where post_id=$1 AND user_id= $2", postId, userId).Scan()
+	for _, username := range taggedUser {
+
+		userID, err := i.findOrCreateUser(username)
+
 		if err != nil {
-			_, err = i.db.Exec("Insert INTO post_tagged_users(post_id,user_id) VALUES($1,$2,)", postId, userId)
+			return err
+		}
+		err = i.db.QueryRow("Select id from post_tagged_users where post_id=$1 AND user_id= $2", postId, userID).Scan()
+		if err == sql.ErrNoRows {
+			_, err = i.db.Exec("Insert INTO post_tagged_users(post_id,user_id) VALUES($1,$2)", postId, userID)
 			if err != nil {
 				return err
 			}
+		} else {
+			return err
 		}
 	}
 	return nil
