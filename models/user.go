@@ -69,3 +69,8 @@ type InstaCommentScrapError struct {
 	PostID string `json:"post_id,omitempty"`
 	Error  string `json:"error,omitempty"`
 }
+
+type AwsServiceError struct {
+	InstanceId string `json:"instance_id"`
+	Error      string `json:"error"`
+}

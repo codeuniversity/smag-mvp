@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	pb "github.com/codeuniversity/smag-mvp/awsService/proto"
-	"github.com/codeuniversity/smag-mvp/http-header-generator"
+	generator "github.com/codeuniversity/smag-mvp/http_header-generator"
+
 	"google.golang.org/grpc"
 	"io/ioutil"
 	"net"
@@ -20,7 +21,7 @@ var userAccountMediaUrl = "https://www.instagram.com/graphql/query/?query_hash=5
 var userPostsCommentUrl = "https://www.instagram.com/graphql/query/?query_hash=865589822932d1b43dfe312121dd353a&variables=%s"
 
 type HttpClient struct {
-	*http_header_generator.HttpHeaderGenerator
+	*generator.HTTPHeaderGenerator
 	localAddressReachLimit bool
 	localIp                string
 	currentAddress         string
@@ -31,7 +32,7 @@ type HttpClient struct {
 
 func NewHttpClient(awsServiceAddress string) *HttpClient {
 	client := &HttpClient{}
-	client.HttpHeaderGenerator = http_header_generator.New()
+	client.HTTPHeaderGenerator = generator.New()
 	var err error
 
 	addresses := getLocalIpAddresses(1)
@@ -182,13 +183,8 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 			return true, nil
 
 		}
-	case *json.UnmarshalTypeError:
-		fmt.Println("UnmarshalTypeError")
-	case *json.InvalidUnmarshalError:
-		fmt.Println("InvalidUnmarchedError")
-	case *json.UnsupportedTypeError:
-		fmt.Println("UnsupportedTypeError")
-	case *HttpStatusError:
+	case *HTTPStatusError:
+		fmt.Println("HttpStatusError")
 		if h.localAddressReachLimit == true {
 			_, err := h.sendRenewElasticIpRequestToAmazonService()
 			if err != nil {
