@@ -86,12 +86,12 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	u := &proto.User{}
 	fmt.Println(username)
 
-	err := s.db.QueryRow("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+	err := s.db.QueryRow("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", fmt.Sprintf("%%%s%%", username.UserName)).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := s.db.Query("Select follows.to_id as id, users.user_name from follows join users on follows.to_id=users.id where follows.from_id=$1", u.Id)
+	rows, err := s.db.Query("SELECT follows.to_id as id, users.user_name FROM follows JOIN users on follows.to_id=users.id WHERE follows.from_id=$1", fmt.Sprintf("%%%v%%", u.Id))
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
 	res := &proto.InstaPostsResponse{}
 
-	rows, err := s.db.Query("SELECT id, post_id, short_code, picture_url FROM posts WHERE user_id=$1", request.UserId)
+	rows, err := s.db.Query("SELECT id, post_id, short_code, picture_url FROM posts WHERE user_id=$1", fmt.Sprintf("%%%s%%", request.UserId))
 	if err != nil {
 		return nil, err
 	}
