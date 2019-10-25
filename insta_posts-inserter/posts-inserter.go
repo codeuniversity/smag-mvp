@@ -98,6 +98,10 @@ func (i *InstaPostInserter) findOrCreateUser(username string) (userID int, err e
 }
 
 func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUser []string) error {
+	if taggedUser == nil {
+		return nil
+	}
+
 	for _, username := range taggedUser {
 
 		userID, err := i.findOrCreateUser(username)
@@ -111,7 +115,7 @@ func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUser []string) er
 			if err != nil {
 				return err
 			}
-		} else {
+		} else if err != nil {
 			return err
 		}
 	}
