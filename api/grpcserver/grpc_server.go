@@ -110,15 +110,16 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 }
 
 //GetInstaPostsWithUserId returns all Instagram Posts of a User
-func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, userId *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
+func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
 	res := &proto.InstaPostsResponse{}
 
-	rows, err := s.db.Query("SELECT id, post_id, short_code, picture_url FROM posts WHERE user_id=$1", userId.UserId)
+	rows, err := s.db.Query("SELECT id, post_id, short_code, picture_url FROM posts WHERE user_id=$1", request.UserId)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	res.UserId = request.UserId
 	for rows.Next() {
 		post := proto.InstaPost{}
 
