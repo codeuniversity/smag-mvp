@@ -224,6 +224,11 @@ func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia,
 				postsTaggedUsers = append(postsTaggedUsers, element.Node.User.Username)
 			}
 
+			var caption string
+			if len(element.Node.EdgeMediaToCaption.Edges) > 0 {
+				caption = element.Node.EdgeMediaToCaption.Edges[0].Node.Text
+			}
+
 			instagramPost := models.InstagramPost{
 				PostID:      element.Node.ID,
 				ShortCode:   element.Node.Shortcode,
@@ -231,6 +236,7 @@ func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia,
 				UserName:    username,
 				PictureURL:  element.Node.DisplayURL,
 				TaggedUsers: postsTaggedUsers,
+				Caption:     caption,
 			}
 
 			instagramPostJSON, err := json.Marshal(instagramPost)
