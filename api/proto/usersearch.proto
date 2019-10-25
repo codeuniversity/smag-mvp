@@ -24,11 +24,12 @@ message UserIdRequest {
 }
 
 message InstaPost {
-    string post_id = 1;
-    string img_url = 2;
-    string caption = 3;
-    repeated User tagged_users = 4;
-    string short_code = 5;
+    string id = 1;
+    string post_id = 2;
+    string img_url = 3;
+    string caption = 4;
+    repeated User tagged_users = 5;
+    string short_code = 6;
 
 }
 
