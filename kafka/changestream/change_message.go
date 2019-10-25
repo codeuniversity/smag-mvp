@@ -1,6 +1,11 @@
-package transferer
+package changestream
 
-type changeMessage struct {
+import (
+	"encoding/json"
+)
+
+// ChangeMessage ...
+type ChangeMessage struct {
 	Schema struct {
 		Type   string `json:"type"`
 		Fields []struct {
@@ -18,15 +23,8 @@ type changeMessage struct {
 		Name     string `json:"name"`
 	} `json:"schema"`
 	Payload struct {
-		Before interface{} `json:"before"`
-		After  struct {
-			ID        int         `json:"id"`
-			UserName  string      `json:"user_name"`
-			RealName  interface{} `json:"real_name"`
-			AvatarURL interface{} `json:"avatar_url"`
-			Bio       interface{} `json:"bio"`
-			CrawlTs   interface{} `json:"crawl_ts"`
-		} `json:"after"`
+		Before json.RawMessage `json:"before"`
+		After  json.RawMessage `json:"after"`
 		Source struct {
 			Version   string      `json:"version"`
 			Connector string      `json:"connector"`
