@@ -17,13 +17,19 @@ import (
 
 //GrpcServer represents the gRPC Server containing the db connection and port
 type GrpcServer struct {
-	grpcPort int
+	grpcPort string
 	db       *sql.DB
 }
 
 // NewGrpcServer returns initilized gRPC Server
-func NewGrpcServer(postgresHost string, postgresPassword string, grpcPort int) *GrpcServer {
-	db, err := sql.Open("postgres", fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable password=%s", postgresHost, postgresPassword))
+func NewGrpcServer(postgresHost string, postgresPassword string, grpcPort string) *GrpcServer {
+
+	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
+	if postgresPassword != "" {
+		connectionString += " " + "password=" + postgresPassword
+	}
+
+	db, err := sql.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
 
 	return &GrpcServer{
@@ -82,12 +88,12 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 
 	err := s.db.QueryRow("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	rows, err := s.db.Query("Select follows.to_id as id, users.user_name from follows  join users on follows.to_id=users.id where follows.from_id=$1", u.Id)
+	rows, err := s.db.Query("Select follows.to_id as id, users.user_name from follows join users on follows.to_id=users.id where follows.from_id=$1", u.Id)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	defer rows.Close()
 
