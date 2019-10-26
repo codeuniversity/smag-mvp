@@ -187,6 +187,8 @@ workflows:
             branches:
               only: master
       - insta_user_names-filter:
+          requires:
+            - tests
           filters:
             branches:
               only: master
