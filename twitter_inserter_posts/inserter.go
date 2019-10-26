@@ -10,6 +10,7 @@ import (
 	// necessary for gorm :pointup:
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
+	dbUtils "github.com/codeuniversity/smag-mvp/db"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
@@ -87,7 +88,7 @@ func (i *Inserter) insertPost(post *models.TwitterPost) error {
 	fromPost := &models.TwitterPost{}
 	filter := &models.TwitterPost{PostIdentifier: post.PostIdentifier}
 
-	err := createOrUpdate(i.db, fromPost, filter, post)
+	err := dbUtils.CreateOrUpdate(i.db, fromPost, filter, post)
 	if err != nil {
 		return err
 	}
@@ -114,24 +115,4 @@ func (i *Inserter) insertPost(post *models.TwitterPost) error {
 	}
 
 	return nil
-}
-
-func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {
-	var err error
-
-	tx := db.Begin()
-
-	if tx.Where(where).First(out).RecordNotFound() {
-		// If the record does'nt exist it gets created
-		err = tx.Create(update).Scan(out).Error
-	} else {
-		// Else it gets upated
-		err = tx.Model(out).Update(update).Scan(out).Error
-	}
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-
-	return tx.Commit().Error
 }
