@@ -85,16 +85,11 @@ func (i *InstaPostsScraper) runStep() error {
 		return nil
 	}
 	fmt.Println("Username: ", username, " Posts Init")
-	cursor := instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.PageInfo.EndCursor
 	userID := instagramAccountInfo.Graphql.User.ID
 
-	err = i.sendUserInfoPostsID(instagramAccountInfo, username, userID)
-	if err != nil {
-		return err
-	}
-
 	isPostsSendingFinished := false
-	for isPostsSendingFinished {
+	cursor := ""
+	for !isPostsSendingFinished {
 		fmt.Println("Username: ", username, " accountPosts")
 		accountMedia, err := i.accountPosts(userID, cursor)
 		i.requestCounter++
@@ -108,7 +103,7 @@ func (i *InstaPostsScraper) runStep() error {
 		i.sendUserTimlinePostsID(accountMedia, username, userID)
 
 		if !accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.HasNextPage {
-			isPostsSendingFinished = false
+			isPostsSendingFinished = true
 		}
 		time.Sleep(time.Millisecond * 100)
 	}
@@ -190,7 +185,6 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userID string, endCursor string) 
 	}
 	variable := &Variables{userID, 12, endCursor}
 	variableJSON, err := json.Marshal(variable)
-	fmt.Println(string(variableJSON))
 	if err != nil {
 		return media, err
 	}
@@ -221,43 +215,28 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userID string, endCursor string) 
 	return media, nil
 }
 
-func (i *InstaPostsScraper) sendUserInfoPostsID(instagramAccountInfo *instagramAccountInfo, username string, userID string) error {
-	for _, element := range instagramAccountInfo.Graphql.User.EdgeOwnerToTimelineMedia.Edges {
-		fmt.Println("Edges ", username)
-		fmt.Println(element.Node.Typename)
-		if element.Node.Shortcode != "" {
-			fmt.Println("Edges Node1 ", username)
-			instagramPost := models.InstagramPost{
-				PostID:     element.Node.ID,
-				ShortCode:  element.Node.Shortcode,
-				UserID:     userID,
-				UserName:   username,
-				PictureURL: element.Node.DisplayURL}
-
-			instagramPostJSON, err := json.Marshal(instagramPost)
-
-			if err != nil {
-				return err
-			}
-
-			err = i.postsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJSON})
-			if err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
 func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia, username string, userID string) {
 	for _, element := range accountMedia.Data.User.EdgeOwnerToTimelineMedia.Edges {
 		if element.Node.ID != "" {
 
+			var postsTaggedUsers []string
+			for _, element := range element.Node.EdgeMediaToTaggedUser.Edges {
+				postsTaggedUsers = append(postsTaggedUsers, element.Node.User.Username)
+			}
+
+			var caption string
+			if len(element.Node.EdgeMediaToCaption.Edges) > 0 {
+				caption = element.Node.EdgeMediaToCaption.Edges[0].Node.Text
+			}
+
 			instagramPost := models.InstagramPost{
-				PostID:     element.Node.ID,
-				ShortCode:  element.Node.Shortcode,
-				UserID:     userID,
-				PictureURL: element.Node.DisplayURL,
+				PostID:      element.Node.ID,
+				ShortCode:   element.Node.Shortcode,
+				UserID:      userID,
+				UserName:    username,
+				PictureURL:  element.Node.DisplayURL,
+				TaggedUsers: postsTaggedUsers,
+				Caption:     caption,
 			}
 
 			instagramPostJSON, err := json.Marshal(instagramPost)

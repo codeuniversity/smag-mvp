@@ -57,11 +57,13 @@ type InstaComment struct {
 
 // InstagramPost is a Post on instagram
 type InstagramPost struct {
-	PostID     string `json:"post_id"`
-	ShortCode  string `json:"short_code"`
-	UserName   string `json:"user_name"`
-	UserID     string `json:"user_id"`
-	PictureURL string `json:"picture_url"`
+	PostID      string   `json:"post_id"`
+	ShortCode   string   `json:"short_code"`
+	UserName    string   `json:"user_name"`
+	UserID      string   `json:"user_id"`
+	PictureURL  string   `json:"picture_url"`
+	TaggedUsers []string `json:"tagged_users"`
+	Caption     string   `json:"caption"`
 }
 
 // InstaCommentScrapError s are written to the error topic of the scraper when even after retries we can't scrape the comments
