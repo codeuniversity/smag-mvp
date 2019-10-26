@@ -25,7 +25,16 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  # GRPC
+  minio:
+    image: minio/minio
+    ports:
+      - 9000:9000
+    environment:
+      MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
+      MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    command: "server /data"
+
+    # GRPC
   # ports: 4000 - 4999
   envoy-proxy:
     build: "./api/envoy-proxy"
@@ -52,11 +61,70 @@ services:
       - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_GROUPID: "user_postgres_inserter"
+      KAFKA_GROUPID: "insta_user_scraper"
       KAFKA_NAME_TOPIC: "user_names"
       KAFKA_INFO_TOPIC: "user_follow_infos"
       KAFKA_ERR_TOPIC: "insta_user_scaper_err"
 
+  insta_posts-scraper:
+    build:
+      context: "."
+      dockerfile: "insta_posts-scraper/Dockerfile"
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_posts_scraper"
+      KAFKA_NAME_TOPIC: "user_names"
+      KAFKA_INSTA_POSTS_TOPIC: "insta_posts"
+      KAFKA_ERR_TOPIC: "insta_post_scrape_errors"
+
+  insta_posts-inserter:
+    build:
+      context: "."
+      dockerfile: "insta_posts-inserter/Dockerfile"
+
+    depends_on:
+      - "my-kafka"
+      - "postgres"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_posts_inserter"
+      KAFKA_INSTA_POSTS_TOPIC: "insta_posts"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+
+  insta_post-pictures-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
+    depends_on:
+      - "my-kafka"
+      - "postgres"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_post-pictures-filter"
+      KAFKA_CHANGE_TOPIC: "postgres.public.posts"
+      KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
+  insta_pics-downloader:
+    build:
+      context: "."
+      dockerfile: "insta_pics-downloader/Dockerfile"
+    depends_on:
+      - "my-kafka"
+      - "postgres"
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_pics_downloader"
+      KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
+      S3_BUCKET_NAME: "instapics"
+      S3_REGION: "eu-west-1"
+      S3_ENDOINT: "minio:9000"
+      S3_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+      S3_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      S3_USE_SSL: "false"
   # TWITTER SCRAPER
   twitter_scraper_users:
     build: "twitter_scraper/"
