@@ -64,6 +64,7 @@ func (i *InstaPostsScraper) runStep() error {
 
 	instagramAccountInfo, err := i.accountInfo(username)
 	i.requestCounter++
+	scraper_client.Counter = string(i.requestCounter)
 	fmt.Println("Instagram Request Counter: ", i.requestCounter)
 	if err != nil {
 		errMessage := &models.InstagramScrapeError{
@@ -93,6 +94,7 @@ func (i *InstaPostsScraper) runStep() error {
 		fmt.Println("Username: ", username, " accountPosts")
 		accountMedia, err := i.accountPosts(userID, cursor)
 		i.requestCounter++
+		scraper_client.Counter = string(i.requestCounter)
 		fmt.Println("Instagram Request Counter: ", i.requestCounter)
 
 		if err != nil {

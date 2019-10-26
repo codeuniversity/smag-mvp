@@ -152,6 +152,8 @@ func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error)
 	return &http.Client{Transport: tr}, nil
 }
 
+var Counter = ""
+
 func (h *HttpClient) WithRetries(times int, f func() error) error {
 	var err error
 	for i := 0; i < times; i++ {
@@ -161,12 +163,11 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 		}
 
 		fmt.Println(err)
-		foundAddress, err := h.checkIfIPReachedTheLimit(err)
-		fmt.Println("FoundAddress: ", foundAddress)
+		isRenewed, err := h.checkIfIPReachedTheLimit(err)
 		if err != nil {
 			fmt.Println(err)
 		}
-		if foundAddress {
+		if isRenewed {
 			times++
 		}
 		time.Sleep(100 * time.Millisecond)
@@ -180,28 +181,20 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 	case *json.SyntaxError:
 		fmt.Println("SyntaxError")
 
-		if h.localAddressReachLimit == true {
-			_, err := h.sendRenewElasticIpRequestToAmazonService()
-			if err != nil {
-				return false, err
-			}
-
-			h.localAddressReachLimit = false
-			return true, nil
-
+		_, err := h.sendRenewElasticIpRequestToAmazonService(Counter)
+		if err != nil {
+			return false, err
 		}
+
+		return true, nil
 	case *HTTPStatusError:
 		fmt.Println("HttpStatusError")
-		if h.localAddressReachLimit == true {
-			_, err := h.sendRenewElasticIpRequestToAmazonService()
-			if err != nil {
-				return false, err
-			}
-
-			h.localAddressReachLimit = false
-			return true, nil
-
+		_, err := h.sendRenewElasticIpRequestToAmazonService(Counter)
+		if err != nil {
+			return false, err
 		}
+
+		return true, nil
 	default:
 		fmt.Println("Found Wrong Json Type Error ", t)
 		return false, err
@@ -228,11 +221,11 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 //	}
 //	return addresses, false
 //}
-func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (bool, error) {
+func (h *HttpClient) sendRenewElasticIpRequestToAmazonService(counter string) (bool, error) {
 
 	renewIp := pb.RenewingElasticIp{
 		InstanceId: h.instanceId,
-		Node:       "",
+		Node:       counter,
 		Pod:        "",
 		PodIp:      h.localIp,
 	}
@@ -243,6 +236,7 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (bool, error) {
 		fmt.Println("sendRenewElasticIpRequestToAmazonService Err: ", err)
 		return false, err
 	}
+
 	return result.IsRenewed, nil
 }
 
