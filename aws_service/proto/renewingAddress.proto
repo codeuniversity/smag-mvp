@@ -6,7 +6,7 @@ service RouteGuide {
     rpc renewElasticIp(RenewingElasticIp) returns (renewedElasticResult) {}
 }
 
-message renewedElasticResult {
+message RenewedElasticResult {
     bool isRenewed = 1;
 }
 
