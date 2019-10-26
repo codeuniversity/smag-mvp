@@ -1,2 +1,17 @@
+# IDE stuf
+.vscode/
+.idea/
+
+# git stuff
+.gitignore
+README.md
+
+# DOCKER stuff
+docker-compose.yml
 */Dockerfile
 Dockerfile
+*.Dockerfile
+
+# PYTHON stuff
+__pycache__/
+*.pyc

@@ -3,28 +3,12 @@ package utils
 import (
 	"context"
 	"fmt"
-	"github.com/segmentio/kafka-go"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/dgraph-io/dgo"
-	"github.com/dgraph-io/dgo/protos/api"
-	"google.golang.org/grpc"
+	"github.com/segmentio/kafka-go"
 )
-
-//GetDGraphClient retuns an intialized dgrapg client and a connection that should be closed once the client is discarded.
-// panics if dgraog can not be connected to
-func GetDGraphClient(dgraphAddress string) (*dgo.Dgraph, *grpc.ClientConn) {
-	conn, err := grpc.Dial(dgraphAddress, grpc.WithInsecure())
-	if err != nil {
-		panic("While trying to dial gRPC")
-	}
-
-	dc := api.NewDgraphClient(conn)
-	dg := dgo.NewDgraphClient(dc)
-	return dg, conn
-}
 
 //WithRetries calls f up to the given `times` and returns the last error if times is reached
 func WithRetries(times int, f func() error) error {
@@ -82,4 +66,32 @@ func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) bool {
 	}
 
 	return envBool
+}
+
+// PanicIfNotNil panics if err != nil
+func PanicIfNotNil(err error) {
+	if err != nil {
+		//TODO: graceful shutdown
+		panic(err)
+	}
+}
+
+// MustBeNil panics if err != nil
+func MustBeNil(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+// ConvertIntToBool converts an integer to a bool (binary)
+func ConvertIntToBool(value int) bool {
+	if value == 1 {
+		return true
+	}
+	return false
+}
+
+// ConvertDateStrToTime converts a dateStr to a time.Time obj
+func ConvertDateStrToTime(dateStr string) (time.Time, error) {
+	return time.Parse("02 Jan 2006", dateStr)
 }

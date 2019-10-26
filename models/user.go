@@ -1,30 +1,36 @@
 package models
 
+import "github.com/jinzhu/gorm"
+
 //UserFollowInfo holds the follow graph info, only relating userNames
 type UserFollowInfo struct {
-	UserName   string   `json:"user_name"`
-	RealName   string   `json:"real_name"`
-	AvatarURL  string   `json:"avatar_url"`
-	Bio        string   `json:"bio"`
-	Followers  []string `json:"followers"`
-	Followings []string `json:"followings"`
-	CrawlTs    int      `json:"crawl_ts"`
+	gorm.Model
+	UserName   string   `json:"user_name" gorm:"column:user_name"`
+	RealName   string   `json:"real_name" gorm:"column:real_name"`
+	AvatarURL  string   `json:"avatar_url" gorm:"column:avatar_url"`
+	Bio        string   `json:"bio" gorm:"column:bio"`
+	Followers  []string `json:"followers" gorm:"column:followers"`
+	Followings []string `json:"followings" gorm:"column:followings"`
+	CrawlTs    int      `json:"crawl_ts" gorm:"column:crawl_ts"`
 }
 
-// User is the struct containing all user fields, used for serializing users to dgraph
+// User is the struct containing all user fields, used for saving users to the database
 type User struct {
+	gorm.Model
 	UID       string  `json:"uid,omitempty"`
-	Name      string  `json:"name,omitempty"`
-	RealName  string  `json:"real_name,omitempty"`
-	AvatarURL string  `json:"avatar_url,omitempty"`
-	Bio       string  `json:"bio,omitempty"`
-	Follows   []*User `json:"follows,omitempty"`
-	CrawledAt int     `json:"crawled_at,omitempty"`
+	UserName  string  `json:"user_name,omitempty" gorm:"column:user_name"`
+	RealName  string  `json:"real_name,omitempty" gorm:"column:real_name"`
+	AvatarURL string  `json:"avatar_url,omitempty" gorm:"column:avatar_url"`
+	Bio       string  `json:"bio,omitempty" gorm:"column:bio"`
+	Follows   []*User `json:"follows,omitempty" gorm:"column:follows"`
+	CrawledAt int     `json:"crawled_at,omitempty" gorm:"column:crawl_ts"`
 }
 
-type RenewingAddresses struct {
-	InstanceId string   `json:"instanceId"`
-	LocalIps   []string `json:"localIps"`
+// Follow is a struct representing the "follows" table in the postgres database
+type Follow struct {
+	// UID  string `json:"uid,omitempty" gorm:"column:uid"`
+	From uint `gorm:"column:from_id"`
+	To   uint `gorm:"column:to_id"`
 }
 
 // ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
@@ -33,35 +39,35 @@ type ScrapeError struct {
 	Error string `json:"error,omitempty"`
 }
 
-// ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
-type AwsServiceError struct {
-	InstanceId string `json:"name,omitempty"`
-	Error      string `json:"error,omitempty"`
-}
-
-// ScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
+// InstagramScrapeError s are written to user_scrape_errors when even after retries we can't scrape a user
 type InstagramScrapeError struct {
 	Name  string `json:"name,omitempty"`
 	Error string `json:"error,omitempty"`
 }
 
+// InstaComment os a comment on instagram
 type InstaComment struct {
-	Id            string `json:"id"`
+	ID            string `json:"id"`
 	Text          string `json:"text"`
 	CreatedAt     int    `json:"created_at"`
-	PostId        string `json:"post_id"`
+	PostID        string `json:"post_id"`
 	ShortCode     string `json:"short_code"`
 	OwnerUsername string `json:"owner_username"`
 }
 
+// InstagramPost is a Post on instagram
 type InstagramPost struct {
-	PostId     string `json:"post_id"`
-	ShortCode  string `json:"short_code"`
-	UserId     string `json:"user_id"`
-	PictureUrl string `json:"picture_url"`
+	PostID      string   `json:"post_id"`
+	ShortCode   string   `json:"short_code"`
+	UserName    string   `json:"user_name"`
+	UserID      string   `json:"user_id"`
+	PictureURL  string   `json:"picture_url"`
+	TaggedUsers []string `json:"tagged_users"`
+	Caption     string   `json:"caption"`
 }
 
+// InstaCommentScrapError s are written to the error topic of the scraper when even after retries we can't scrape the comments
 type InstaCommentScrapError struct {
-	PostId string `json:"post_id,omitempty"`
+	PostID string `json:"post_id,omitempty"`
 	Error  string `json:"error,omitempty"`
 }
