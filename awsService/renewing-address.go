@@ -81,9 +81,9 @@ func (r *RenewingAddressGrpcServer) ErrorTest() {
 func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reachedRequestLimit *pb.RenewingElasticIp) (*pb.RenewedElasticResult, error) {
 	ec2Address, err := GetElasticPublicAddresses(r.ec2Service, reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
 
-	fmt.Println("PodIp: ", reachedRequestLimit.PodIp)
-	fmt.Println("InstanceId: ", reachedRequestLimit.InstanceId)
-	log.Println("Time")
+	log.Println("PodIp: ", reachedRequestLimit.PodIp)
+	log.Println("InstanceId: ", reachedRequestLimit.InstanceId)
+	log.Println("Counter: ", reachedRequestLimit.Node)
 	if err != nil {
 		fmt.Println(err)
 		return &pb.RenewedElasticResult{IsRenewed: false}, nil
