@@ -10,7 +10,8 @@ export class Results extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      users: this.props.location.state.results
+      users:
+        (this.props.location.state && this.props.location.state.results) || []
     };
   }
 
