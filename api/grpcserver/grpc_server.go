@@ -21,6 +21,8 @@ type GrpcServer struct {
 	db       *sql.DB
 }
 
+type scanFunc func(row *sql.Rows) (proto.User, error)
+
 // NewGrpcServer returns initilized gRPC Server
 func NewGrpcServer(postgresHost string, postgresPassword string, grpcPort string) *GrpcServer {
 
@@ -88,12 +90,12 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 		return nil, err
 	}
 
-	u.Followings, err = s.getRelationsFromUser("SELECT follows.to_id as id, users.user_name FROM follows JOIN users ON follows.to_id=users.id WHERE follows.from_id=$1", u.Id)
+	u.Followings, err = s.getRelationsFromUser("SELECT follows.to_id as id, users.user_name FROM follows JOIN users ON follows.to_id=users.id WHERE follows.from_id=$1", u.Id, scanForIDAndUserName)
 	if err != nil {
 		return nil, err
 	}
 
-	u.Followers, err = s.getRelationsFromUser("SELECT follows.from_id, users.user_name FROM follows JOIN users ON follows.from_id=users.id WHERE follows.to_id=$1", u.Id)
+	u.Followers, err = s.getRelationsFromUser("SELECT follows.from_id, users.user_name FROM follows JOIN users ON follows.from_id=users.id WHERE follows.to_id=$1", u.Id, scanForIDAndUserName)
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +103,7 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	return u, nil
 }
 
-func (s *GrpcServer) getRelationsFromUser(query string, userID string) ([]*proto.User, error) {
+func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc scanFunc) ([]*proto.User, error) {
 
 	u := []*proto.User{}
 
@@ -114,7 +116,7 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string) ([]*proto
 	for rows.Next() {
 		user := proto.User{}
 
-		err := rows.Scan(&user.Id, &user.UserName)
+		user, err = scanFunc(rows)
 		if err != nil {
 			return nil, err
 		}
@@ -124,4 +126,15 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string) ([]*proto
 	}
 
 	return u, nil
+}
+
+//scanForIdAndUserName scans a sql row for user id and username
+func scanForIDAndUserName(row *sql.Rows) (proto.User, error) {
+	user := proto.User{}
+	err := row.Scan(&user.Id, &user.UserName)
+	if err != nil {
+		//return nil, nil
+	}
+
+	return user, nil
 }
