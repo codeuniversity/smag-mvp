@@ -34,10 +34,9 @@ func NewHttpClient(awsServiceAddress string) *HttpClient {
 
 	localIp := utils.GetStringFromEnvWithDefault("POD_IP", "")
 
-	if localIp != "" {
+	if localIp == "" {
 		panic("Env $POD_IP is not set")
 	}
-	//addresses := []string{"192.168.178.41"}
 
 	client.localIp = localIp
 
