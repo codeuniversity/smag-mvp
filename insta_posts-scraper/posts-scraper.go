@@ -64,7 +64,6 @@ func (i *InstaPostsScraper) runStep() error {
 
 	instagramAccountInfo, err := i.accountInfo(username)
 	i.requestCounter++
-	scraper_client.Counter = string(i.requestCounter)
 	fmt.Println("Instagram Request Counter: ", i.requestCounter)
 	if err != nil {
 		errMessage := &models.InstagramScrapeError{
@@ -94,7 +93,6 @@ func (i *InstaPostsScraper) runStep() error {
 		fmt.Println("Username: ", username, " accountPosts")
 		accountMedia, err := i.accountPosts(userID, cursor)
 		i.requestCounter++
-		scraper_client.Counter = string(i.requestCounter)
 		fmt.Println("Instagram Request Counter: ", i.requestCounter)
 
 		if err != nil {
@@ -115,7 +113,7 @@ func (i *InstaPostsScraper) runStep() error {
 func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo, error) {
 	var instagramAccountInfo *instagramAccountInfo
 
-	err := i.httpClient.WithRetries(2, func() error {
+	err := i.httpClient.WithRetries(string(i.requestCounter), 2, func() error {
 		accountInfo, err := i.scrapeAccountInfo(username)
 		if err != nil {
 			return err
@@ -134,7 +132,7 @@ func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo,
 func (i *InstaPostsScraper) accountPosts(userID string, cursor string) (*instagramMedia, error) {
 	var instagramAccountMedia *instagramMedia
 
-	err := i.httpClient.WithRetries(2, func() error {
+	err := i.httpClient.WithRetries(string(i.requestCounter), 2, func() error {
 		accountInfo, err := i.scrapeProfileMedia(userID, cursor)
 		if err != nil {
 			return err

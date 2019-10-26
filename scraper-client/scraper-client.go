@@ -4,7 +4,7 @@ import "net/http"
 
 // ScraperClient is some implementation of a http client usable for scraping
 type ScraperClient interface {
-	WithRetries(times int, f func() error) error
+	WithRetries(counter string, times int, f func() error) error
 	Do(request *http.Request) (*http.Response, error)
 }
 

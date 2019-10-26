@@ -152,9 +152,7 @@ func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error)
 	return &http.Client{Transport: tr}, nil
 }
 
-var Counter = ""
-
-func (h *HttpClient) WithRetries(times int, f func() error) error {
+func (h *HttpClient) WithRetries(counter string, times int, f func() error) error {
 	var err error
 	for i := 0; i < times; i++ {
 		err = f()
@@ -163,7 +161,7 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 		}
 
 		fmt.Println(err)
-		isRenewed, err := h.checkIfIPReachedTheLimit(err)
+		isRenewed, err := h.checkIfIPReachedTheLimit(counter, err)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -175,13 +173,13 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 	return err
 }
 
-func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
+func (h *HttpClient) checkIfIPReachedTheLimit(counter string, err error) (bool, error) {
 	fmt.Println("checkIfIPReachedTheLimit")
 	switch t := err.(type) {
 	case *json.SyntaxError:
 		fmt.Println("SyntaxError")
 
-		_, err := h.sendRenewElasticIpRequestToAmazonService(Counter)
+		_, err := h.sendRenewElasticIpRequestToAmazonService(counter)
 		if err != nil {
 			return false, err
 		}
@@ -189,7 +187,7 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 		return true, nil
 	case *HTTPStatusError:
 		fmt.Println("HttpStatusError")
-		_, err := h.sendRenewElasticIpRequestToAmazonService(Counter)
+		_, err := h.sendRenewElasticIpRequestToAmazonService(counter)
 		if err != nil {
 			return false, err
 		}
