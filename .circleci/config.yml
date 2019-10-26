@@ -43,8 +43,6 @@ jobs:
 
   insta-comments-scraper:
     executor: job-runner
-    environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta_comments-scraper
     steps:
       - checkout
       - setup_remote_docker
