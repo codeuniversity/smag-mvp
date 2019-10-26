@@ -132,7 +132,7 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc 
 func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
 	res := &proto.InstaPostsResponse{}
 
-	rows, err := s.db.Query("SELECT id, post_id, short_code, picture_url FROM posts WHERE user_id=$1", request.UserId)
+	rows, err := s.db.Query("SELECT id, post_id, short_code, picture_url, caption FROM posts WHERE user_id=$1", request.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +142,7 @@ func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.U
 	for rows.Next() {
 		post := proto.InstaPost{}
 
-		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.ImgUrl)
+		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.ImgUrl, &post.Caption)
 
 		res.InstaPosts = append(res.InstaPosts, &post)
 	}
