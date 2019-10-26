@@ -1,4 +1,4 @@
-package awsService
+package aws_service
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
-	pb "github.com/codeuniversity/smag-mvp/awsService/proto"
+	pb "github.com/codeuniversity/smag-mvp/aws_service/proto"
 	"google.golang.org/grpc"
 	"log"
 	"net"

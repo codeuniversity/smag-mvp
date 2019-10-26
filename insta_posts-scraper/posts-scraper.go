@@ -29,18 +29,17 @@ type InstaPostsScraper struct {
 	errQWriter   *kafka.Writer
 
 	requestCounter int
-
-	httpClient scraper_client.ScraperClient
+	httpClient     scraper_client.ScraperClient
 }
 
 // New returns an initilized scraper
-func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *InstaPostsScraper {
+func New(awsServiceAddress string, nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *InstaPostsScraper {
 	i := &InstaPostsScraper{}
 	i.nameQReader = nameQReader
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
 
-	i.httpClient = scraper_client.NewHttpClient("localhost:9900")
+	i.httpClient = scraper_client.NewHttpClient(awsServiceAddress)
 
 	i.Worker = worker.Builder{}.WithName("insta_posts_scraper").
 		WithWorkStep(i.runStep).

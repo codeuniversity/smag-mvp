@@ -32,13 +32,13 @@ type PostCommentScraper struct {
 }
 
 // New returns an initialized PostCommentScraper
-func New(postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
+func New(awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
 	s := &PostCommentScraper{}
 	s.postIDQReader = postIDQReader
 	s.commentsInfoQWriter = commentsInfoQWriter
 	s.errQWriter = errQWriter
 
-	s.httpClient = client.NewSimpleScraperClient()
+	s.httpClient = client.NewHttpClient(awsServiceAddress)
 
 	s.Worker = worker.Builder{}.WithName("insta_comments_scraper").
 		WithWorkStep(s.runStep).

@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	pb "github.com/codeuniversity/smag-mvp/awsService/proto"
+	pb "github.com/codeuniversity/smag-mvp/aws_service/proto"
 	generator "github.com/codeuniversity/smag-mvp/http_header-generator"
 	"github.com/codeuniversity/smag-mvp/utils"
 
@@ -30,15 +30,8 @@ func NewHttpClient(awsServiceAddress string) *HttpClient {
 	client.HTTPHeaderGenerator = generator.New()
 	var err error
 
-	localIp := utils.GetStringFromEnvWithDefault("POD_IP", "")
-
-	if localIp == "" {
-		panic("Env $POD_IP is not set")
-	}
-
-	client.localIp = localIp
-
-	client.client, err = client.getBoundAddressClient(localIp)
+	client.localIp = utils.MustGetStringFromEnv("POD_IP")
+	client.client, err = client.getBoundAddressClient(client.localIp)
 
 	if err != nil {
 		panic(err)
@@ -123,7 +116,7 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 	switch t := err.(type) {
 	case *json.SyntaxError, *HTTPStatusError:
 		fmt.Println("SyntaxError")
-		_, err := h.sendRenewElasticIpRequestToAmazonService(counter)
+		_, err := h.sendRenewElasticIpRequestToAmazonService()
 		if err != nil {
 			return false, err
 		}
