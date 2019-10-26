@@ -49,8 +49,8 @@ class App extends Component {
   };
   render() {
     return (
-      <div className="container">
-        <div className="column">
+      <div className="container-center">
+        <div className="column-center">
           <Title />
           <Form onSubmit={this.handleSubmit} />
         </div>
