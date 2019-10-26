@@ -1,4 +1,4 @@
-package scraper_client
+package client
 
 import (
 	"context"
