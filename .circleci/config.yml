@@ -225,25 +225,6 @@ jobs:
             docker tag $CHANGE_STREAM_IMAGE:latest $CHANGE_STREAM_IMAGE:$IMAGE_TAG
             docker push $CHANGE_STREAM_IMAGE:latest
             docker push $CHANGE_STREAM_IMAGE:$IMAGE_TAG
-  aws_service:
-    # specify the version
-    executor: job-runner
-    environment:
-      SERVICE_IMAGE: codesmag/aws_service
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker Image
-          command: docker build -f aws_service/Dockerfile -t $SERVICE_IMAGE .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SERVICE_IMAGE:latest $SERVICE_IMAGE:$IMAGE_TAG
-            docker push $SERVICE_IMAGE:latest
-            docker push $SERVICE_IMAGE:$IMAGE_TAG
 workflows:
   version: 2
   workflow:
@@ -308,10 +289,6 @@ workflows:
             branches:
               only: master
       - insta_user_names-filter:
-          filters:
-            branches:
-              only: master
-      - aws_service:
           filters:
             branches:
               only: master
