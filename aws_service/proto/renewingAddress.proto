@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package proto;
 
-service RouteGuide {
+service ElasticIpService {
     rpc renewElasticIp(RenewingElasticIp) returns (renewedElasticResult) {}
 }
 
-message RenewedElasticResult {
+message renewedElasticResult {
     bool isRenewed = 1;
 }
 

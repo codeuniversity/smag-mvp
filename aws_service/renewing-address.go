@@ -44,7 +44,7 @@ func (r *RenewingAddressGrpcServer) Listen() {
 	fmt.Println("Start RenewingAddressGrpcServer Server")
 
 	grpcServer := grpc.NewServer()
-	pb.RegisterRouteGuideServer(grpcServer, r)
+	pb.RegisterElasticIpServiceServer(grpcServer, r)
 
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)

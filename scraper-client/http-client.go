@@ -136,7 +136,7 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (bool, error) {
 		PodIp:      h.localIp,
 	}
 
-	awsClient := pb.NewRouteGuideClient(h.grpcClient)
+	awsClient := pb.NewElasticIpServiceClient(h.grpcClient)
 	result, err := awsClient.RenewElasticIp(context.Background(), &renewIp)
 	if err != nil {
 		fmt.Println("sendRenewElasticIpRequestToAmazonService Err: ", err)
