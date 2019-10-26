@@ -7,7 +7,6 @@
  * @public
  */
 // GENERATED CODE -- DO NOT EDIT!
-/* eslint-disable */
 
 var jspb = require('google-protobuf');
 var goog = jspb;
@@ -85,7 +84,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.proto.User.repeatedFields_ = [7];
+proto.proto.User.repeatedFields_ = [6,7];
 
 
 
@@ -118,13 +117,14 @@ proto.proto.User.prototype.toObject = function(opt_includeInstance) {
  */
 proto.proto.User.toObject = function(includeInstance, msg) {
   var f, obj = {
-    userName: jspb.Message.getFieldWithDefault(msg, 1, ""),
-    realName: jspb.Message.getFieldWithDefault(msg, 2, ""),
-    bio: jspb.Message.getFieldWithDefault(msg, 3, ""),
-    avatarUrl: jspb.Message.getFieldWithDefault(msg, 4, ""),
-    followingsCount: jspb.Message.getFieldWithDefault(msg, 5, 0),
-    followersCount: jspb.Message.getFieldWithDefault(msg, 6, 0),
-    followingsUsersList: jspb.Message.toObjectList(msg.getFollowingsUsersList(),
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
+    userName: jspb.Message.getFieldWithDefault(msg, 2, ""),
+    realName: jspb.Message.getFieldWithDefault(msg, 3, ""),
+    bio: jspb.Message.getFieldWithDefault(msg, 4, ""),
+    avatarUrl: jspb.Message.getFieldWithDefault(msg, 5, ""),
+    followingsList: jspb.Message.toObjectList(msg.getFollowingsList(),
+    proto.proto.User.toObject, includeInstance),
+    followersList: jspb.Message.toObjectList(msg.getFollowersList(),
     proto.proto.User.toObject, includeInstance)
   };
 
@@ -164,32 +164,33 @@ proto.proto.User.deserializeBinaryFromReader = function(msg, reader) {
     switch (field) {
     case 1:
       var value = /** @type {string} */ (reader.readString());
-      msg.setUserName(value);
+      msg.setId(value);
       break;
     case 2:
       var value = /** @type {string} */ (reader.readString());
-      msg.setRealName(value);
+      msg.setUserName(value);
       break;
     case 3:
       var value = /** @type {string} */ (reader.readString());
-      msg.setBio(value);
+      msg.setRealName(value);
       break;
     case 4:
       var value = /** @type {string} */ (reader.readString());
-      msg.setAvatarUrl(value);
+      msg.setBio(value);
       break;
     case 5:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setFollowingsCount(value);
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAvatarUrl(value);
       break;
     case 6:
-      var value = /** @type {number} */ (reader.readUint64());
-      msg.setFollowersCount(value);
+      var value = new proto.proto.User;
+      reader.readMessage(value,proto.proto.User.deserializeBinaryFromReader);
+      msg.addFollowings(value);
       break;
     case 7:
       var value = new proto.proto.User;
       reader.readMessage(value,proto.proto.User.deserializeBinaryFromReader);
-      msg.addFollowingsUsers(value);
+      msg.addFollowers(value);
       break;
     default:
       reader.skipField();
@@ -220,49 +221,50 @@ proto.proto.User.prototype.serializeBinary = function() {
  */
 proto.proto.User.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
-  f = message.getUserName();
+  f = message.getId();
   if (f.length > 0) {
     writer.writeString(
       1,
       f
     );
   }
-  f = message.getRealName();
+  f = message.getUserName();
   if (f.length > 0) {
     writer.writeString(
       2,
       f
     );
   }
-  f = message.getBio();
+  f = message.getRealName();
   if (f.length > 0) {
     writer.writeString(
       3,
       f
     );
   }
-  f = message.getAvatarUrl();
+  f = message.getBio();
   if (f.length > 0) {
     writer.writeString(
       4,
       f
     );
   }
-  f = message.getFollowingsCount();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getAvatarUrl();
+  if (f.length > 0) {
+    writer.writeString(
       5,
       f
     );
   }
-  f = message.getFollowersCount();
-  if (f !== 0) {
-    writer.writeUint64(
+  f = message.getFollowingsList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
       6,
-      f
+      f,
+      proto.proto.User.serializeBinaryToWriter
     );
   }
-  f = message.getFollowingsUsersList();
+  f = message.getFollowersList();
   if (f.length > 0) {
     writer.writeRepeatedMessage(
       7,
@@ -274,10 +276,10 @@ proto.proto.User.serializeBinaryToWriter = function(message, writer) {
 
 
 /**
- * optional string user_name = 1;
+ * optional string id = 1;
  * @return {string}
  */
-proto.proto.User.prototype.getUserName = function() {
+proto.proto.User.prototype.getId = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
@@ -286,16 +288,16 @@ proto.proto.User.prototype.getUserName = function() {
  * @param {string} value
  * @return {!proto.proto.User} returns this
  */
-proto.proto.User.prototype.setUserName = function(value) {
+proto.proto.User.prototype.setId = function(value) {
   return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
 /**
- * optional string real_name = 2;
+ * optional string user_name = 2;
  * @return {string}
  */
-proto.proto.User.prototype.getRealName = function() {
+proto.proto.User.prototype.getUserName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 2, ""));
 };
 
@@ -304,16 +306,16 @@ proto.proto.User.prototype.getRealName = function() {
  * @param {string} value
  * @return {!proto.proto.User} returns this
  */
-proto.proto.User.prototype.setRealName = function(value) {
+proto.proto.User.prototype.setUserName = function(value) {
   return jspb.Message.setProto3StringField(this, 2, value);
 };
 
 
 /**
- * optional string bio = 3;
+ * optional string real_name = 3;
  * @return {string}
  */
-proto.proto.User.prototype.getBio = function() {
+proto.proto.User.prototype.getRealName = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 3, ""));
 };
 
@@ -322,16 +324,16 @@ proto.proto.User.prototype.getBio = function() {
  * @param {string} value
  * @return {!proto.proto.User} returns this
  */
-proto.proto.User.prototype.setBio = function(value) {
+proto.proto.User.prototype.setRealName = function(value) {
   return jspb.Message.setProto3StringField(this, 3, value);
 };
 
 
 /**
- * optional string avatar_url = 4;
+ * optional string bio = 4;
  * @return {string}
  */
-proto.proto.User.prototype.getAvatarUrl = function() {
+proto.proto.User.prototype.getBio = function() {
   return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 4, ""));
 };
 
@@ -340,52 +342,72 @@ proto.proto.User.prototype.getAvatarUrl = function() {
  * @param {string} value
  * @return {!proto.proto.User} returns this
  */
-proto.proto.User.prototype.setAvatarUrl = function(value) {
+proto.proto.User.prototype.setBio = function(value) {
   return jspb.Message.setProto3StringField(this, 4, value);
 };
 
 
 /**
- * optional uint64 followings_count = 5;
- * @return {number}
+ * optional string avatar_url = 5;
+ * @return {string}
  */
-proto.proto.User.prototype.getFollowingsCount = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 5, 0));
+proto.proto.User.prototype.getAvatarUrl = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 5, ""));
 };
 
 
 /**
- * @param {number} value
+ * @param {string} value
  * @return {!proto.proto.User} returns this
  */
-proto.proto.User.prototype.setFollowingsCount = function(value) {
-  return jspb.Message.setProto3IntField(this, 5, value);
+proto.proto.User.prototype.setAvatarUrl = function(value) {
+  return jspb.Message.setProto3StringField(this, 5, value);
 };
 
 
 /**
- * optional uint64 followers_count = 6;
- * @return {number}
- */
-proto.proto.User.prototype.getFollowersCount = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 6, 0));
-};
-
-
-/**
- * @param {number} value
- * @return {!proto.proto.User} returns this
- */
-proto.proto.User.prototype.setFollowersCount = function(value) {
-  return jspb.Message.setProto3IntField(this, 6, value);
-};
-
-
-/**
- * repeated User followings_users = 7;
+ * repeated User followings = 6;
  * @return {!Array<!proto.proto.User>}
  */
-proto.proto.User.prototype.getFollowingsUsersList = function() {
+proto.proto.User.prototype.getFollowingsList = function() {
+  return /** @type{!Array<!proto.proto.User>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.proto.User, 6));
+};
+
+
+/**
+ * @param {!Array<!proto.proto.User>} value
+ * @return {!proto.proto.User} returns this
+*/
+proto.proto.User.prototype.setFollowingsList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 6, value);
+};
+
+
+/**
+ * @param {!proto.proto.User=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.proto.User}
+ */
+proto.proto.User.prototype.addFollowings = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 6, opt_value, proto.proto.User, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.proto.User} returns this
+ */
+proto.proto.User.prototype.clearFollowingsList = function() {
+  return this.setFollowingsList([]);
+};
+
+
+/**
+ * repeated User followers = 7;
+ * @return {!Array<!proto.proto.User>}
+ */
+proto.proto.User.prototype.getFollowersList = function() {
   return /** @type{!Array<!proto.proto.User>} */ (
     jspb.Message.getRepeatedWrapperField(this, proto.proto.User, 7));
 };
@@ -395,7 +417,7 @@ proto.proto.User.prototype.getFollowingsUsersList = function() {
  * @param {!Array<!proto.proto.User>} value
  * @return {!proto.proto.User} returns this
 */
-proto.proto.User.prototype.setFollowingsUsersList = function(value) {
+proto.proto.User.prototype.setFollowersList = function(value) {
   return jspb.Message.setRepeatedWrapperField(this, 7, value);
 };
 
@@ -405,7 +427,7 @@ proto.proto.User.prototype.setFollowingsUsersList = function(value) {
  * @param {number=} opt_index
  * @return {!proto.proto.User}
  */
-proto.proto.User.prototype.addFollowingsUsers = function(opt_value, opt_index) {
+proto.proto.User.prototype.addFollowers = function(opt_value, opt_index) {
   return jspb.Message.addToRepeatedWrapperField(this, 7, opt_value, proto.proto.User, opt_index);
 };
 
@@ -414,8 +436,8 @@ proto.proto.User.prototype.addFollowingsUsers = function(opt_value, opt_index) {
  * Clears the list making it empty but non-null.
  * @return {!proto.proto.User} returns this
  */
-proto.proto.User.prototype.clearFollowingsUsersList = function() {
-  return this.setFollowingsUsersList([]);
+proto.proto.User.prototype.clearFollowersList = function() {
+  return this.setFollowersList([]);
 };
 
 
