@@ -12,8 +12,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"regexp"
-	"strings"
 	"time"
 )
 
@@ -73,59 +71,6 @@ func getAmazonInstanceId() (string, error) {
 	return string(body), nil
 }
 
-func isNetworkInterfaces(name string) bool {
-	matched, err := regexp.MatchString("eth[0-9]*$", name)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return matched
-}
-
-func isIpv4Address(ip string) bool {
-	matched, err := regexp.MatchString("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$", ip)
-
-	if err != nil {
-		panic(err)
-	}
-
-	return matched
-}
-
-func getLocalIpAddresses(count int) []string {
-	interfaces, err := net.Interfaces()
-
-	if err != nil {
-		fmt.Println("Get Network Interfaces Error: ")
-		panic(err)
-	}
-
-	var localAddresses []string
-	for _, networkInterface := range interfaces {
-		if isNetworkInterfaces(networkInterface.Name) {
-			addrs, err := networkInterface.Addrs()
-			if err != nil {
-				fmt.Println("Error Addrs: ", err)
-				panic(err)
-			}
-			for _, address := range addrs {
-				ip := strings.Split(address.String(), "/")
-				if isIpv4Address(ip[0]) {
-					localAddresses = append(localAddresses, ip[0])
-				}
-			}
-		}
-	}
-
-	if len(localAddresses) < count {
-		panic(fmt.Sprintf("Not Enough Local Ip Addresses, Requirement: %d \n", count))
-	}
-
-	fmt.Println("All LocalAddresses: ", localAddresses)
-	return localAddresses[:count]
-}
-
 func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error) {
 	localAddr, err := net.ResolveIPAddr("ip", localIp)
 
@@ -152,7 +97,7 @@ func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error)
 	return &http.Client{Transport: tr}, nil
 }
 
-func (h *HttpClient) WithRetries(counter string, times int, f func() error) error {
+func (h *HttpClient) WithRetries(times int, f func() error) error {
 	var err error
 	for i := 0; i < times; i++ {
 		err = f()
@@ -161,69 +106,39 @@ func (h *HttpClient) WithRetries(counter string, times int, f func() error) erro
 		}
 
 		fmt.Println(err)
-		isRenewed, err := h.checkIfIPReachedTheLimit(counter, err)
+		isRenewed, err := h.checkIfIPReachedTheLimit(err)
 		if err != nil {
 			fmt.Println(err)
 		}
 		if isRenewed {
 			times++
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(380 * time.Millisecond)
 	}
 	return err
 }
 
-func (h *HttpClient) checkIfIPReachedTheLimit(counter string, err error) (bool, error) {
+func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
 	fmt.Println("checkIfIPReachedTheLimit")
 	switch t := err.(type) {
-	case *json.SyntaxError:
+	case *json.SyntaxError, *HTTPStatusError:
 		fmt.Println("SyntaxError")
-
 		_, err := h.sendRenewElasticIpRequestToAmazonService(counter)
 		if err != nil {
 			return false, err
 		}
-
-		return true, nil
-	case *HTTPStatusError:
-		fmt.Println("HttpStatusError")
-		_, err := h.sendRenewElasticIpRequestToAmazonService(counter)
-		if err != nil {
-			return false, err
-		}
-
 		return true, nil
 	default:
 		fmt.Println("Found Wrong Json Type Error ", t)
 		return false, err
 	}
-	fmt.Println("checkIfIPReachedTheLimit is not working!!!")
-	return false, err
 }
 
-//func (h *HttpClient) checkAvailableAddresses() ([]string, bool) {
-//	h.localAddressesReachLimit[h.currentAddress] = false
-//	var addresses []string
-//	var err error
-//	for ip := range h.localAddressesReachLimit {
-//		addresses = append(addresses, ip)
-//		if h.localAddressesReachLimit[ip] == true {
-//			h.currentAddress = ip
-//			h.client, err = h.getBoundAddressClient(ip)
-//			if err != nil {
-//				panic(err)
-//			}
-//			fmt.Println("Update Client")
-//			return addresses, true
-//		}
-//	}
-//	return addresses, false
-//}
-func (h *HttpClient) sendRenewElasticIpRequestToAmazonService(counter string) (bool, error) {
+func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (bool, error) {
 
 	renewIp := pb.RenewingElasticIp{
 		InstanceId: h.instanceId,
-		Node:       counter,
+		Node:       "",
 		Pod:        "",
 		PodIp:      h.localIp,
 	}
@@ -237,27 +152,6 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService(counter string) (b
 
 	return result.IsRenewed, nil
 }
-
-//func (h *HttpClient) waitForRenewElasticIpRequest() (*models.RenewingAddresses, error) {
-//	fmt.Println("waitForRenewElasticIpRequest")
-//	message, err := h.renewedAddressQReader.FetchMessage(context.Background())
-//	fmt.Println("waitForRenewElasticIpRequest Finished: ")
-//	if err != nil {
-//		fmt.Println("waitForRenewElasticIpRequest error")
-//		return nil, err
-//	}
-//	fmt.Println("Wait Message Time: ", message.Time)
-//
-//	var renewedAddresses models.RenewingAddresses
-//	err = json.Unmarshal(message.Value, &renewedAddresses)
-//	if err != nil {
-//		return nil, err
-//	}
-//
-//	h.renewedAddressQReader.CommitMessages(context.Background(), message)
-//	return &renewedAddresses, err
-//}
-//
 
 func (h *HttpClient) Close() {
 	h.grpcClient.Close()

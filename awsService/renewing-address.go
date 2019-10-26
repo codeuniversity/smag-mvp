@@ -2,16 +2,11 @@ package awsService
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	pb "github.com/codeuniversity/smag-mvp/awsService/proto"
-	"github.com/codeuniversity/smag-mvp/models"
-	"github.com/codeuniversity/smag-mvp/service"
-	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -19,23 +14,15 @@ import (
 
 // Scraper represents the scraper containing all clients it uses
 type RenewingAddressGrpcServer struct {
-	errQWriter *kafka.Writer
 	awsSession *session.Session
 	ec2Service *ec2.EC2
 	grpcPort   int
-	*service.Executor
 }
 
 // New returns an initilized scraper
-func New(kafkaAddress string, grpcPort int) *RenewingAddressGrpcServer {
+func New(grpcPort int) *RenewingAddressGrpcServer {
 	var err error
 	s := &RenewingAddressGrpcServer{}
-	//s.errQWriter = kafka.NewWriter(kafka.WriterConfig{
-	//	Brokers:  []string{kafkaAddress},
-	//	Topic:    "renewing_elastic_ip_errors",
-	//	Balancer: &kafka.LeastBytes{},
-	//	Async:    false,
-	//})
 	s.awsSession, err = session.NewSession(&aws.Config{
 		Region: aws.String("eu-central-1")},
 	)
@@ -64,59 +51,38 @@ func (r *RenewingAddressGrpcServer) Listen() {
 	}
 }
 
-func (r *RenewingAddressGrpcServer) ErrorTest() {
-
-	var err error
-	err = &NoElasticIPError{"Test"}
-	//err = errors.New("Test")
-
-	var e *NoElasticIPError
-	if !errors.As(err, &e) {
-		fmt.Println("NoElasticIPError")
-	} else {
-		fmt.Println("Error")
-	}
-}
-
 func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reachedRequestLimit *pb.RenewingElasticIp) (*pb.RenewedElasticResult, error) {
-	ec2Address, err := GetElasticPublicAddresses(r.ec2Service, reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
+	ec2Address, err := r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
 
 	log.Println("PodIp: ", reachedRequestLimit.PodIp)
 	log.Println("InstanceId: ", reachedRequestLimit.InstanceId)
-	log.Println("Counter: ", reachedRequestLimit.Node)
 	if err != nil {
 		fmt.Println(err)
 		return &pb.RenewedElasticResult{IsRenewed: false}, nil
 	}
 
-	var noElasticIPError *NoElasticIPError
-	if !errors.As(err, &noElasticIPError) {
-		err = disassociateAddress(r.awsSession, *ec2Address.PublicIp)
-		if err != nil {
-			fmt.Println("disassociateAddress Error: ", err)
-			r.sendErrorMessage(reachedRequestLimit.InstanceId, err)
-			return nil, err
-		}
-
-		err = releaseElasticAddresses(r.ec2Service, *ec2Address.AllocationId)
-		if err != nil {
-			fmt.Println("Error ReleaseElasticAddress: ", err)
-			r.sendErrorMessage(reachedRequestLimit.InstanceId, err)
-			return nil, err
-		}
+	err = r.disassociateAddress(*ec2Address.PublicIp)
+	if err != nil {
+		fmt.Println("disassociateAddress Error: ", err)
+		return nil, err
 	}
 
-	err = allocateAddresses(r.ec2Service, reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp, *ec2Address.NetworkInterfaceId)
+	err = r.releaseElasticAddresses(*ec2Address.AllocationId)
+	if err != nil {
+		fmt.Println("Error ReleaseElasticAddress: ", err)
+		return nil, err
+	}
+
+	err = allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, *ec2Address.NetworkInterfaceId)
 	if err != nil {
 		fmt.Println("Error AllocateAddress: ", err)
-		r.sendErrorMessage(reachedRequestLimit.InstanceId, err)
 		return nil, err
 	}
 
 	return &pb.RenewedElasticResult{IsRenewed: true}, nil
 }
 
-func allocateAddresses(svc *ec2.EC2, instanceId string, localIp string, networkInterfaceId string) error {
+func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) error {
 
 	allocRes, err := svc.AllocateAddress(&ec2.AllocateAddressInput{
 		Domain: aws.String("vpc"),
@@ -140,9 +106,9 @@ func allocateAddresses(svc *ec2.EC2, instanceId string, localIp string, networkI
 	return nil
 }
 
-func releaseElasticAddresses(svc *ec2.EC2, allocationId string) error {
+func (r *RenewingAddressGrpcServer) releaseElasticAddresses(allocationId string) error {
 
-	_, err := svc.ReleaseAddress(&ec2.ReleaseAddressInput{
+	_, err := r.ec2Service.ReleaseAddress(&ec2.ReleaseAddressInput{
 		AllocationId: &allocationId,
 	})
 	if err != nil {
@@ -154,9 +120,9 @@ func releaseElasticAddresses(svc *ec2.EC2, allocationId string) error {
 	return nil
 }
 
-func GetElasticPublicAddresses(svc *ec2.EC2, instanceId string, localIp string) (*ec2.Address, error) {
+func (r *RenewingAddressGrpcServer) getElasticPublicAddresses(instanceId string, localIp string) (*ec2.Address, error) {
 
-	result, err := svc.DescribeAddresses(&ec2.DescribeAddressesInput{
+	result, err := r.ec2Service.DescribeAddresses(&ec2.DescribeAddressesInput{
 		Filters: []*ec2.Filter{
 			{
 				Name:   aws.String("instance-id"),
@@ -174,17 +140,9 @@ func GetElasticPublicAddresses(svc *ec2.EC2, instanceId string, localIp string) 
 	}
 
 	if len(result.Addresses) == 0 {
-		fmt.Printf("No elastic IPs for %s region\n", *svc.Config.Region)
-		return nil, &NoElasticIPError{*svc.Config.Region}
+		fmt.Printf("No elastic IPs for %s region\n", *r.ec2Service.Config.Region)
+		return nil, &NoElasticIPError{*r.ec2Service.Config.Region}
 	} else {
-		fmt.Println("Elastic IPs")
-		fmt.Println(len(result.Addresses))
-
-		if len(result.Addresses) > 1 {
-			//send Error Kafka Message!!!!
-		}
-		//publicIp := result.Addresses[0].PublicIp
-		//networkInterfaceId := result.Addresses[0].NetworkInterfaceId
 		return result.Addresses[0], nil
 	}
 }
@@ -192,9 +150,8 @@ func GetElasticPublicAddresses(svc *ec2.EC2, instanceId string, localIp string) 
 // To disassociate an Elastic IP addresses in EC2-Classic
 //
 // This example disassociates an Elastic IP address from an instance in EC2-Classic.
-func disassociateAddress(session *session.Session, publicIP string) error {
-
-	svc := ec2.New(session)
+func (r *RenewingAddressGrpcServer) disassociateAddress(publicIP string) error {
+	svc := ec2.New(r.awsSession)
 	input := &ec2.DisassociateAddressInput{
 		PublicIp: aws.String(publicIP),
 	}
@@ -212,20 +169,4 @@ type NoElasticIPError struct {
 
 func (e *NoElasticIPError) Error() string {
 	return fmt.Sprintf("No elastic IPs for region %s \n", e.region)
-}
-
-func (r *RenewingAddressGrpcServer) sendErrorMessage(instanceId string, err error) {
-	errMessage := &models.AwsServiceError{
-		InstanceId: instanceId,
-		Error:      err.Error(),
-	}
-	_, err = json.Marshal(errMessage)
-	if err != nil {
-		fmt.Println(err)
-	}
-	//r.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
-}
-
-func (r *RenewingAddressGrpcServer) Close() {
-	r.errQWriter.Close()
 }

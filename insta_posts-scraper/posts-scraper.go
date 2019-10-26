@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/models"
@@ -114,7 +113,7 @@ func (i *InstaPostsScraper) runStep() error {
 func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo, error) {
 	var instagramAccountInfo *instagramAccountInfo
 
-	err := i.httpClient.WithRetries(strconv.FormatInt(int64(i.requestCounter), 10), 2, func() error {
+	err := i.httpClient.WithRetries(2, func() error {
 		accountInfo, err := i.scrapeAccountInfo(username)
 		if err != nil {
 			return err
@@ -133,7 +132,7 @@ func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo,
 func (i *InstaPostsScraper) accountPosts(userID string, cursor string) (*instagramMedia, error) {
 	var instagramAccountMedia *instagramMedia
 
-	err := i.httpClient.WithRetries(strconv.FormatInt(int64(i.requestCounter), 10), 2, func() error {
+	err := i.httpClient.WithRetries(2, func() error {
 		accountInfo, err := i.scrapeProfileMedia(userID, cursor)
 		if err != nil {
 			return err
