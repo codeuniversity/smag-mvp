@@ -60,7 +60,6 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 	response := &proto.UserSearchResponse{}
 	rows, err := s.db.Query("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE LOWER(user_name) LIKE LOWER($1)", fmt.Sprintf("%%%s%%", username.UserName))
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -68,16 +67,14 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 	for rows.Next() {
 		u := proto.User{}
 
-		rows.Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+		err := rows.Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+		if err != nil {
+			return nil, err
+		}
 
-		// TODO: error handling
 		response.UserList = append(response.UserList, &u)
 	}
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	fmt.Println(response)
+
 	return response, nil
 }
 
@@ -117,7 +114,10 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string) ([]*proto
 	for rows.Next() {
 		user := proto.User{}
 
-		rows.Scan(&user.Id, &user.UserName)
+		err := rows.Scan(&user.Id, &user.UserName)
+		if err != nil {
+			return nil, err
+		}
 
 		u = append(u, &user)
 
