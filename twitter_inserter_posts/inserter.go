@@ -23,16 +23,14 @@ type Inserter struct {
 	*worker.Worker
 
 	qReader *kafka.Reader
-	qWriter *kafka.Writer
 
 	db *gorm.DB
 }
 
 // New returns an initilized inserter
-func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
+func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
-	i.qWriter = qWriter
 
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
@@ -50,10 +48,6 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("qReader", qReader.Close).
 		AddShutdownHook("postgres_client", db.Close)
-
-	if qWriter != nil {
-		b = b.AddShutdownHook("qWriter", qWriter.Close)
-	}
 
 	i.Worker = b.MustBuild()
 
@@ -91,27 +85,6 @@ func (i *Inserter) insertPost(post *models.TwitterPost) error {
 	err := dbUtils.CreateOrUpdate(i.db, fromPost, filter, post)
 	if err != nil {
 		return err
-	}
-
-	newUserLists := [][]*models.TwitterUser{post.Mentions, post.ReplyTo}
-	if post.RetweetUserID != "" {
-		newUserLists = append(newUserLists, []*models.TwitterUser{
-			&models.TwitterUser{
-				Username: post.RetweetUsername,
-			},
-		})
-	}
-	usersList := models.NewTwitterUserList(newUserLists...)
-	usersList.RemoveDuplicates()
-
-	for _, relationUser := range *usersList {
-
-		queryUser := models.TwitterUser{}
-
-		err = i.db.Where("username = ?", relationUser.Username).First(&queryUser).Error
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil

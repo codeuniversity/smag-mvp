@@ -23,16 +23,14 @@ type Inserter struct {
 	*worker.Worker
 
 	qReader *kafka.Reader
-	qWriter *kafka.Writer
 
 	db *gorm.DB
 }
 
 // New returns an initilized scraper
-func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *kafka.Writer) *Inserter {
+func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
-	i.qWriter = qWriter
 
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
@@ -50,10 +48,6 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader, qWriter *
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("qReader", qReader.Close).
 		AddShutdownHook("postgres_client", db.Close)
-
-	if qWriter != nil {
-		b = b.AddShutdownHook("qWriter", qWriter.Close)
-	}
 
 	i.Worker = b.MustBuild()
 
@@ -95,30 +89,5 @@ func (i *Inserter) insertUser(user *models.TwitterUser) error {
 		return err
 	}
 
-	usersList := models.NewTwitterUserList(user.FollowersList, user.FollowingList)
-	usersList.RemoveDuplicates()
-
-	for _, relationUser := range *usersList {
-
-		var queryUser models.TwitterUser
-
-		err = i.db.Where(&models.TwitterUser{Username: relationUser.Username}).First(&queryUser).Error
-		if err != nil {
-			return err
-		}
-
-		if queryUser.UserIdentifier == "" {
-			i.handleCreatedUser(relationUser.Username)
-		}
-	}
 	return nil
-}
-
-func (i *Inserter) handleCreatedUser(userName string) {
-	// if qWriter is nil, user discovery is disabled
-	if i.qWriter != nil {
-		i.qWriter.WriteMessages(context.Background(), kafka.Message{
-			Value: []byte(userName),
-		})
-	}
 }

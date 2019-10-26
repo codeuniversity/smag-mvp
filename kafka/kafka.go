@@ -65,28 +65,6 @@ func NewWriter(c *WriterConfig) *kafka.Writer {
 	})
 }
 
-// GetUserDiscoveryInserterConfig is a convenience function for gathering the necessary
-// kafka configuration for all inserters
-func GetUserDiscoveryInserterConfig() (*ReaderConfig, *WriterConfig, bool) {
-	var readerConfig *ReaderConfig
-	var writerConfig *WriterConfig
-	var wTopic string
-
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
-	isUserDiscovery := utils.GetBoolFromEnvWithDefault("USER_DISCOVERY", false)
-
-	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
-
-	if isUserDiscovery {
-		wTopic = utils.MustGetStringFromEnv("KAFKA_NAME_TOPIC")
-		writerConfig = NewWriterConfig(kafkaAddress, wTopic, true)
-	}
-
-	readerConfig = NewReaderConfig(kafkaAddress, groupID, rTopic)
-	return readerConfig, writerConfig, isUserDiscovery
-}
-
 //GetInserterConfig returns the Reader topics from kafka for Inserters
 func GetInserterConfig() *ReaderConfig {
 	var readerConfig *ReaderConfig
