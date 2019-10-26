@@ -20,7 +20,8 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Downloader represents the scraper containing all clients it uses
+// Downloader reads download jobs from kafka, downloads pictures from posts, stores them in S3
+//  and writes the S3 path to posts
 type Downloader struct {
 	*worker.Worker
 
@@ -32,7 +33,7 @@ type Downloader struct {
 	db          *sql.DB
 }
 
-// Config holds all the params configurable variables for the Downloader
+// Config holds all the configurable variables for the Downloader
 type Config struct {
 	S3BucketName      string
 	S3Region          string
@@ -52,7 +53,6 @@ func New(qReader *kafka.Reader, config Config) *Downloader {
 	i.bucketName = config.S3BucketName
 	i.region = config.S3Region
 
-	// Initialize minio client object.
 	minioClient, err := minio.New(config.S3Endpoint, config.S3AccessKeyID, config.S3SecretAccessKey, config.S3UseSSL)
 	utils.MustBeNil(err)
 
@@ -82,11 +82,11 @@ func New(qReader *kafka.Reader, config Config) *Downloader {
 }
 
 func (d *Downloader) runStep() error {
-
 	m, err := d.qReader.FetchMessage(context.Background())
 	if err != nil {
 		return err
 	}
+
 	job := models.PostDownloadJob{}
 	err = json.Unmarshal(m.Value, &job)
 	if err != nil {
