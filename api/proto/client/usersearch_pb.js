@@ -150,7 +150,7 @@ if (goog.DEBUG && !COMPILED) {
  * @private {!Array<number>}
  * @const
  */
-proto.proto.User.repeatedFields_ = [6];
+proto.proto.User.repeatedFields_ = [6,7];
 
 
 
@@ -183,12 +183,14 @@ proto.proto.User.prototype.toObject = function(opt_includeInstance) {
  */
 proto.proto.User.toObject = function(includeInstance, msg) {
   var f, obj = {
-    id: jspb.Message.getFieldWithDefault(msg, 1, 0),
+    id: jspb.Message.getFieldWithDefault(msg, 1, ""),
     userName: jspb.Message.getFieldWithDefault(msg, 2, ""),
     realName: jspb.Message.getFieldWithDefault(msg, 3, ""),
     bio: jspb.Message.getFieldWithDefault(msg, 4, ""),
     avatarUrl: jspb.Message.getFieldWithDefault(msg, 5, ""),
     followingsList: jspb.Message.toObjectList(msg.getFollowingsList(),
+    proto.proto.User.toObject, includeInstance),
+    followersList: jspb.Message.toObjectList(msg.getFollowersList(),
     proto.proto.User.toObject, includeInstance)
   };
 
@@ -227,7 +229,7 @@ proto.proto.User.deserializeBinaryFromReader = function(msg, reader) {
     var field = reader.getFieldNumber();
     switch (field) {
     case 1:
-      var value = /** @type {number} */ (reader.readInt64());
+      var value = /** @type {string} */ (reader.readString());
       msg.setId(value);
       break;
     case 2:
@@ -250,6 +252,11 @@ proto.proto.User.deserializeBinaryFromReader = function(msg, reader) {
       var value = new proto.proto.User;
       reader.readMessage(value,proto.proto.User.deserializeBinaryFromReader);
       msg.addFollowings(value);
+      break;
+    case 7:
+      var value = new proto.proto.User;
+      reader.readMessage(value,proto.proto.User.deserializeBinaryFromReader);
+      msg.addFollowers(value);
       break;
     default:
       reader.skipField();
@@ -281,8 +288,8 @@ proto.proto.User.prototype.serializeBinary = function() {
 proto.proto.User.serializeBinaryToWriter = function(message, writer) {
   var f = undefined;
   f = message.getId();
-  if (f !== 0) {
-    writer.writeInt64(
+  if (f.length > 0) {
+    writer.writeString(
       1,
       f
     );
@@ -323,24 +330,32 @@ proto.proto.User.serializeBinaryToWriter = function(message, writer) {
       proto.proto.User.serializeBinaryToWriter
     );
   }
+  f = message.getFollowersList();
+  if (f.length > 0) {
+    writer.writeRepeatedMessage(
+      7,
+      f,
+      proto.proto.User.serializeBinaryToWriter
+    );
+  }
 };
 
 
 /**
- * optional int64 id = 1;
- * @return {number}
+ * optional string id = 1;
+ * @return {string}
  */
 proto.proto.User.prototype.getId = function() {
-  return /** @type {number} */ (jspb.Message.getFieldWithDefault(this, 1, 0));
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 1, ""));
 };
 
 
 /**
- * @param {number} value
+ * @param {string} value
  * @return {!proto.proto.User} returns this
  */
 proto.proto.User.prototype.setId = function(value) {
-  return jspb.Message.setProto3IntField(this, 1, value);
+  return jspb.Message.setProto3StringField(this, 1, value);
 };
 
 
@@ -451,6 +466,44 @@ proto.proto.User.prototype.addFollowings = function(opt_value, opt_index) {
  */
 proto.proto.User.prototype.clearFollowingsList = function() {
   return this.setFollowingsList([]);
+};
+
+
+/**
+ * repeated User followers = 7;
+ * @return {!Array<!proto.proto.User>}
+ */
+proto.proto.User.prototype.getFollowersList = function() {
+  return /** @type{!Array<!proto.proto.User>} */ (
+    jspb.Message.getRepeatedWrapperField(this, proto.proto.User, 7));
+};
+
+
+/**
+ * @param {!Array<!proto.proto.User>} value
+ * @return {!proto.proto.User} returns this
+*/
+proto.proto.User.prototype.setFollowersList = function(value) {
+  return jspb.Message.setRepeatedWrapperField(this, 7, value);
+};
+
+
+/**
+ * @param {!proto.proto.User=} opt_value
+ * @param {number=} opt_index
+ * @return {!proto.proto.User}
+ */
+proto.proto.User.prototype.addFollowers = function(opt_value, opt_index) {
+  return jspb.Message.addToRepeatedWrapperField(this, 7, opt_value, proto.proto.User, opt_index);
+};
+
+
+/**
+ * Clears the list making it empty but non-null.
+ * @return {!proto.proto.User} returns this
+ */
+proto.proto.User.prototype.clearFollowersList = function() {
+  return this.setFollowersList([]);
 };
 
 

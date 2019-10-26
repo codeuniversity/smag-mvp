@@ -3,12 +3,13 @@ syntax = "proto3";
 package proto;
 
 message User {
-    int64 id = 1;
+    string id = 1;
     string user_name = 2;
     string real_name = 3;
     string bio = 4;
     string avatar_url = 5;
     repeated User followings = 6;
+    repeated User followers = 7;
 }
 
 message UserSearchResponse {

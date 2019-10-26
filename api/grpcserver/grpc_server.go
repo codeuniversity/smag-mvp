@@ -21,6 +21,8 @@ type GrpcServer struct {
 	db       *sql.DB
 }
 
+type scanFunc func(row *sql.Rows) (proto.User, error)
+
 // NewGrpcServer returns initilized gRPC Server
 func NewGrpcServer(postgresHost string, postgresPassword string, grpcPort string) *GrpcServer {
 
@@ -60,7 +62,6 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 	response := &proto.UserSearchResponse{}
 	rows, err := s.db.Query("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE LOWER(user_name) LIKE LOWER($1)", fmt.Sprintf("%%%s%%", username.UserName))
 	if err != nil {
-		fmt.Println(err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -68,16 +69,14 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 	for rows.Next() {
 		u := proto.User{}
 
-		rows.Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+		err := rows.Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+		if err != nil {
+			return nil, err
+		}
 
-		// TODO: error handling
 		response.UserList = append(response.UserList, &u)
 	}
-	if err != nil {
-		fmt.Println(err)
-		return nil, err
-	}
-	fmt.Println(response)
+
 	return response, nil
 }
 
@@ -91,18 +90,38 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 		return nil, err
 	}
 
-	rows, err := s.db.Query("Select follows.to_id as id, users.user_name from follows join users on follows.to_id=users.id where follows.from_id=$1", u.Id)
+	u.Followings, err = s.getRelationsFromUser("SELECT follows.to_id as id, users.user_name FROM follows JOIN users ON follows.to_id=users.id WHERE follows.from_id=$1", u.Id, scanForIDAndUserName)
+	if err != nil {
+		return nil, err
+	}
+
+	u.Followers, err = s.getRelationsFromUser("SELECT follows.from_id, users.user_name FROM follows JOIN users ON follows.from_id=users.id WHERE follows.to_id=$1", u.Id, scanForIDAndUserName)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc scanFunc) ([]*proto.User, error) {
+
+	u := []*proto.User{}
+
+	rows, err := s.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		followingUser := proto.User{}
+		user := proto.User{}
 
-		rows.Scan(&followingUser.Id, &followingUser.UserName)
+		user, err = scanFunc(rows)
+		if err != nil {
+			return nil, err
+		}
 
-		u.Followings = append(u.Followings, &followingUser)
+		u = append(u, &user)
 
 	}
 
@@ -129,4 +148,15 @@ func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.U
 	}
 
 	return res, nil
+}
+
+//scanForIdAndUserName scans a sql row for user id and username
+func scanForIDAndUserName(row *sql.Rows) (proto.User, error) {
+	user := proto.User{}
+	err := row.Scan(&user.Id, &user.UserName)
+	if err != nil {
+		//return nil, nil
+	}
+
+	return user, nil
 }
