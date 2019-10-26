@@ -83,6 +83,7 @@ func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reac
 
 	fmt.Println("PodIp: ", reachedRequestLimit.PodIp)
 	fmt.Println("InstanceId: ", reachedRequestLimit.InstanceId)
+	log.Println("Time")
 	if err != nil {
 		fmt.Println(err)
 		return &pb.RenewedElasticResult{IsRenewed: false}, nil
