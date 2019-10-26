@@ -209,3 +209,27 @@ services:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
+
+  # FILTER
+  insta-user-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_user_names-filter"
+  twitter-user-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/twitter_user_names-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_user_names-filter"
+
+
