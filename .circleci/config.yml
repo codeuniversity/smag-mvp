@@ -102,7 +102,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh kafka/changestream/Dockerfile codesmag/insta_user_names_filter
+          command: ./build_and_upload_image.sh kafka/changestream/insta_user_names-filter/Dockerfile codesmag/insta_user_names_filter
 
   twitter_scraper:
     executor: job-runner
