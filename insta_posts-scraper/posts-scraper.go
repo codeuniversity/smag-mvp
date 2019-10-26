@@ -40,7 +40,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
 
-	i.httpClient = scraper_client.NewSimpleScraperClient()
+	i.httpClient = scraper_client.NewHttpClient("localhost:9900")
 
 	i.Worker = worker.Builder{}.WithName("insta_posts_scraper").
 		WithWorkStep(i.runStep).

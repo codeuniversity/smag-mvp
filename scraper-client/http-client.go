@@ -6,6 +6,7 @@ import (
 	"fmt"
 	pb "github.com/codeuniversity/smag-mvp/awsService/proto"
 	generator "github.com/codeuniversity/smag-mvp/http_header-generator"
+	"github.com/codeuniversity/smag-mvp/utils"
 
 	"google.golang.org/grpc"
 	"io/ioutil"
@@ -15,10 +16,6 @@ import (
 	"strings"
 	"time"
 )
-
-var userAccountInfoUrl = "https://instagram.com/%s/?__a=1"
-var userAccountMediaUrl = "https://www.instagram.com/graphql/query/?query_hash=58b6785bea111c67129decbe6a448951&variables=%s"
-var userPostsCommentUrl = "https://www.instagram.com/graphql/query/?query_hash=865589822932d1b43dfe312121dd353a&variables=%s"
 
 type HttpClient struct {
 	*generator.HTTPHeaderGenerator
@@ -35,18 +32,26 @@ func NewHttpClient(awsServiceAddress string) *HttpClient {
 	client.HTTPHeaderGenerator = generator.New()
 	var err error
 
-	addresses := getLocalIpAddresses(1)
+	localIp := utils.GetStringFromEnvWithDefault("POD_IP", "")
+
+	if localIp != "" {
+		panic("Env $POD_IP is not set")
+	}
 	//addresses := []string{"192.168.178.41"}
 
-	client.localIp = addresses[0]
+	client.localIp = localIp
 
-	client.client, err = client.getBoundAddressClient(addresses[0])
+	client.client, err = client.getBoundAddressClient(localIp)
 
 	if err != nil {
 		panic(err)
 	}
 
-	client.instanceId = getAmazonInstanceId()
+	client.instanceId, err = getAmazonInstanceId()
+
+	if err != nil {
+		fmt.Println("amazon InstanceId is not set")
+	}
 
 	client.grpcClient, err = grpc.Dial(awsServiceAddress, grpc.WithInsecure())
 	if err != nil {
@@ -55,15 +60,18 @@ func NewHttpClient(awsServiceAddress string) *HttpClient {
 	return client
 }
 
-func getAmazonInstanceId() string {
+func getAmazonInstanceId() (string, error) {
 	resp, err := http.Get("http://169.254.169.254/latest/meta-data/instance-id")
+	if err != nil {
+		return "", nil
+	}
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
 		fmt.Println("Error: ", err)
 		panic(err)
 	}
-	return string(body)
+	return string(body), nil
 }
 
 func isNetworkInterfaces(name string) bool {
