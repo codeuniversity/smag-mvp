@@ -13,17 +13,17 @@ class ScraperManager:
         fetch_topic: str,
         insert_topic: str,
         kafka_consumer_group: str = "scraper_manager",
-        kafka_host_port: str = "localhost:9092",
+        kafka_address: str = "localhost:9092",
     ):
         self.consumer = KafkaConsumer(
             fetch_topic,
-            bootstrap_servers=kafka_host_port,
+            bootstrap_servers=kafka_address,
             group_id=kafka_consumer_group,
             reconnect_backoff_ms=500,
             reconnect_backoff_max_ms=10000,
         )
         self.producer = KafkaProducer(
-            bootstrap_servers=kafka_host_port,
+            bootstrap_servers=kafka_address,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),
             reconnect_backoff_ms=500,
             reconnect_backoff_max_ms=10000,
