@@ -104,6 +104,15 @@ jobs:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh kafka/changestream/insta_user_names-filter/Dockerfile codesmag/insta_user_names_filter
 
+  insta_post_pictures-filter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh kafka/changestream/insta_post_pictures-filter/Dockerfile codesmag/insta_post_pictures_filter
+
   twitter_scraper:
     executor: job-runner
     environment:
@@ -187,6 +196,12 @@ workflows:
             branches:
               only: master
       - insta_user_names-filter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta_post_pictures-filter:
           requires:
             - tests
           filters:
