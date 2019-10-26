@@ -15,122 +15,96 @@ jobs:
       # specify any bash command here prefixed with `run: `
       - run: go test -v ./...
   scraper-image:
-    # specify the version
     executor: job-runner
-    environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta_user-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker Image
-          command: docker build -f insta_user-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-            docker push $SCRAPER_IMAGE_NAME:latest
-            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_user-scraper/Dockerfile codesmag/insta_user-scraper
+
   postgres-inserter-image:
-    # specify the version
     executor: job-runner
-    environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta_postgres-inserter
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker Image
-          command: docker build -f insta_postgres-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-            docker push $SCRAPER_IMAGE_NAME:latest
-            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_postgres-inserter/Dockerfile codesmag/insta_postgres-inserter
+
   insta-comments-inserter:
-    # specify the version
     executor: job-runner
-    environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta_comments-inserter
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker Image
-          command: docker build -f insta_comments-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-            docker push $SCRAPER_IMAGE_NAME:latest
-            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_comments-inserter/Dockerfile codesmag/insta_comments-inserter
+
   insta-comments-scraper:
-    # specify the version
     executor: job-runner
-    environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta_comments-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker Image
-          command: docker build -f insta_comments-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-            docker push $SCRAPER_IMAGE_NAME:latest
-            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_comments-scraper/Dockerfile codesmag/insta_comments-scraper
+
   insta-posts-inserter:
-    # specify the version
     executor: job-runner
-    environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta-posts-inserter
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker Image
-          command: docker build -f insta_posts-inserter/Dockerfile -t $SCRAPER_IMAGE_NAME .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-            docker push $SCRAPER_IMAGE_NAME:latest
-            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_posts-inserter/Dockerfile codesmag/insta-posts-inserter
+
   insta-posts-scraper:
-    # specify the version
     executor: job-runner
-    environment:
-      SCRAPER_IMAGE_NAME: codesmag/insta_posts-scraper
     steps:
       - checkout
       - setup_remote_docker
       - run:
-          name: Build Docker Image
-          command: docker build -f insta_posts-scraper/Dockerfile -t $SCRAPER_IMAGE_NAME .
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_posts-scraper/Dockerfile codesmag/insta_posts-scraper
+
+  postgres-setup:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
       - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SCRAPER_IMAGE_NAME:latest $SCRAPER_IMAGE_NAME:$IMAGE_TAG
-            docker push $SCRAPER_IMAGE_NAME:latest
-            docker push $SCRAPER_IMAGE_NAME:$IMAGE_TAG
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh debezium/kubernetes/Dockerfile codesmag/postgres-setup
+
+  twitter_inserter_users:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh twitter_inserter_users/Dockerfile codesmag/twitter_inserter_users
+
+  twitter_inserter_posts:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh twitter_inserter_posts/Dockerfile codesmag/twitter_inserter_posts
+
+  insta_user_names-filter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh kafka/changestream/Dockerfile codesmag/insta_user_names_filter
 
   twitter_scraper:
-    # specify the version
     executor: job-runner
     environment:
       TWITTER_SCRAPER_IMAGE: codesmag/twitter_scraper
@@ -149,82 +123,6 @@ jobs:
             docker push $TWITTER_SCRAPER_IMAGE:latest
             docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
 
-  postgres-setup:
-    # specify the version
-    executor: job-runner
-    environment:
-      SETUP_IMAGE_NAME: codesmag/postgres-setup
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker Image
-          command: docker build -f debezium/kubernetes/Dockerfile -t $SETUP_IMAGE_NAME .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $SETUP_IMAGE_NAME:latest $SETUP_IMAGE_NAME:$IMAGE_TAG
-            docker push $SETUP_IMAGE_NAME:latest
-            docker push $SETUP_IMAGE_NAME:$IMAGE_TAG
-  twitter_inserter_users:
-    # specify the version
-    executor: job-runner
-    environment:
-      TWITTER_INSERTER_USERS_IMAGE: codesmag/twitter_inserter_users
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker Image
-          command: docker build -f twitter_inserter_users/Dockerfile -t $TWITTER_INSERTER_USERS_IMAGE .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $TWITTER_INSERTER_USERS_IMAGE:latest $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
-            docker push $TWITTER_INSERTER_USERS_IMAGE:latest
-            docker push $TWITTER_INSERTER_USERS_IMAGE:$IMAGE_TAG
-  twitter_inserter_posts:
-    # specify the version
-    executor: job-runner
-    environment:
-      TWITTER_INSERTER_POSTS_IMAGE: codesmag/twitter_inserter_posts
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker Image
-          command: docker build -f twitter_inserter_posts/Dockerfile -t $TWITTER_INSERTER_POSTS_IMAGE .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $TWITTER_INSERTER_POSTS_IMAGE:latest $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
-            docker push $TWITTER_INSERTER_POSTS_IMAGE:latest
-            docker push $TWITTER_INSERTER_POSTS_IMAGE:$IMAGE_TAG
-  insta_user_names-filter:
-    # specify the version
-    executor: job-runner
-    environment:
-      CHANGE_STREAM_IMAGE: codesmag/insta_user_names_filter
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker Image
-          command: docker build -f kafka/changestream/Dockerfile -t $CHANGE_STREAM_IMAGE .
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $CHANGE_STREAM_IMAGE:latest $CHANGE_STREAM_IMAGE:$IMAGE_TAG
-            docker push $CHANGE_STREAM_IMAGE:latest
-            docker push $CHANGE_STREAM_IMAGE:$IMAGE_TAG
 workflows:
   version: 2
   workflow:
