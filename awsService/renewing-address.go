@@ -216,11 +216,11 @@ func (r *RenewingAddressGrpcServer) sendErrorMessage(instanceId string, err erro
 		InstanceId: instanceId,
 		Error:      err.Error(),
 	}
-	serializedErr, err := json.Marshal(errMessage)
+	_, err = json.Marshal(errMessage)
 	if err != nil {
 		fmt.Println(err)
 	}
-	r.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+	//r.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
 }
 
 func (r *RenewingAddressGrpcServer) Close() {
