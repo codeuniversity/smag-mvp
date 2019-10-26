@@ -91,18 +91,35 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 		return nil, err
 	}
 
-	rows, err := s.db.Query("Select follows.to_id as id, users.user_name from follows join users on follows.to_id=users.id where follows.from_id=$1", u.Id)
+	u.Followings, err = s.getRelationsFromUser("SELECT follows.to_id as id, users.user_name FROM follows JOIN users ON follows.to_id=users.id WHERE follows.from_id=$1", u.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	u.Followers, err = s.getRelationsFromUser("SELECT follows.from_id, users.user_name FROM follows JOIN users ON follows.from_id=users.id WHERE follows.to_id=$1", u.Id)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func (s *GrpcServer) getRelationsFromUser(query string, userID string) ([]*proto.User, error) {
+
+	u := []*proto.User{}
+
+	rows, err := s.db.Query(query, userID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		followingUser := proto.User{}
+		user := proto.User{}
 
-		rows.Scan(&followingUser.Id, &followingUser.UserName)
+		rows.Scan(&user.Id, &user.UserName)
 
-		u.Followings = append(u.Followings, &followingUser)
+		u = append(u, &user)
 
 	}
 
