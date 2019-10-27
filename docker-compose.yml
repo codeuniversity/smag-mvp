@@ -219,6 +219,16 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_user_names-filter"
+  insta-post-picture-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_post_pictures-filter"
   twitter-user-filter:
     build:
       context: "."
