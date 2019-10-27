@@ -25,7 +25,7 @@ type InstaCommentInserter struct {
 }
 
 // New returns an initialized InstaCommentInserter
-func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, userQWriter *kafka.Writer) *InstaCommentInserter {
+func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader) *InstaCommentInserter {
 	i := &InstaCommentInserter{}
 	i.commentsQReader = commentsQReader
 
