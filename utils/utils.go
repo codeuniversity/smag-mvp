@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -38,6 +39,21 @@ func MustGetStringFromEnv(enVarName string) string {
 	}
 
 	return envValue
+}
+
+// GetBoolFromEnvWithDefault parses an OS Environment Variable as bool
+func GetBoolFromEnvWithDefault(enVarName string, defaultValue bool) bool {
+	envValue := os.Getenv(enVarName)
+	if envValue == "" {
+		return defaultValue
+	}
+
+	envBool, err := strconv.ParseBool(envValue)
+	if err != nil {
+		panic(fmt.Errorf("couldn't parse %s as bool: %s", enVarName, err))
+	}
+
+	return envBool
 }
 
 // PanicIfNotNil panics if err != nil
