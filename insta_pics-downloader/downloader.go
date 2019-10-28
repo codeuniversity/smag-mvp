@@ -33,21 +33,8 @@ type Downloader struct {
 	db          *sql.DB
 }
 
-// Config holds all the configurable variables for the Downloader
-type Config struct {
-	S3BucketName      string
-	S3Region          string
-	S3Endpoint        string
-	S3AccessKeyID     string
-	S3SecretAccessKey string
-	S3UseSSL          bool
-
-	PostgresHost     string
-	PostgresPassword string
-}
-
 // New returns an initilized scraper
-func New(qReader *kafka.Reader, config Config) *Downloader {
+func New(qReader *kafka.Reader, config models.Config) *Downloader {
 	i := &Downloader{}
 
 	i.bucketName = config.S3BucketName
