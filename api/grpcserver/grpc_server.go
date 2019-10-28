@@ -11,7 +11,9 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/codeuniversity/smag-mvp/api/proto"
+	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
+	"github.com/minio/minio-go/v6"
 	"google.golang.org/grpc"
 )
 
@@ -19,12 +21,18 @@ import (
 type GrpcServer struct {
 	grpcPort string
 	db       *sql.DB
+
+	minioClient *minio.Client
+	bucketName  string
 }
 
 type scanFunc func(row *sql.Rows) (proto.User, error)
 
 // NewGrpcServer returns initilized gRPC Server
-func NewGrpcServer(postgresHost string, postgresPassword string, grpcPort string) *GrpcServer {
+func NewGrpcServer(grpcPort string, config models.Config) *GrpcServer {
+
+	postgresPassword := config.PostgresPassword
+	postgresHost := config.PostgresHost
 
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
@@ -132,7 +140,7 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc 
 func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
 	res := &proto.InstaPostsResponse{}
 
-	rows, err := s.db.Query("SELECT id, post_id, short_code, internal_picture_url, caption FROM posts WHERE user_id=$1", request.UserId)
+	rows, err := s.db.Query("SELECT id, post_id, short_code, caption, internal_picture_url FROM posts WHERE user_id=$1", request.UserId)
 	if err != nil {
 		return nil, err
 	}
@@ -142,7 +150,7 @@ func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.U
 	for rows.Next() {
 		post := proto.InstaPost{}
 
-		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.ImgUrl, &post.Caption)
+		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.Caption)
 
 		res.InstaPosts = append(res.InstaPosts, &post)
 	}
