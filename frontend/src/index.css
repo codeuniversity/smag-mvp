@@ -82,6 +82,10 @@ code {
   letter-spacing: 0.36px;
   font-weight: 600;
 }
+h1 {
+  font-size: 2em;
+  line-height: 1em;
+}
 .sub-headline {
   color: #000000;
   font-size: 20px;
@@ -117,12 +121,12 @@ a {
   padding: 50px 0px;
 }
 input[type="text"] {
-  width: 80%;
+  width: 70%;
   border: solid 1px #555555;
   padding: 20px;
 }
 button {
-  width: 10%;
+  width: 20%;
   border: solid 1px #555555;
   padding: 20px;
   float: right;
@@ -134,21 +138,33 @@ button {
     width: 100%;
   }
   input[type="text"] {
-    width: 70%;
+    width: 60%;
     border: solid 1px #555555;
-    padding: 20px;
+    padding: 20px 10px;
   }
   button {
     width: 20%;
     border: solid 1px #555555;
-    padding: 20px;
+    padding: 20px 0px;
     float: right;
   }
   .column-one-third {
     width: 100%;
     flex-direction: column;
   }
+  .container-center {
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
   .container-card {
     flex-direction: column;
+  }
+  h1 {
+    font-size: 1em;
+    line-height: 1em;
   }
 }
