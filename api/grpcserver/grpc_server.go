@@ -24,12 +24,22 @@ type GrpcServer struct {
 
 	minioClient *minio.Client
 	bucketName  string
+	region      string
 }
 
 type scanFunc func(row *sql.Rows) (proto.User, error)
 
 // NewGrpcServer returns initilized gRPC Server
 func NewGrpcServer(grpcPort string, config models.Config) *GrpcServer {
+	g := &GrpcServer{}
+
+	g.bucketName = config.S3BucketName
+	g.region = config.S3Region
+
+	minioClient, err := minio.New(config.S3Endpoint, config.S3AccessKeyID, config.S3SecretAccessKey, config.S3UseSSL)
+	utils.MustBeNil(err)
+
+	g.minioClient = minioClient
 
 	postgresPassword := config.PostgresPassword
 	postgresHost := config.PostgresHost
@@ -42,10 +52,10 @@ func NewGrpcServer(grpcPort string, config models.Config) *GrpcServer {
 	db, err := sql.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
 
-	return &GrpcServer{
-		grpcPort: grpcPort,
-		db:       db,
-	}
+	g.grpcPort = grpcPort
+	g.db = db
+
+	return g
 }
 
 // Listen blocks, while listening for grpc requests on the port specified in the GrpcServer struct
