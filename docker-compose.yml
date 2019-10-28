@@ -134,7 +134,7 @@ services:
     depends_on:
       - "my-kafka"
     environment:
-      KAFKA_HOST_PORT: "my-kafka:9092"
+      KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-users_scraped"
   twitter_scraper_posts:
@@ -144,7 +144,7 @@ services:
     depends_on:
       - "my-kafka"
     environment:
-      KAFKA_HOST_PORT: "my-kafka:9092"
+      KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-posts_scraped"
 
