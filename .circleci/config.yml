@@ -210,6 +210,10 @@ workflows:
           filters:
             branches:
               only: master
+      - cli:
+          filters:
+            branches:
+              only: master
       - insta_user_names-filter:
           requires:
             - tests
