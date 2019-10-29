@@ -6,8 +6,8 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-// CreateOrUpdate checks whether a specific (gorm) database entry already exists using a model
-// filter, creates it in case no record is found and updates the first in case of existing record(s)
+// CreateOrUpdate checks whether a specific (gorm) database entry already exists using a model filter,
+// creates it in case no record is found and updates the first in case of existing record(s)
 func CreateOrUpdate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {
 	var err error
 
