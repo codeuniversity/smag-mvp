@@ -15,7 +15,7 @@ func main() {
 	var userNameArg string
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
-	instagramTopic := utils.GetStringFromEnvWithDefault("INSTAGRAM_TOPIC", "user_names")
+	instagramTopic := utils.GetStringFromEnvWithDefault("KAFKA_INSTAGRAM_TOPIC", "user_names")
 	twitterTopic := utils.GetStringFromEnvWithDefault("TWITTER_TOPIC", "twitter-user_names")
 
 	if len(os.Args) == 3 {
