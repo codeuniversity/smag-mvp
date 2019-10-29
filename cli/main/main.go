@@ -16,7 +16,7 @@ func main() {
 
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	instagramTopic := utils.GetStringFromEnvWithDefault("KAFKA_INSTAGRAM_TOPIC", "user_names")
-	twitterTopic := utils.GetStringFromEnvWithDefault("TWITTER_TOPIC", "twitter-user_names")
+	twitterTopic := utils.GetStringFromEnvWithDefault("KAFKA_TWITTER_TOPIC", "twitter-user_names")
 
 	if len(os.Args) == 3 {
 		fmt.Println("getting arguments from parameters")
