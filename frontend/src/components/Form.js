@@ -33,7 +33,7 @@ function Form(props) {
 
 export default Form;
 
-// class Bla extends Component{
+// class Form extends Component{
 //     state = {
 //         value: ""
 //     }
