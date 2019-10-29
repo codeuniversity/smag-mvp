@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.twitter_users")
 	namesTopic := utils.GetStringFromEnvWithDefault("KAFKA_NAME_TOPIC", "twitter-user_names")
