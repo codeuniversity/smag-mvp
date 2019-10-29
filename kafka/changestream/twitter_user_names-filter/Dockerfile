@@ -8,8 +8,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o kafka_changestream k
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
-RUN mkdir /app
-COPY useragents.json /app
-COPY --from=builder /app/kafka_changestream /app
 WORKDIR /app
+COPY useragents.json .
+COPY --from=builder /app/kafka_changestream .
 CMD ["./kafka_changestream"]
