@@ -19,7 +19,7 @@ You can find a overview about our architecture on this [miro board](https://miro
 
 ## Requirements
 
-- At least go 1.11 with the env var `GO111MODULEs=on`
+- go 1.13 _(or go 1.11+ with the env var `GO111MODULEs=on`)_
 - `docker` and `docker-compose` are available and up-to-date
 
 ## Getting started
