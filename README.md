@@ -19,7 +19,7 @@ If this is your first time running this:
 
 1. Add `127.0.0.1 my-kafka` to your `/etc/hosts` file
 2. Run `make init-db`, to set the postgres-db up
-3. Choose a user_name as a starting point and run `go run cli/main/main.go <user_name>`
+3. Choose a user_name as a starting point and run `go run cli/main/main.go instagram <user_name>`
 
 ### scraper in docker
 
