@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 	"time"
 
@@ -11,22 +11,16 @@ import (
 )
 
 func main() {
-	var platformArg string
-	var userNameArg string
-
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	instagramTopic := utils.GetStringFromEnvWithDefault("KAFKA_INSTAGRAM_TOPIC", "user_names")
 	twitterTopic := utils.GetStringFromEnvWithDefault("KAFKA_TWITTER_TOPIC", "twitter-user_names")
 
-	if len(os.Args) == 3 {
-		log.Println("getting arguments from parameters")
-		platformArg = os.Args[1]
-		userNameArg = os.Args[2]
-	} else {
-		log.Println("getting arguments from env variables")
-		platformArg = utils.MustGetStringFromEnv("CLI_PLATFORM")
-		userNameArg = utils.MustGetStringFromEnv("CLI_USER")
+	if len(os.Args) < 3 {
+		panic("Invalid argumemts. Usage: cli <instagram|twitter> <username>")
 	}
+
+	platformArg := os.Args[1]
+	userNameArg := os.Args[2]
 
 	var topic string
 	switch platformArg {
@@ -37,8 +31,7 @@ func main() {
 		topic = twitterTopic
 		break
 	default:
-		log.Printf("Invalid platform option: %s\n", platformArg)
-		return
+		panic(fmt.Sprintf("Invalid platform option: %s\n", platformArg))
 	}
 
 	w := kafka.NewWriter(kafka.WriterConfig{
