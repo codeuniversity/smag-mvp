@@ -76,7 +76,7 @@ class ScraperManager:
                 self.produce(m)
         else:
             self.produce(msg)
-        logging.info("done sending")
+        logging.info(f"Done sending {len(msg) if type(msg) is list else 1} element(s) to kafka/{self.insert_topic}")
 
     def scrape(self, user_name: str):
         """This method will be implemented by the user to scrape either user-profile or tweets"""
@@ -87,7 +87,7 @@ class ScraperManager:
 
     def produce(self, msg) -> None:
         topic = self.insert_topic
-        logging.info(
+        logging.debug(
             f"{self.name} sends msg (from {msg.username}) to kafka/{topic}"
         )
         msg_dict = getattr(msg, "__dict__", msg)
