@@ -1,5 +1,7 @@
 # instascraper
 
+- [About](#about)
+- [Architectural overview](#architectural-overview)
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
   - [scraper in docker](#scraper-in-docker)
@@ -7,6 +9,13 @@
     - [scraper](#scraper)
     - [inserter](#inserter)
 - [Postgres change stream](#postgres-change-stream)
+
+## About
+The goal of this project is to raise awareness about data privacy. The mean to do so is a tool to scrape, combine and analyze public social media data.
+The results will be available via an API, used for some kind of art exhibition.
+
+## Architectural overview
+You can find a overview about our architecture on this [miro board](https://miro.com/app/board/o9J_kw7a-qM=/)
 
 ## Requirements
 
