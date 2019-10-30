@@ -19,7 +19,7 @@ type RenewingAddressGrpcServer struct {
 	grpcPort   int
 }
 
-// New returns an initilized scraper
+// New returns an initialised gRPC Server
 func New(grpcPort int) *RenewingAddressGrpcServer {
 	var err error
 	s := &RenewingAddressGrpcServer{}
