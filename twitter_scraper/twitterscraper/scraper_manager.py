@@ -71,12 +71,12 @@ class ScraperManager:
 
     def scrape_and_produce(self, user_name: str) -> None:
         msg = self.scrape(user_name)
-        if type(msg) is list:
-            for m in msg:
-                self.produce(m)
-        else:
-            self.produce(msg)
-        logging.info("done sending")
+        msg_list = msg if type(msg) is list else [msg]
+        for m in msg_list:
+            self.produce(m)
+        logging.info(
+            f"Done sending {len(msg_list)} element(s) to kafka/{self.insert_topic}"
+        )
 
     def scrape(self, user_name: str):
         """This method will be implemented by the user to scrape either user-profile or tweets"""
