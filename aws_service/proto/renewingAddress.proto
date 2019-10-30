@@ -3,10 +3,10 @@ syntax = "proto3";
 package proto;
 
 service ElasticIpService {
-    rpc renewElasticIp(RenewingElasticIp) returns (renewedElasticResult) {}
+    rpc renewElasticIp(RenewingElasticIp) returns (RenewedElasticResult) {}
 }
 
-message renewedElasticResult {
+message RenewedElasticResult {
     bool isRenewed = 1;
 }
 
