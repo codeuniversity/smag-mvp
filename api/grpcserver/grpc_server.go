@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/url"
+	"time"
 
 	// required for postgres
 	_ "github.com/lib/pq"
@@ -38,6 +40,7 @@ func NewGrpcServer(grpcPort string, config models.Config) *GrpcServer {
 
 	minioClient, err := minio.New(config.S3Endpoint, config.S3AccessKeyID, config.S3SecretAccessKey, config.S3UseSSL)
 	utils.MustBeNil(err)
+	log.Println("✅ Minio connection established")
 
 	g.minioClient = minioClient
 
@@ -51,6 +54,7 @@ func NewGrpcServer(grpcPort string, config models.Config) *GrpcServer {
 
 	db, err := sql.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
+	log.Println("✅ Postgres connection established")
 
 	g.grpcPort = grpcPort
 	g.db = db
@@ -65,7 +69,7 @@ func (s *GrpcServer) Listen() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	fmt.Println("Start gRPC Server")
+	log.Println("✅ Start gRPC Server")
 
 	grpcServer := grpc.NewServer()
 	proto.RegisterUserSearchServiceServer(grpcServer, s)
@@ -160,7 +164,14 @@ func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.U
 	for rows.Next() {
 		post := proto.InstaPost{}
 
-		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.Caption)
+		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.Caption, &post.ImgUrl)
+
+		if post.ImgUrl != "" {
+			post.ImgUrl, err = s.getURLForPost(post.ImgUrl)
+			if err != nil {
+				return nil, err
+			}
+		}
 
 		res.InstaPosts = append(res.InstaPosts, &post)
 	}
@@ -177,4 +188,21 @@ func scanForIDAndUserName(row *sql.Rows) (proto.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *GrpcServer) getURLForPost(object string) (string, error) {
+
+	// Set request parameters for content-disposition.
+	reqParams := make(url.Values)
+	reqParams.Set("response-content-disposition", fmt.Sprintf("attachment; filename=\"%s.jpg\"", object))
+
+	// Generates a presigned url which expires in a day.
+	presignedURL, err := s.minioClient.PresignedGetObject(s.bucketName, object, time.Second*24*60*60, reqParams)
+	if err != nil {
+		log.Println(err)
+		return "", err
+	}
+	fmt.Println("Successfully generated presigned URL", presignedURL)
+	return presignedURL.String(), nil
+
 }
