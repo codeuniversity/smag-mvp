@@ -4,6 +4,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 COPY api/  ./api
 COPY utils/ ./utils
+COPY models ./models
 RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o grpc_server api/grpcserver/main/main.go
 
 FROM alpine
