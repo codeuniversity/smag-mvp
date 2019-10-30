@@ -13,7 +13,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/codeuniversity/smag-mvp/api/proto"
-	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/config"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/minio/minio-go/v6"
 	"google.golang.org/grpc"
@@ -32,20 +32,20 @@ type GrpcServer struct {
 type scanFunc func(row *sql.Rows) (proto.User, error)
 
 // NewGrpcServer returns initilized gRPC Server
-func NewGrpcServer(grpcPort string, config models.Config) *GrpcServer {
-	g := &GrpcServer{}
+func NewGrpcServer(grpcPort string, s3Config *config.S3Config, postgresConfig *config.PostgresConfig) *GrpcServer {
+	s := &GrpcServer{}
 
-	g.bucketName = config.S3BucketName
-	g.region = config.S3Region
+	s.bucketName = s3Config.S3BucketName
+	s.region = s3Config.S3Region
 
-	minioClient, err := minio.New(config.S3Endpoint, config.S3AccessKeyID, config.S3SecretAccessKey, config.S3UseSSL)
+	minioClient, err := minio.New(s3Config.S3Endpoint, s3Config.S3AccessKeyID, s3Config.S3SecretAccessKey, s3Config.S3UseSSL)
 	utils.MustBeNil(err)
 	log.Println("✅ Minio connection established")
 
-	g.minioClient = minioClient
+	s.minioClient = minioClient
 
-	postgresPassword := config.PostgresPassword
-	postgresHost := config.PostgresHost
+	postgresPassword := postgresConfig.PostgresPassword
+	postgresHost := postgresConfig.PostgresHost
 
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
@@ -56,10 +56,10 @@ func NewGrpcServer(grpcPort string, config models.Config) *GrpcServer {
 	utils.PanicIfNotNil(err)
 	log.Println("✅ Postgres connection established")
 
-	g.grpcPort = grpcPort
-	g.db = db
+	s.grpcPort = grpcPort
+	s.db = db
 
-	return g
+	return s
 }
 
 // Listen blocks, while listening for grpc requests on the port specified in the GrpcServer struct

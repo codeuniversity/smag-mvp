@@ -12,6 +12,7 @@ import (
 	// necessary for sql :pointup:
 	_ "github.com/lib/pq"
 
+	"github.com/codeuniversity/smag-mvp/config"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
@@ -34,13 +35,13 @@ type Downloader struct {
 }
 
 // New returns an initilized scraper
-func New(qReader *kafka.Reader, config models.Config) *Downloader {
+func New(qReader *kafka.Reader, s3Config *config.S3Config, postgresConfig *config.PostgresConfig) *Downloader {
 	i := &Downloader{}
 
-	i.bucketName = config.S3BucketName
-	i.region = config.S3Region
+	i.bucketName = s3Config.S3BucketName
+	i.region = s3Config.S3Region
 
-	minioClient, err := minio.New(config.S3Endpoint, config.S3AccessKeyID, config.S3SecretAccessKey, config.S3UseSSL)
+	minioClient, err := minio.New(s3Config.S3Endpoint, s3Config.S3AccessKeyID, s3Config.S3SecretAccessKey, s3Config.S3UseSSL)
 	utils.MustBeNil(err)
 
 	i.minioClient = minioClient
@@ -49,9 +50,9 @@ func New(qReader *kafka.Reader, config models.Config) *Downloader {
 
 	i.qReader = qReader
 
-	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", config.PostgresHost)
-	if config.PostgresPassword != "" {
-		connectionString += " " + "password=" + config.PostgresPassword
+	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresConfig.PostgresHost)
+	if postgresConfig.PostgresPassword != "" {
+		connectionString += " " + "password=" + postgresConfig.PostgresPassword
 	}
 
 	db, err := sql.Open("postgres", connectionString)
