@@ -21,12 +21,14 @@ class ScraperManager:
             group_id=kafka_consumer_group,
             reconnect_backoff_ms=500,
             reconnect_backoff_max_ms=10000,
+            max_poll_interval_ms=600000,
         )
         self.producer = KafkaProducer(
             bootstrap_servers=kafka_address,
             value_serializer=lambda v: json.dumps(v).encode('utf-8'),
             reconnect_backoff_ms=500,
             reconnect_backoff_max_ms=10000,
+            request_timeout_ms=600000,
         )
         self.insert_topic = insert_topic
 
