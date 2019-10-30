@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -57,7 +58,7 @@ func New(awsServiceAddress string, nameQReader *kafka.Reader, infoQWriter *kafka
 }
 
 func (i *InstaPostsScraper) runStep() error {
-	fmt.Println("fetching")
+	log.Println("fetching")
 	m, err := i.nameQReader.FetchMessage(context.Background())
 	if err != nil {
 		return err
@@ -67,7 +68,7 @@ func (i *InstaPostsScraper) runStep() error {
 
 	instagramAccountInfo, err := i.accountInfo(username)
 	i.requestCounter++
-	fmt.Println("Instagram Request Counter: ", i.requestCounter)
+	log.Println("Instagram Request Counter: ", i.requestCounter)
 	if err != nil {
 		errMessage := &models.InstagramScrapeError{
 			Name:  username,
@@ -83,20 +84,20 @@ func (i *InstaPostsScraper) runStep() error {
 	}
 
 	if instagramAccountInfo.Graphql.User.IsPrivate {
-		fmt.Println("Username: ", username, " is private")
+		log.Println("Username: ", username, " is private")
 		i.nameQReader.CommitMessages(context.Background(), m)
 		return nil
 	}
-	fmt.Println("Username: ", username, " Posts Init")
+	log.Println("Username: ", username, " Posts Init")
 	userID := instagramAccountInfo.Graphql.User.ID
 
 	isPostsSendingFinished := false
 	cursor := ""
 	for !isPostsSendingFinished {
-		fmt.Println("Username: ", username, " accountPosts")
+		log.Println("Username: ", username, " accountPosts")
 		accountMedia, err := i.accountPosts(userID, cursor)
 		i.requestCounter++
-		fmt.Println("Instagram Request Counter: ", i.requestCounter)
+		log.Println("Instagram Request Counter: ", i.requestCounter)
 
 		if err != nil {
 			return i.sendErrorMessage(m, username, err)
@@ -245,13 +246,13 @@ func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia,
 			instagramPostJSON, err := json.Marshal(instagramPost)
 
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				break
 			}
 
 			err = i.postsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJSON})
 			if err != nil {
-				fmt.Println(err)
+				log.Println(err)
 				break
 			}
 		}

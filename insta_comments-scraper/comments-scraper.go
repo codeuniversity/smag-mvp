@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -56,7 +57,7 @@ func New(awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWri
 func (s *PostCommentScraper) runStep() error {
 	message, err := s.postIDQReader.FetchMessage(context.Background())
 
-	fmt.Println("New Message")
+	log.Println("New Message")
 	if err != nil {
 		return err
 	}
@@ -67,7 +68,7 @@ func (s *PostCommentScraper) runStep() error {
 		return err
 	}
 
-	fmt.Println("ShortCode: ", post.ShortCode)
+	log.Println("ShortCode: ", post.ShortCode)
 
 	postsComments, err := s.scrapeComments(post.ShortCode)
 
@@ -116,7 +117,7 @@ func (s *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComment
 }
 
 func (s *PostCommentScraper) sendComments(postsComments *instaPostComments, postID models.InstagramPost) error {
-	fmt.Println("sendComments: ", len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
+	log.Println("sendComments: ", len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	messages := make([]kafka.Message, 0, len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
 		if element.Node.ID != "" {
@@ -128,7 +129,7 @@ func (s *PostCommentScraper) sendComments(postsComments *instaPostComments, post
 				ShortCode:     postID.ShortCode,
 				OwnerUsername: element.Node.Owner.Username,
 			}
-			fmt.Println("CommentText: ", element.Node.Text)
+			log.Println("CommentText: ", element.Node.Text)
 			postCommentJSON, err := json.Marshal(postComment)
 
 			if err != nil {
@@ -173,7 +174,7 @@ func (s *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComme
 	if response.StatusCode != 200 {
 		return instaPostComment, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
-	fmt.Println("ScrapePostComments got response")
+	log.Println("ScrapePostComments got response")
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return instaPostComment, err

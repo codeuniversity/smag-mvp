@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -64,14 +65,14 @@ func (i *Inserter) runStep() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("inserting: ", info.UserName)
+	log.Println("inserting: ", info.UserName)
 	err = i.InsertUserFollowInfo(info)
 	if err != nil {
 		return err
 	}
 
 	i.qReader.CommitMessages(context.Background(), m)
-	fmt.Println("commited: ", info.UserName)
+	log.Println("commited: ", info.UserName)
 
 	return nil
 }
