@@ -95,6 +95,15 @@ jobs:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh twitter_inserter_posts/Dockerfile codesmag/twitter_inserter_posts
 
+  twitter_user_names-filter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh kafka/changestream/twitter_user_names-filter/Dockerfile codesmag/twitter_user_names-filter
+
   insta_user_names-filter:
     executor: job-runner
     steps:
@@ -120,7 +129,14 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh insta_pics-downloader/Dockerfile codesmag/insta_pics_downloader
-
+  cli:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh cli/Dockerfile codesmag/cli
   twitter_scraper:
     executor: job-runner
     environment:
@@ -200,6 +216,10 @@ workflows:
             branches:
               only: master
       - postgres-setup:
+          filters:
+            branches:
+              only: master
+      - cli:
           filters:
             branches:
               only: master

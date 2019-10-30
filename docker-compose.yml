@@ -170,7 +170,7 @@ services:
     depends_on:
       - "my-kafka"
     environment:
-      KAFKA_HOST_PORT: "my-kafka:9092"
+      KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-users_scraped"
   twitter_scraper_posts:
@@ -180,7 +180,7 @@ services:
     depends_on:
       - "my-kafka"
     environment:
-      KAFKA_HOST_PORT: "my-kafka:9092"
+      KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_FETCH_TOPIC: "twitter-user_names"
       KAFKA_INSERT_TOPIC: "twitter-posts_scraped"
 
@@ -197,7 +197,6 @@ services:
       KAFKA_GROUPID: "twitter_inserter_users"
       KAFKA_INFO_TOPIC: "twitter-users_scraped"
       KAFKA_NAME_TOPIC: "twitter-user_names"
-      USER_DISCOVERY: "true"
   twitter_inserter_posts:
     build:
       context: "."
@@ -210,7 +209,6 @@ services:
       KAFKA_GROUPID: "twitter_inserter_posts"
       KAFKA_INFO_TOPIC: "twitter-posts_scraped"
       KAFKA_NAME_TOPIC: "twitter-user_names"
-      USER_DISCOVERY: "true"
 
   # POSTGRES
   postgres:
@@ -246,3 +244,37 @@ services:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
+
+  # FILTER
+  insta-user-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_user_names-filter"
+  insta-post-picture-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_post_pictures-filter"
+  twitter-user-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/twitter_user_names-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_user_names-filter"
+
+

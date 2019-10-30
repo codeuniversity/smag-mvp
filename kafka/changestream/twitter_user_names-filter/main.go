@@ -12,20 +12,20 @@ import (
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.users")
-	namesTopic := utils.GetStringFromEnvWithDefault("KAFKA_NAME_TOPIC", "user_names")
+	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.twitter_users")
+	namesTopic := utils.GetStringFromEnvWithDefault("KAFKA_NAME_TOPIC", "twitter-user_names")
 
 	f := changestream.NewFilter(kafkaAddress, groupID, changesTopic, namesTopic, filterChange)
 
 	service.CloseOnSignal(f)
-	waitUntilClosed := f.Start()
+	waitUntilClose := f.Start()
 
-	waitUntilClosed()
+	waitUntilClose()
 }
 
 type user struct {
 	ID       int    `json:"id"`
-	UserName string `json:"user_name"`
+	Username string `json:"username"`
 }
 
 func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
@@ -39,5 +39,5 @@ func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
 		return nil, err
 	}
 
-	return []kafka.Message{{Value: []byte(u.UserName)}}, nil
+	return []kafka.Message{{Value: []byte(u.Username)}}, nil
 }
