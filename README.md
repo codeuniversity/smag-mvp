@@ -6,8 +6,6 @@
 - [Getting started](#getting-started)
   - [scraper in docker](#scraper-in-docker)
   - [scraper locally](#scraper-locally)
-    - [scraper](#scraper)
-    - [inserter](#inserter)
 - [Postgres change stream](#postgres-change-stream)
 
 ## About
@@ -37,30 +35,7 @@ $ make run
 
 ### scraper locally
 
-#### scraper
-
-> For the scraper, make sure to set the following environment variables:
-> - `KAFKA_GROUPID`
-> - `KAFKA_NAME_TOPIC` - read from topic
-> - `KAFKA_INFO_TOPIC` - write to topic
-> - `KAFKA_ERR_TOPIC` - error write to topic
-
-Run the scraper with:
-```bash
-go run scraper/main/main.go
-```
-
-#### inserter
-
-> For the insertes, make sure to set the following environment variables:
-> - `KAFKA_GROUPID`
-> - `KAFKA_INFO_TOPIC` - read from topic
-> - `KAFKA_NAME_TOPIC` - write to topic
-
-Run the postgres inserter with:
-```bash
-go run postgres-inserter/main/main.go
-```
+Have a look into [`docker-compose.yml`](docker-compose.yml), set the neccessary environment variables and run it with the command from the regarding dockerfile.
 
 ## Postgres change stream
 
