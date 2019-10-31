@@ -35,6 +35,7 @@ func New(grpcPort int) *RenewingAddressGrpcServer {
 	return s
 }
 
+// GrpcServer represents the gRPC Server containing the db connection and port
 func (r *RenewingAddressGrpcServer) Listen() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%v", r.grpcPort))
 	if err != nil {
@@ -51,6 +52,7 @@ func (r *RenewingAddressGrpcServer) Listen() {
 	}
 }
 
+// renewing the elastic ip using local ip and instanceId
 func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reachedRequestLimit *pb.RenewingElasticIp) (*pb.RenewedElasticResult, error) {
 	ec2Address, err := r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
 
