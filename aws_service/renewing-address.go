@@ -16,11 +16,11 @@ import (
 type RenewingAddressGrpcServer struct {
 	awsSession *session.Session
 	ec2Service *ec2.EC2
-	grpcPort   int
+	grpcPort   string
 }
 
 // New returns an initialised gRPC Server
-func New(grpcPort int) *RenewingAddressGrpcServer {
+func New(grpcPort string) *RenewingAddressGrpcServer {
 	var err error
 	s := &RenewingAddressGrpcServer{}
 	s.awsSession, err = session.NewSession(&aws.Config{
