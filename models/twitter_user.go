@@ -7,10 +7,6 @@ import (
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
-// TwitterUserList is a custom type of TwitterUser to be used for easier handling
-// of relation users in twitter inserters
-type TwitterUserList []*TwitterUser
-
 // TwitterUserRaw holds the follow graph info, only relating userNames
 type TwitterUserRaw struct {
 	// Meta
@@ -127,31 +123,4 @@ func ConvertTwitterUser(raw *TwitterUserRaw) *TwitterUser {
 		Likes:      raw.Likes,
 		MediaCount: raw.MediaCount,
 	}
-}
-
-// NewTwitterUserList converts multiple TwitterUser slices into a single custom
-// TwitterUserList structure
-func NewTwitterUserList(slices ...[]*TwitterUser) *TwitterUserList {
-	list := &TwitterUserList{}
-
-	for _, slice := range slices {
-		*list = append(*list, slice...)
-	}
-
-	return list
-}
-
-// RemoveDuplicates removes duplicated users from TwitterUserList
-func (list *TwitterUserList) RemoveDuplicates() {
-	uniqueSlice := make([]*TwitterUser, 0, len(*list))
-	set := make(map[string]bool)
-
-	for i, user := range *list {
-		if !set[user.Username] {
-			set[user.Username] = true
-			uniqueSlice = append(uniqueSlice, (*list)[i])
-		}
-	}
-
-	*list = uniqueSlice
 }

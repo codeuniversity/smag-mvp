@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/models"
-	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
 
 	// necessary for "database/sql"
@@ -21,15 +20,14 @@ type InstaCommentInserter struct {
 	*worker.Worker
 
 	commentsQReader *kafka.Reader
-	userQWriter     *kafka.Writer
-	db              *sql.DB
+
+	db *sql.DB
 }
 
 // New returns an initialized InstaCommentInserter
-func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, userQWriter *kafka.Writer) *InstaCommentInserter {
+func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader) *InstaCommentInserter {
 	i := &InstaCommentInserter{}
 	i.commentsQReader = commentsQReader
-	i.userQWriter = userQWriter
 
 	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
 	if postgresPassword != "" {
@@ -47,10 +45,6 @@ func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader, u
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("commentsQReader", commentsQReader.Close).
 		AddShutdownHook("postgres_client", db.Close)
-
-	if userQWriter != nil {
-		b = b.AddShutdownHook("userQWriter", userQWriter.Close)
-	}
 
 	i.Worker = b.MustBuild()
 
@@ -91,7 +85,6 @@ func (i *InstaCommentInserter) findOrCreateUser(username string) (userID int, er
 			return 0, err
 		}
 
-		utils.HandleCreatedUser(i.userQWriter, username)
 		userID = int(insertedUserID)
 	}
 
