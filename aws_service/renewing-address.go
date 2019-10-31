@@ -58,7 +58,7 @@ func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reac
 	log.Println("InstanceId: ", reachedRequestLimit.InstanceId)
 	if err != nil {
 		fmt.Println(err)
-		return &pb.RenewedElasticResult{IsRenewed: false}, nil
+		return &pb.RenewedElasticResult{IsRenewed: false}, err
 	}
 
 	err = r.disassociateAddress(*ec2Address.PublicIp)
