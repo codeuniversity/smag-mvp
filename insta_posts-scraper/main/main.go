@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	awsServiceAddress := utils.MustGetStringFromEnv("AWS_SERVICE_ADDRESS")
+	awsServiceAddress := utils.GetStringFromEnvWithDefault("AWS_SERVICE_ADDRESS", "")
 	nameReaderConfig, infoWriterConfig, errWriterConfig := kafka.GetInstaPostsScraperConfig()
 
 	s := scraper.New(awsServiceAddress, kafka.NewReader(nameReaderConfig), kafka.NewWriter(infoWriterConfig), kafka.NewWriter(errWriterConfig))

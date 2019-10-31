@@ -39,7 +39,11 @@ func New(awsServiceAddress string, nameQReader *kafka.Reader, infoQWriter *kafka
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
 
-	i.httpClient = scraper_client.NewHttpClient(awsServiceAddress)
+	if awsServiceAddress == "" {
+		i.httpClient = scraper_client.NewSimpleScraperClient()
+	} else {
+		i.httpClient = scraper_client.NewHttpClient(awsServiceAddress)
+	}
 
 	i.Worker = worker.Builder{}.WithName("insta_posts_scraper").
 		WithWorkStep(i.runStep).

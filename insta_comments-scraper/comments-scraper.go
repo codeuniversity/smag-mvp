@@ -38,8 +38,11 @@ func New(awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWri
 	s.commentsInfoQWriter = commentsInfoQWriter
 	s.errQWriter = errQWriter
 
-	s.httpClient = client.NewHttpClient(awsServiceAddress)
-
+	if awsServiceAddress == "" {
+		s.httpClient = client.NewSimpleScraperClient()
+	} else {
+		s.httpClient = client.NewHttpClient(awsServiceAddress)
+	}
 	s.Worker = worker.Builder{}.WithName("insta_comments_scraper").
 		WithWorkStep(s.runStep).
 		AddShutdownHook("postIDQReader", postIDQReader.Close).
