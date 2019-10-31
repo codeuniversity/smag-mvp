@@ -113,7 +113,7 @@ func (r *RenewingAddressGrpcServer) releaseElasticAddresses(allocationId string)
 	})
 	if err != nil {
 		fmt.Println("Release Address Error ", err)
-		return nil
+		return err
 	}
 
 	fmt.Printf("Successfully released allocation ID\n")

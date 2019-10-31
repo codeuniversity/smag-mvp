@@ -15,6 +15,10 @@ import (
 	"time"
 )
 
+const (
+	awsGetInstanceIdUrl = "http://169.254.169.254/latest/meta-data/instance-id"
+)
+
 type HttpClient struct {
 	*generator.HTTPHeaderGenerator
 	localAddressReachLimit bool
@@ -51,9 +55,9 @@ func NewHttpClient(awsServiceAddress string) *HttpClient {
 }
 
 func getAmazonInstanceId() (string, error) {
-	resp, err := http.Get("http://169.254.169.254/latest/meta-data/instance-id")
+	resp, err := http.Get(awsGetInstanceIdUrl)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
@@ -61,7 +65,7 @@ func getAmazonInstanceId() (string, error) {
 		fmt.Println("Error: ", err)
 		panic(err)
 	}
-	return string(body), nil
+	return string(body), err
 }
 
 func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error) {
