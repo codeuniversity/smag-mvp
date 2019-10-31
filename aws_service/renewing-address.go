@@ -137,7 +137,7 @@ func (r *RenewingAddressGrpcServer) getElasticPublicAddresses(instanceId string,
 		},
 	})
 	if err != nil {
-		fmt.Println("Unable to elastic IP address: ", err)
+		fmt.Println("Unable to get elastic IP address: ", err)
 		return nil, err
 	}
 
