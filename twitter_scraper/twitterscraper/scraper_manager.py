@@ -32,10 +32,10 @@ class ScraperManager(object):
         )
         self.insert_topic = insert_topic
 
-    def consume_scrape_produce(self):
+    def run(self):
         try:
             while True:
-                self._consume_scrape_produce()
+                self.consume_scrape_produce()
         except Exception:
             logging.error(
                 "Caught error. Going to flush KafkaProducer and then throw error further."
@@ -43,10 +43,10 @@ class ScraperManager(object):
             self.producer.flush()
             raise
 
-    def _consume_scrape_produce(self) -> None:
+    def consume_scrape_produce(self) -> None:
         """
         Consumes from kafka,
-        scrapes via twint,
+        scrapes via custom function,
         and produces/sends scraped msges to kafka
         """
 
