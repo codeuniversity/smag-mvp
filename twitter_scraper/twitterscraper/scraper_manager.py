@@ -49,27 +49,13 @@ class ScraperManager(object):
         scrapes via twint,
         and produces/sends scraped msges to kafka
         """
-        new_users = self.consume()
-        logging.info(f"New users received: {new_users}")
 
-        for user_name in new_users:
+        for msg in self.consumer:
+            user_name = msg.value.decode("utf-8")
             try:
                 self.scrape_and_produce(user_name)
             except Exception:
-                logging.error(f"Couldn't scraper user {user_name}")
-
-    def consume(self, blocking: bool = True) -> dict:
-        timeout_ms = float("inf") if blocking is True else 0
-        partition_dict = self.consumer.poll(
-            timeout_ms=timeout_ms,
-            max_records=1,
-        )
-
-        ret = []
-        for consumer_list in partition_dict.values():
-            names = [consumer.value.decode("utf-8") for consumer in consumer_list]
-            ret.extend(names)
-        return ret
+                logging.error(f"Couldn't scrape user {user_name}")
 
     def scrape_and_produce(self, user_name: str) -> None:
         msg = self.scrape(user_name)
