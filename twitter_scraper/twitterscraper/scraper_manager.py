@@ -92,5 +92,5 @@ class ScraperManager:
         logging.info(
             f"{self.name} sends msg (from {msg.username}) to kafka/{topic}"
         )
-        msg_dict = getattr(msg, "__dict__", msg)
+        msg_dict = getattr(msg, "__dict__")
         self.producer.send(topic, msg_dict)
