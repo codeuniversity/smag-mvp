@@ -4,7 +4,7 @@ import logging
 from kafka import KafkaProducer, KafkaConsumer
 
 
-class ScraperManager:
+class ScraperManager(object):
 
     name = "scraper_manager"
 
