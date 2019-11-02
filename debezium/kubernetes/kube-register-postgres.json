@@ -1,6 +1,7 @@
 {
   "name": "inventory-connector",
   "config": {
+    "plugin.name": "wal2json",
     "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
     "tasks.max": "1",
     "database.hostname": "my-postgres-postgresql",
