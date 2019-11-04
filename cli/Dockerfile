@@ -9,4 +9,5 @@ FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=builder /app/smag-cli .
-CMD ["./smag-cli"]
+ENTRYPOINT ["./smag-cli"]
+CMD [ "" ] # optional explicit statement
