@@ -10,4 +10,4 @@ RUN apk --no-cache add ca-certificates
 WORKDIR /app
 COPY --from=builder /app/smag-cli .
 ENTRYPOINT ["./smag-cli"]
-CMD [ "" ]
+CMD [ "" ] # optional explicit statement
