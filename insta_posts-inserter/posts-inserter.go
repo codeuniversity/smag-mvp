@@ -110,7 +110,8 @@ func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUsers []string) e
 		if err != nil {
 			return err
 		}
-		err = i.db.QueryRow("Select id from post_tagged_users where post_id=$1 AND user_id= $2", postId, userID).Scan()
+		var taggedId int
+		err = i.db.QueryRow("Select id from post_tagged_users where post_id=$1 AND user_id= $2", postId, userID).Scan(&taggedId)
 		if err == sql.ErrNoRows {
 			_, err = i.db.Exec("Insert INTO post_tagged_users(post_id,user_id) VALUES($1,$2)", postId, userID)
 			if err != nil {
