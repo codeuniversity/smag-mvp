@@ -32,29 +32,3 @@ function Form(props) {
 }
 
 export default Form;
-
-// class Form extends Component{
-//     state = {
-//         value: ""
-//     }
-
-//     render(){
-//         const {value} = this.state
-//         const {onSubmit} = this.props
-
-//         return (
-//             <div className="searchForm">
-//                 <form>
-//                     <input type="text" id="filter" placeholder="Full name or username" value={value} onChange={this.handleSubmit}  />
-//                     <input type="button" value="Submit" onClick={props.onSubmit} />
-//                 </form>
-//             </div>
-//         )
-
-//     }
-
-//     handleSubmit = (e)=>{
-//         e.preventDefault()
-//         this.setState({value: e.target.value})
-//     }
-// }

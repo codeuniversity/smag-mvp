@@ -25,7 +25,10 @@ class App extends Component {
 
     request.setUserName(userName);
     userSearch.getAllUsersLikeUsername(request, {}, (err, response) => {
-      console.log(err);
+      if (err) {
+        console.log(err);
+        return;
+      }
       const users = response.getUserListList();
       users.map(user => ({
         bio: user.getBio(),
@@ -43,8 +46,6 @@ class App extends Component {
         pathname: "/results",
         state: { results: userdata }
       });
-
-      //this.setState({ users: userdata });
     });
   };
   render() {

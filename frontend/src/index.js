@@ -8,7 +8,6 @@ import Results from "./components/Results";
 import Notfound from "./notfound";
 
 const root = document.getElementById("root");
-//import { ProtectedRoute } from "./.ProtectedRoute";
 
 ReactDOM.render(
   <BrowserRouter>
