@@ -167,7 +167,7 @@ services:
   twitter_scraper_users:
     build: "twitter_scraper/"
     image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.user_scraper"]
+    command: ["-m", "twitterscraper.users_scraper"]
     depends_on:
       - "my-kafka"
     environment:
@@ -197,7 +197,7 @@ services:
   twitter_scraper_posts:
     build: "twitter_scraper/"
     image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.tweets_scraper"]
+    command: ["-m", "twitterscraper.posts_scraper"]
     depends_on:
       - "my-kafka"
     environment:
