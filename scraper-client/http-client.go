@@ -3,16 +3,18 @@ package client
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log"
+
 	pb "github.com/codeuniversity/smag-mvp/aws_service/proto"
 	generator "github.com/codeuniversity/smag-mvp/http_header-generator"
 	"github.com/codeuniversity/smag-mvp/utils"
 
-	"google.golang.org/grpc"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"time"
+
+	"google.golang.org/grpc"
 )
 
 const (
@@ -44,7 +46,7 @@ func NewHttpClient(awsServiceAddress string) *HttpClient {
 	client.instanceId, err = getAmazonInstanceId()
 
 	if err != nil {
-		fmt.Println("amazon InstanceId is not set")
+		log.Println("amazon InstanceId is not set")
 	}
 
 	client.grpcClient, err = grpc.Dial(awsServiceAddress, grpc.WithInsecure())
@@ -62,7 +64,7 @@ func getAmazonInstanceId() (string, error) {
 	body, err := ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
 	if err != nil {
-		fmt.Println("Error: ", err)
+		log.Println("Error: ", err)
 		panic(err)
 	}
 	return string(body), err
@@ -102,10 +104,10 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 			return nil
 		}
 
-		fmt.Println(err)
+		log.Println(err)
 		isRenewed, err := h.checkIfIPReachedTheLimit(err)
 		if err != nil {
-			fmt.Println(err)
+			log.Println(err)
 		}
 		if isRenewed {
 			times++
@@ -116,17 +118,17 @@ func (h *HttpClient) WithRetries(times int, f func() error) error {
 }
 
 func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
-	fmt.Println("checkIfIPReachedTheLimit")
+	log.Println("checkIfIPReachedTheLimit")
 	switch t := err.(type) {
 	case *json.SyntaxError, *HTTPStatusError:
-		fmt.Println("SyntaxError")
+		log.Println("SyntaxError")
 		_, err := h.sendRenewElasticIpRequestToAmazonService()
 		if err != nil {
 			return false, err
 		}
 		return true, nil
 	default:
-		fmt.Println("Found Wrong Json Type Error ", t)
+		log.Println("Found Wrong Json Type Error ", t)
 		return false, err
 	}
 }
@@ -143,7 +145,7 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (bool, error) {
 	awsClient := pb.NewElasticIpServiceClient(h.grpcClient)
 	result, err := awsClient.RenewElasticIp(context.Background(), &renewIp)
 	if err != nil {
-		fmt.Println("sendRenewElasticIpRequestToAmazonService Err: ", err)
+		log.Println("sendRenewElasticIpRequestToAmazonService Err: ", err)
 		return false, err
 	}
 
