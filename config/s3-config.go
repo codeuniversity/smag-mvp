@@ -12,12 +12,6 @@ type S3Config struct {
 	S3UseSSL          bool
 }
 
-// PostgresConfig holds all the configurable variables for Postgres
-type PostgresConfig struct {
-	PostgresHost     string
-	PostgresPassword string
-}
-
 //GetS3Config returns a inizialized S3 Config
 func GetS3Config() *S3Config {
 
@@ -28,15 +22,5 @@ func GetS3Config() *S3Config {
 		S3AccessKeyID:     utils.MustGetStringFromEnv("S3_ACCESS_KEY_ID"),
 		S3SecretAccessKey: utils.MustGetStringFromEnv("S3_SECRET_ACCESS_KEY"),
 		S3UseSSL:          utils.GetBoolFromEnvWithDefault("S3_USE_SSL", true),
-	}
-}
-
-//GetPostgresConfig returns a inizialized Postgres Config
-func GetPostgresConfig() *PostgresConfig {
-
-	return &PostgresConfig{
-
-		PostgresHost:     utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1"),
-		PostgresPassword: utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", ""),
 	}
 }
