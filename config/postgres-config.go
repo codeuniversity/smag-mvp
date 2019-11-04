@@ -10,9 +10,7 @@ type PostgresConfig struct {
 
 //GetPostgresConfig returns a inizialized Postgres Config
 func GetPostgresConfig() *PostgresConfig {
-
 	return &PostgresConfig{
-
 		PostgresHost:     utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1"),
 		PostgresPassword: utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", ""),
 	}

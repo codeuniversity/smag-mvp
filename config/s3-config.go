@@ -14,7 +14,6 @@ type S3Config struct {
 
 //GetS3Config returns a inizialized S3 Config
 func GetS3Config() *S3Config {
-
 	return &S3Config{
 		S3BucketName:      utils.GetStringFromEnvWithDefault("S3_BUCKET_NAME", "insta_pics"),
 		S3Region:          utils.GetStringFromEnvWithDefault("S3_REGION", "eu-west-1"),

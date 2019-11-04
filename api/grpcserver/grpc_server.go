@@ -197,7 +197,7 @@ func (s *GrpcServer) getURLForPost(object string) (string, error) {
 	reqParams.Set("response-content-disposition", fmt.Sprintf("attachment; filename=\"%s.jpg\"", object))
 
 	// Generates a presigned url which expires in a day.
-	presignedURL, err := s.minioClient.PresignedGetObject(s.bucketName, object, time.Second*24*60*60, reqParams)
+	presignedURL, err := s.minioClient.PresignedGetObject(s.bucketName, object, time.Second*60*60, reqParams)
 	if err != nil {
 		log.Println(err)
 		return "", err
