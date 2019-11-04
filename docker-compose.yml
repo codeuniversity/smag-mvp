@@ -34,7 +34,7 @@ services:
       MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     command: "server /data"
 
-    # GRPC
+  # GRPC
   # ports: 4000 - 4999
   envoy-proxy:
     build: "./api/envoy-proxy"
@@ -162,11 +162,32 @@ services:
       S3_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
       S3_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
       S3_USE_SSL: "false"
+
   # TWITTER SCRAPER
   twitter_scraper_users:
     build: "twitter_scraper/"
     image: "smag-twitter_scraper"
     command: ["-m", "twitterscraper.user_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter-user_names"
+      KAFKA_INSERT_TOPIC: "twitter-users_scraped"
+  twitter_scraper_followers:
+    build: "twitter_scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.followers_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter-user_names"
+      KAFKA_INSERT_TOPIC: "twitter-users_scraped"
+  twitter_scraper_following:
+    build: "twitter_scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.following_scraper"]
     depends_on:
       - "my-kafka"
     environment:
@@ -276,5 +297,4 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_user_names-filter"
-
 
