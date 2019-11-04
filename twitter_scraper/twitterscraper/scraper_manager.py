@@ -1,5 +1,6 @@
 import json
 import logging
+import traceback
 
 from kafka import KafkaProducer, KafkaConsumer
 
@@ -55,7 +56,9 @@ class ScraperManager(object):
             try:
                 self.scrape_and_produce(user_name)
             except Exception:
-                logging.error(f"Couldn't scrape user {user_name}")
+                self.consumer.commit()
+                traceback.print_exc()
+                logging.error(f"Couldn't scrape user {user_name}. Continuing")
 
     def scrape_and_produce(self, user_name: str) -> None:
         msg = self.scrape(user_name)
