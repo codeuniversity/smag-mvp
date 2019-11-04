@@ -40,7 +40,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{}, &models.Follow{})
 	i.db = db
 
 	b := worker.Builder{}.WithName("insta_postgres_inserter").

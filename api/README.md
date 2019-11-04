@@ -24,11 +24,12 @@
 
 
 ## Functions
-- `getUserWithUsername(UserSearchRequest) User`
+- `getUserWithUsername(UserNameRequest) User`
     > Queries the Database for one specific User
-- `getAllUsersWithUsername(UserSearchRequest) UserSearchRsponse`
+- `getAllUsersWithUsername(UserNameRequest) UserSearchResponse`
     > Queries the database for all users that have a similar usenames and returns array of user
-
+- `getInstaPostssWithUserid(UserIdRequest) InstaPostsResponse`
+    > GetInstaPostsWithUserId takes the User id and returns all Instagram Posts of a User
 
 ## Testing
 1. `docker-compose up`
