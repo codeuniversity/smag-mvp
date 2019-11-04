@@ -3,13 +3,14 @@ package aws_service
 import (
 	"context"
 	"fmt"
+	"log"
+	"net"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	pb "github.com/codeuniversity/smag-mvp/aws_service/proto"
 	"google.golang.org/grpc"
-	"log"
-	"net"
 )
 
 // Scraper represents the scraper containing all clients it uses
@@ -27,7 +28,7 @@ func New(grpcPort string) *RenewingAddressGrpcServer {
 		Region: aws.String("eu-central-1")},
 	)
 	if err != nil {
-		fmt.Println("Error AWS Session ", err)
+		log.Println("Error AWS Session ", err)
 		return nil
 	}
 	s.ec2Service = ec2.New(s.awsSession)
@@ -42,7 +43,7 @@ func (r *RenewingAddressGrpcServer) Listen() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	fmt.Println("Start RenewingAddressGrpcServer Server")
+	log.Println("Start RenewingAddressGrpcServer Server")
 
 	grpcServer := grpc.NewServer()
 	pb.RegisterElasticIpServiceServer(grpcServer, r)
@@ -59,25 +60,25 @@ func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reac
 	log.Println("PodIp: ", reachedRequestLimit.PodIp)
 	log.Println("InstanceId: ", reachedRequestLimit.InstanceId)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return &pb.RenewedElasticResult{IsRenewed: false}, err
 	}
 
 	err = r.disassociateAddress(*ec2Address.PublicIp)
 	if err != nil {
-		fmt.Println("disassociateAddress Error: ", err)
+		log.Println("disassociateAddress Error: ", err)
 		return nil, err
 	}
 
 	err = r.releaseElasticAddresses(*ec2Address.AllocationId)
 	if err != nil {
-		fmt.Println("Error ReleaseElasticAddress: ", err)
+		log.Println("Error ReleaseElasticAddress: ", err)
 		return nil, err
 	}
 
 	err = allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, *ec2Address.NetworkInterfaceId)
 	if err != nil {
-		fmt.Println("Error AllocateAddress: ", err)
+		log.Println("Error AllocateAddress: ", err)
 		return nil, err
 	}
 
@@ -90,7 +91,7 @@ func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) 
 		Domain: aws.String("vpc"),
 	})
 	if err != nil {
-		fmt.Println("AllocateAddress Error : ")
+		log.Println("AllocateAddress Error : ")
 		return err
 	}
 
@@ -101,7 +102,7 @@ func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) 
 	})
 
 	if err != nil {
-		fmt.Println("AssociateAddress Error")
+		log.Println("AssociateAddress Error")
 		return err
 	}
 
@@ -114,11 +115,11 @@ func (r *RenewingAddressGrpcServer) releaseElasticAddresses(allocationId string)
 		AllocationId: &allocationId,
 	})
 	if err != nil {
-		fmt.Println("Release Address Error ", err)
+		log.Println("Release Address Error ", err)
 		return err
 	}
 
-	fmt.Printf("Successfully released allocation ID\n")
+	log.Printf("Successfully released allocation ID\n")
 	return nil
 }
 
@@ -137,12 +138,12 @@ func (r *RenewingAddressGrpcServer) getElasticPublicAddresses(instanceId string,
 		},
 	})
 	if err != nil {
-		fmt.Println("Unable to get elastic IP address: ", err)
+		log.Println("Unable to get elastic IP address: ", err)
 		return nil, err
 	}
 
 	if len(result.Addresses) == 0 {
-		fmt.Printf("No elastic IPs for %s region\n", *r.ec2Service.Config.Region)
+		log.Printf("No elastic IPs for %s region\n", *r.ec2Service.Config.Region)
 		return nil, &NoElasticIPError{*r.ec2Service.Config.Region}
 	} else {
 		return result.Addresses[0], nil

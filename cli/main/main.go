@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -19,11 +19,11 @@ func main() {
 	twitterTopic := utils.GetStringFromEnvWithDefault("KAFKA_TWITTER_TOPIC", "twitter-user_names")
 
 	if len(os.Args) == 3 {
-		fmt.Println("getting arguments from parameters")
+		log.Println("getting arguments from parameters")
 		platformArg = os.Args[1]
 		userNameArg = os.Args[2]
 	} else {
-		fmt.Println("getting arguments from env variables")
+		log.Println("getting arguments from env variables")
 		platformArg = utils.MustGetStringFromEnv("CLI_PLATFORM")
 		userNameArg = utils.MustGetStringFromEnv("CLI_USER")
 	}
@@ -37,7 +37,7 @@ func main() {
 		topic = twitterTopic
 		break
 	default:
-		fmt.Printf("Invalid platform option: %s\n", platformArg)
+		log.Printf("Invalid platform option: %s\n", platformArg)
 		return
 	}
 

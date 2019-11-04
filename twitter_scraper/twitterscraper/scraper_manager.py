@@ -75,7 +75,7 @@ class ScraperManager(object):
 
     def produce(self, msg) -> None:
         topic = self.insert_topic
-        logging.info(
+        logging.debug(
             f"{self.name} sends msg (from {msg.username}) to kafka/{topic}"
         )
         msg_dict = getattr(msg, "__dict__")

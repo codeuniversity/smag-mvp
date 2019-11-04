@@ -47,7 +47,7 @@ func (s *GrpcServer) Listen() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	fmt.Println("Start gRPC Server")
+	log.Println("Start gRPC Server")
 
 	grpcServer := grpc.NewServer()
 	proto.RegisterUserSearchServiceServer(grpcServer, s)
@@ -83,7 +83,7 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 //GetUserWithUsername returns one User that equals the given username
 func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserSearchRequest) (*proto.User, error) {
 	u := &proto.User{}
-	fmt.Println(username)
+	log.Println(username)
 
 	err := s.db.QueryRow("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 	if err != nil {
