@@ -1,4 +1,5 @@
-# instascraper
+# SMAG - mvp
+> social media graph abusal
 
 - [About](#about)
 - [Architectural overview](#architectural-overview)
