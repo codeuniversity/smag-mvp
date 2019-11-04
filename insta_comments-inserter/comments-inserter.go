@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/models"
@@ -61,7 +62,7 @@ func (i *InstaCommentInserter) runStep() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("inserting: ", info.OwnerUsername)
+	log.Println("inserting: ", info.OwnerUsername)
 
 	err = i.insertComment(info)
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -46,7 +47,7 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka
 
 // runStep the scraper
 func (s *Scraper) runStep() error {
-	fmt.Println("fetching")
+	log.Println("fetching")
 	m, err := s.nameQReader.FetchMessage(context.Background())
 	if err != nil {
 		return err
@@ -55,7 +56,7 @@ func (s *Scraper) runStep() error {
 	userName := string(m.Value)
 	followInfo, err := s.scrapeUserFollowGraph(userName)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		errMessage := &models.ScrapeError{
 			Name:  userName,
 			Error: err.Error(),
@@ -123,11 +124,11 @@ func (s *Scraper) getUserInfoIn(url string) (info *scrapedInfo, err error) {
 	})
 
 	c.OnError(func(c *colly.Response, err error) {
-		fmt.Println("Something went wrong:", err, " code: ", c.StatusCode)
+		log.Println("Something went wrong:", err, " code: ", c.StatusCode)
 	})
 
 	c.OnResponse(func(r *colly.Response) {
-		// fmt.Println("Visited", r.Request.URL)
+		// log.Println("Visited", r.Request.URL)
 	})
 
 	c.OnHTML("p.grid-user-identifier-1 a", func(e *colly.HTMLElement) {
@@ -152,7 +153,7 @@ func (s *Scraper) getUserInfoIn(url string) (info *scrapedInfo, err error) {
 	})
 
 	c.OnScraped(func(r *colly.Response) {
-		fmt.Println("Finished", r.Request.URL)
+		log.Println("Finished", r.Request.URL)
 	})
 
 	err = c.Visit(url)

@@ -131,7 +131,7 @@ func (d *Downloader) ensureBucketExists() error {
 	if err != nil {
 		return fmt.Errorf("couldn't create bucket %s: %w", d.bucketName, err)
 	}
-	fmt.Printf("successfully created bucket %s\n", d.bucketName)
+	log.Printf("successfully created bucket %s\n", d.bucketName)
 	return nil
 }
 

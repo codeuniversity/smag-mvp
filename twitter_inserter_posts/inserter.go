@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
@@ -69,7 +70,7 @@ func (i *Inserter) runStep() error {
 	}
 
 	post := models.ConvertTwitterPost(rawPost)
-	fmt.Println("inserting post:", post.Link)
+	log.Println("inserting post:", post.Link)
 
 	err = i.insertPost(post)
 	if err != nil {

@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
@@ -15,7 +16,7 @@ func WithRetries(times int, f func() error) error {
 		if err == nil {
 			return nil
 		}
-		fmt.Println(err)
+		log.Println(err)
 		time.Sleep(100 * time.Millisecond)
 	}
 	return err
