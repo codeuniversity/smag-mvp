@@ -40,6 +40,10 @@ func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
 		return nil, err
 	}
 
+	if currentVersion.PictureURL == "" {
+		return nil, nil
+	}
+
 	if m.Payload.Op == "c" {
 		return constructDownloadJobMessage(currentVersion)
 	}
