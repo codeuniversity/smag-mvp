@@ -20,6 +20,20 @@ If this is your first time running this:
 1. Add `127.0.0.1 my-kafka` and `127.0.0.1 minio` to your `/etc/hosts` file
 2. Choose a user_name as a starting point and run `go run cli/main/main.go <instagram|twitter> <user_name>`
 
+As alternative, you can also add the cli to the docker-compose:
+
+```yaml
+ cli:
+   build:
+     context: "."
+     dockerfile: "cli/Dockerfile"
+   command: ["<instagram|twitter>", "<user_name>"]
+   depends_on:
+     - "my-kafka"
+   environment:
+     KAFKA_ADDRESS: "my-kafka:9092"
+```
+
 ### scraper in docker
 
 ```bash
