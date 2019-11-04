@@ -44,4 +44,4 @@ if __name__ == "__main__":
         kafka_consumer_group=kafka_consumer_group,
         kafka_address=kafka_address,
     )
-    tweets_scraper.consume_scrape_produce()
+    tweets_scraper.run()
