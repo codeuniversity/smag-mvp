@@ -1,13 +1,11 @@
 package utils
 
 import (
-	"context"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/segmentio/kafka-go"
 )
 
 //WithRetries calls f up to the given `times` and returns the last error if times is reached
@@ -18,19 +16,10 @@ func WithRetries(times int, f func() error) error {
 		if err == nil {
 			return nil
 		}
-		fmt.Println(err)
+		log.Println(err)
 		time.Sleep(100 * time.Millisecond)
 	}
 	return err
-}
-
-// if qWriter is nil, user discovery is disabled
-func HandleCreatedUser(qWriter *kafka.Writer, userName string) {
-	if qWriter != nil {
-		qWriter.WriteMessages(context.Background(), kafka.Message{
-			Value: []byte(userName),
-		})
-	}
 }
 
 //GetStringFromEnvWithDefault returns default Value if OS Environment Variable is not set

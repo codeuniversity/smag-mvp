@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,7 +19,7 @@ func CloseOnSignal(s Service) {
 		signals := make(chan os.Signal, 1)
 		signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 		sig := <-signals
-		fmt.Println("Received Signal:", sig)
+		log.Println("Received Signal:", sig)
 
 		s.Close()
 	}()

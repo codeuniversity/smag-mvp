@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jinzhu/gorm"
 	// necessary for gorm :pointup:
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
+	dbUtils "github.com/codeuniversity/smag-mvp/db"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
@@ -38,7 +40,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.User{}, &models.Follow{})
 	i.db = db
 
 	b := worker.Builder{}.WithName("insta_postgres_inserter").
@@ -63,14 +65,14 @@ func (i *Inserter) runStep() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("inserting: ", info.UserName)
+	log.Println("inserting: ", info.UserName)
 	err = i.InsertUserFollowInfo(info)
 	if err != nil {
 		return err
 	}
 
 	i.qReader.CommitMessages(context.Background(), m)
-	fmt.Println("commited: ", info.UserName)
+	log.Println("commited: ", info.UserName)
 
 	return nil
 }
@@ -98,7 +100,7 @@ func (i *Inserter) insertUser(p *models.User) error {
 	fromUser := models.User{}
 	filter := &models.User{UserName: p.UserName}
 
-	err := createOrUpdate(i.db, &fromUser, filter, p)
+	err := dbUtils.CreateOrUpdate(i.db, &fromUser, filter, p)
 	if err != nil {
 		return err
 	}
@@ -131,23 +133,5 @@ func (i *Inserter) insertUser(p *models.User) error {
 			return err
 		}
 	}
-	return nil
-}
-
-func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {
-	var err error
-
-	tx := db.Begin()
-	if tx.Where(where).First(out).RecordNotFound() {
-		err = tx.Create(update).Scan(out).Error
-	} else {
-		err = tx.Model(out).Update(update).Scan(out).Error
-	}
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	tx.Commit()
-
 	return nil
 }

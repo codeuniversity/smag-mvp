@@ -39,7 +39,7 @@ class UserScraper(ScraperManager):
 
     @staticmethod
     def scrape(user_name: str):
-        logging.info(f"scrape user {user_name}")
+        logging.info(f"Scrape user {user_name}")
         user = scrape(user_name)
         return user
 
@@ -47,11 +47,14 @@ class UserScraper(ScraperManager):
 if __name__ == "__main__":
     import os
 
+    log_level = logging.DEBUG if os.getenv("DEBUG", "false") == "true" else logging.INFO
+
     logging.basicConfig(
         format="%(asctime)s.%(msecs)03d - %(module)s - %(levelname)s - %(message)s",
         datefmt="%H:%M:%S",
-        level=logging.INFO,
+        level=log_level,
     )
+
 
     fetch_topic = os.getenv("KAFKA_FETCH_TOPIC", "user_names")
     insert_topic = os.getenv("KAFKA_INSERT_TOPIC", "users_scraped")
@@ -64,4 +67,4 @@ if __name__ == "__main__":
         kafka_consumer_group=kafka_consumer_group,
         kafka_address=kafka_address,
     )
-    user_scraper.consume_scrape_produce()
+    user_scraper.run()

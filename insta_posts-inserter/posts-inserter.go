@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/models"
@@ -73,7 +74,7 @@ func (i *InstaPostInserter) runStep() error {
 	if err != nil {
 		return fmt.Errorf("posts inserter insertTaggedUser() failed %s ", err)
 	}
-	fmt.Println("Insert Post: ", post.ShortCode)
+	log.Println("Insert Post: ", post.ShortCode)
 	return i.postQReader.CommitMessages(context.Background(), message)
 }
 

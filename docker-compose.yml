@@ -47,8 +47,17 @@ services:
       context: "."
       dockerfile: "./api/grpcserver/Dockerfile"
     environment:
-      GRPC_POSTGRES_HOST: "postgres"
-      GRPC_POSTGRES_PASSWORD: "12345678"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_pics_downloader"
+      KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
+      S3_BUCKET_NAME: "instapics"
+      S3_REGION: "eu-west-1"
+      S3_ENDOINT: "minio:9000"
+      S3_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+      S3_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      S3_USE_SSL: "false"
     ports:
       - "10000:10000"
 
@@ -66,6 +75,32 @@ services:
       KAFKA_NAME_TOPIC: "user_names"
       KAFKA_INFO_TOPIC: "user_follow_infos"
       KAFKA_ERR_TOPIC: "insta_user_scaper_err"
+
+  insta_user-inserter:
+    build:
+      context: "."
+      dockerfile: "insta_postgres-inserter/Dockerfile"
+    image: "smag-insta_postgres-inserter"
+    depends_on:
+      - "my-kafka"
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_user_inserter"
+      KAFKA_INFO_TOPIC: "user_follow_infos"
+
+  insta_user_names-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
+    depends_on:
+      - "my-kafka"
+      - "postgres"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_user_names-filter"
+      KAFKA_CHANGE_TOPIC: "postgres.public.users"
 
   insta_posts-scraper:
     build:
@@ -107,6 +142,7 @@ services:
       KAFKA_GROUPID: "insta_post-pictures-filter"
       KAFKA_CHANGE_TOPIC: "postgres.public.posts"
       KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
+
   insta_pics-downloader:
     build:
       context: "."
@@ -161,7 +197,6 @@ services:
       KAFKA_GROUPID: "twitter_inserter_users"
       KAFKA_INFO_TOPIC: "twitter-users_scraped"
       KAFKA_NAME_TOPIC: "twitter-user_names"
-      USER_DISCOVERY: "true"
   twitter_inserter_posts:
     build:
       context: "."
@@ -174,7 +209,6 @@ services:
       KAFKA_GROUPID: "twitter_inserter_posts"
       KAFKA_INFO_TOPIC: "twitter-posts_scraped"
       KAFKA_NAME_TOPIC: "twitter-user_names"
-      USER_DISCOVERY: "true"
 
   # POSTGRES
   postgres:
@@ -210,3 +244,37 @@ services:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
+
+  # FILTER
+  insta-user-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_user_names-filter"
+  insta-post-picture-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_post_pictures-filter"
+  twitter-user-filter:
+    build:
+      context: "."
+      dockerfile: "kafka/changestream/twitter_user_names-filter/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_user_names-filter"
+
+

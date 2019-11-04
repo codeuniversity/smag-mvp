@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -11,29 +11,38 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run cli/main/main.go <instagram|twitter> <username>")
-		return
-	}
+	var platformArg string
+	var userNameArg string
 
-	platformArg := os.Args[1]
-	userNameArg := os.Args[2]
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
+	instagramTopic := utils.GetStringFromEnvWithDefault("KAFKA_INSTAGRAM_TOPIC", "user_names")
+	twitterTopic := utils.GetStringFromEnvWithDefault("KAFKA_TWITTER_TOPIC", "twitter-user_names")
+
+	if len(os.Args) == 3 {
+		log.Println("getting arguments from parameters")
+		platformArg = os.Args[1]
+		userNameArg = os.Args[2]
+	} else {
+		log.Println("getting arguments from env variables")
+		platformArg = utils.MustGetStringFromEnv("CLI_PLATFORM")
+		userNameArg = utils.MustGetStringFromEnv("CLI_USER")
+	}
 
 	var topic string
 	switch platformArg {
 	case "instagram":
-		topic = "user_names"
+		topic = instagramTopic
 		break
 	case "twitter":
-		topic = "twitter-user_names"
+		topic = twitterTopic
 		break
 	default:
-		fmt.Printf("Invalid platform option: %s\n", platformArg)
+		log.Printf("Invalid platform option: %s\n", platformArg)
 		return
 	}
 
 	w := kafka.NewWriter(kafka.WriterConfig{
-		Brokers:  []string{"localhost:9092"},
+		Brokers:  []string{kafkaAddress},
 		Topic:    topic,
 		Balancer: &kafka.LeastBytes{},
 	})

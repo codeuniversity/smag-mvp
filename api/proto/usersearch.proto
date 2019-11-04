@@ -16,11 +16,32 @@ message UserSearchResponse {
     repeated User user_list = 1;
 }
 
-message UserSearchRequest {
+message UserNameRequest {
     string user_name = 1;
 }
 
+message UserIdRequest {
+    string user_id = 1;
+}
+
+message InstaPost {
+    string id = 1;
+    string post_id = 2;
+    string img_url = 3;
+    string caption = 4;
+    repeated User tagged_users = 5;
+    string short_code = 6;
+
+}
+
+message InstaPostsResponse {
+    string user_id = 1;
+    repeated InstaPost insta_posts = 2;
+}
+
 service UserSearchService {
-    rpc GetAllUsersLikeUsername(UserSearchRequest) returns (UserSearchResponse);
-    rpc GetUserWithUsername(UserSearchRequest) returns (User);
+    rpc GetAllUsersLikeUsername(UserNameRequest) returns (UserSearchResponse);
+    rpc GetUserWithUsername(UserNameRequest) returns (User);
+    rpc GetInstaPostsWithUserId(UserIdRequest) returns (InstaPostsResponse);
+
 }
