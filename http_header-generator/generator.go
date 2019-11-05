@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"net/http"
+	"time"
 )
 
 // HTTPHeaderGenerator generates headers for http requests for scraping
@@ -45,6 +46,7 @@ func (h *HTTPHeaderGenerator) AddHeaders(header *http.Header) {
 
 // GetRandomUserAgent returns a random user agent
 func (h *HTTPHeaderGenerator) GetRandomUserAgent() string {
+	rand.Seed(time.Now().UnixNano())
 	randomNumber := rand.Intn(len(h.browserAgent))
 	return h.browserAgent[randomNumber].UserAgents
 }
