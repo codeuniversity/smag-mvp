@@ -56,39 +56,65 @@ func (r *RenewingAddressGrpcServer) Listen() {
 // renewing the elastic ip using local ip and instanceId
 func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reachedRequestLimit *pb.RenewingElasticIp) (*pb.RenewedElasticResult, error) {
 
-	var ec2Address *ec2.Address
-	var err error
 	log.Println("PodIp: ", reachedRequestLimit.PodIp)
 	log.Println("InstanceId: ", reachedRequestLimit.InstanceId)
-	for i := 0; i < 10; i++ {
-		ec2Address, err = r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
-		log.Println("Retry getElasticPublicAddresses")
-	}
+	var networkInterfaceId string
+	ec2Address, err := r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
 
 	if err != nil {
 		log.Println(err)
-		return &pb.RenewedElasticResult{ElasticIp: ""}, err
+		networkInterfaceId, err = r.getNetworkInterfaceId(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
+
+		if err != nil {
+			return &pb.RenewedElasticResult{ElasticIp: ""}, err
+		}
+	} else {
+		networkInterfaceId = *ec2Address.NetworkInterfaceId
+		err = r.disassociateAddress(*ec2Address.PublicIp)
+		if err != nil {
+			log.Println("disassociateAddress Error: ", err)
+			return nil, err
+		}
+
+		err = r.releaseElasticAddresses(*ec2Address.AllocationId)
+		if err != nil {
+			log.Println("Error ReleaseElasticAddress: ", err)
+			return nil, err
+		}
 	}
 
-	err = r.disassociateAddress(*ec2Address.PublicIp)
-	if err != nil {
-		log.Println("disassociateAddress Error: ", err)
-		return nil, err
-	}
-
-	err = r.releaseElasticAddresses(*ec2Address.AllocationId)
-	if err != nil {
-		log.Println("Error ReleaseElasticAddress: ", err)
-		return nil, err
-	}
-
-	elasticIp, err := allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, *ec2Address.NetworkInterfaceId)
+	elasticIp, err := allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, networkInterfaceId)
 	if err != nil {
 		log.Println("Error AllocateAddress: ", err)
 		return nil, err
 	}
 
 	return &pb.RenewedElasticResult{ElasticIp: elasticIp}, nil
+}
+
+func (r *RenewingAddressGrpcServer) getNetworkInterfaceId(instanceId string, localIp string) (string, error) {
+	networkInterfaces, err := r.ec2Service.DescribeNetworkInterfaces(&ec2.DescribeNetworkInterfacesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("attachment.instance-id"),
+				Values: aws.StringSlice([]string{instanceId}),
+			},
+			{
+				Name:   aws.String("addresses.private-ip-address"),
+				Values: aws.StringSlice([]string{localIp}),
+			},
+		},
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if len(networkInterfaces.NetworkInterfaces) == 0 {
+		return "", fmt.Errorf("No network interface Id %s \n", *r.ec2Service.Config.Region)
+	} else {
+		return *networkInterfaces.NetworkInterfaces[0].NetworkInterfaceId, nil
+	}
 }
 
 func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) (string, error) {
