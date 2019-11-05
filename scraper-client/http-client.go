@@ -29,11 +29,13 @@ type HttpClient struct {
 	client                 *http.Client
 	instanceId             string
 	grpcClient             *grpc.ClientConn
+	scraperConfig          *ScraperConfig
 }
 
-func NewHttpClient(awsServiceAddress string) *HttpClient {
+func NewHttpClient(awsServiceAddress string, config *ScraperConfig) *HttpClient {
 	client := &HttpClient{}
 	client.HTTPHeaderGenerator = generator.New()
+	client.scraperConfig = config
 	var err error
 
 	client.localIp = utils.MustGetStringFromEnv("POD_IP")
@@ -96,32 +98,38 @@ func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error)
 	return &http.Client{Transport: tr}, nil
 }
 
-func (h *HttpClient) WithRetries(times int, f func() error) error {
+func (h *HttpClient) WithRetries(requestRetryCount int, f func() error) error {
 	var err error
-	for i := 0; i < times; i++ {
-		err = f()
-		if err == nil {
-			return nil
+	isWithRetriesDone := false
+	for i := 0; i < requestRetryCount; i++ {
+
+		for k := 0; k < h.scraperConfig.ElasticIpRetryCount; k++ {
+			err = f()
+			time.Sleep(time.Duration(h.scraperConfig.RequestTimeout) * time.Millisecond)
+
+			if err == nil {
+				return nil
+			}
 		}
 
 		log.Println(err)
-		isRenewed, err := h.checkIfIPReachedTheLimit(err)
+		_, err := h.checkIfIPReachedTheLimit(err)
 		if err != nil {
-			log.Println(err)
+			panic(err)
 		}
-		if isRenewed {
-			times++
+
+		if !isWithRetriesDone && ((i + 1) == requestRetryCount) {
+			isWithRetriesDone = true
+			i--
 		}
-		time.Sleep(380 * time.Millisecond)
+		time.Sleep(time.Duration(h.scraperConfig.ElasticAssignmentTimeout) * time.Millisecond)
 	}
 	return err
 }
 
 func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
-	log.Println("checkIfIPReachedTheLimit")
 	switch t := err.(type) {
 	case *json.SyntaxError, *HTTPStatusError:
-		log.Println("SyntaxError")
 		_, err := h.sendRenewElasticIpRequestToAmazonService()
 		if err != nil {
 			return false, err

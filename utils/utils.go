@@ -32,6 +32,17 @@ func GetStringFromEnvWithDefault(enVarName, defaultValue string) string {
 	return envValue
 }
 
+// GetNumberFromEnvWithDefault returns default Value if OS Environment Variable is not set
+func GetNumberFromEnvWithDefault(envVarName string, defaultValue int) int {
+	envValue := os.Getenv(envVarName)
+	number, err := strconv.ParseInt(envValue, 10, 64)
+	if err != nil {
+		return defaultValue
+	}
+
+	return int(number)
+}
+
 //MustGetStringFromEnv panics if OS Environment Variable is not set
 func MustGetStringFromEnv(enVarName string) string {
 	envValue := os.Getenv(enVarName)
