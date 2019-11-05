@@ -55,13 +55,19 @@ func (r *RenewingAddressGrpcServer) Listen() {
 
 // renewing the elastic ip using local ip and instanceId
 func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reachedRequestLimit *pb.RenewingElasticIp) (*pb.RenewedElasticResult, error) {
-	ec2Address, err := r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
 
+	var ec2Address *ec2.Address
+	var err error
 	log.Println("PodIp: ", reachedRequestLimit.PodIp)
 	log.Println("InstanceId: ", reachedRequestLimit.InstanceId)
+	for i := 0; i < 10; i++ {
+		ec2Address, err = r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
+		log.Println("Retry getElasticPublicAddresses")
+	}
+
 	if err != nil {
 		log.Println(err)
-		return &pb.RenewedElasticResult{IsRenewed: false}, err
+		return &pb.RenewedElasticResult{ElasticIp: ""}, err
 	}
 
 	err = r.disassociateAddress(*ec2Address.PublicIp)
@@ -76,23 +82,24 @@ func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reac
 		return nil, err
 	}
 
-	err = allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, *ec2Address.NetworkInterfaceId)
+	elasticIp, err := allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, *ec2Address.NetworkInterfaceId)
 	if err != nil {
 		log.Println("Error AllocateAddress: ", err)
 		return nil, err
 	}
 
-	return &pb.RenewedElasticResult{IsRenewed: true}, nil
+	return &pb.RenewedElasticResult{ElasticIp: elasticIp}, nil
 }
 
-func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) error {
+func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) (string, error) {
 
 	allocRes, err := svc.AllocateAddress(&ec2.AllocateAddressInput{
 		Domain: aws.String("vpc"),
 	})
+
 	if err != nil {
 		log.Println("AllocateAddress Error : ")
-		return err
+		return "", err
 	}
 
 	_, err = svc.AssociateAddress(&ec2.AssociateAddressInput{
@@ -103,10 +110,10 @@ func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) 
 
 	if err != nil {
 		log.Println("AssociateAddress Error")
-		return err
+		return "", err
 	}
 
-	return nil
+	return *allocRes.PublicIp, nil
 }
 
 func (r *RenewingAddressGrpcServer) releaseElasticAddresses(allocationId string) error {
@@ -114,6 +121,7 @@ func (r *RenewingAddressGrpcServer) releaseElasticAddresses(allocationId string)
 	_, err := r.ec2Service.ReleaseAddress(&ec2.ReleaseAddressInput{
 		AllocationId: &allocationId,
 	})
+
 	if err != nil {
 		log.Println("Release Address Error ", err)
 		return err
