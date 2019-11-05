@@ -85,6 +85,21 @@ func (i *InstaPostsScraper) runStep() error {
 		return nil
 	}
 
+	if instagramAccountInfo == nil {
+		log.Println("InstagramAccount is nil")
+
+		errMessage := &models.InstagramScrapeError{
+			Name: username,
+		}
+		serializedErr, err := json.Marshal(errMessage)
+		if err != nil {
+			return err
+		}
+		i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+		i.nameQReader.CommitMessages(context.Background(), m)
+		return nil
+	}
+
 	if instagramAccountInfo.Graphql.User.IsPrivate {
 		log.Println("Username: ", username, " is private")
 		i.nameQReader.CommitMessages(context.Background(), m)
@@ -129,7 +144,7 @@ func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo,
 	})
 
 	if err != nil {
-		return instagramAccountInfo, err
+		return nil, err
 	}
 	return instagramAccountInfo, err
 }

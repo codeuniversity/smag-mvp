@@ -72,6 +72,30 @@ func getAmazonInstanceId() (string, error) {
 	return string(body), err
 }
 
+func getPublicIp() string {
+	resp, err := http.Get("https://api.ipify.org?format=json")
+	if err != nil {
+		return ""
+	}
+	body, err := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
+	if err != nil {
+		log.Println("Error: ", err)
+		return ""
+	}
+
+	type PublicIp struct {
+		Ip string `json:"ip"`
+	}
+	var publicIp PublicIp
+	err = json.Unmarshal(body, &publicIp)
+	if err != nil {
+		log.Println(err)
+		return ""
+	}
+	return publicIp.Ip
+}
+
 func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error) {
 	localAddr, err := net.ResolveIPAddr("ip", localIp)
 
@@ -101,10 +125,14 @@ func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error)
 func (h *HttpClient) WithRetries(requestRetryCount int, f func() error) error {
 	var err error
 	isWithRetriesDone := false
+	var elasticIp string
 	for i := 0; i < requestRetryCount; i++ {
 
 		for k := 0; k < h.scraperConfig.ElasticIpRetryCount; k++ {
 			err = f()
+			ip := getPublicIp()
+			log.Println("Real PublicIp: ", ip)
+			log.Println("Elastic Ip: ", elasticIp)
 			time.Sleep(time.Duration(h.scraperConfig.RequestTimeout) * time.Millisecond)
 
 			if err == nil {
@@ -113,7 +141,7 @@ func (h *HttpClient) WithRetries(requestRetryCount int, f func() error) error {
 		}
 
 		log.Println(err)
-		_, err := h.checkIfIPReachedTheLimit(err)
+		elasticIp, err = h.checkIfIPReachedTheLimit(err)
 		if err != nil {
 			panic(err)
 		}
@@ -127,21 +155,21 @@ func (h *HttpClient) WithRetries(requestRetryCount int, f func() error) error {
 	return err
 }
 
-func (h *HttpClient) checkIfIPReachedTheLimit(err error) (bool, error) {
+func (h *HttpClient) checkIfIPReachedTheLimit(err error) (string, error) {
 	switch t := err.(type) {
 	case *json.SyntaxError, *HTTPStatusError:
-		_, err := h.sendRenewElasticIpRequestToAmazonService()
+		elasticIp, err := h.sendRenewElasticIpRequestToAmazonService()
 		if err != nil {
-			return false, err
+			return "", err
 		}
-		return true, nil
+		return elasticIp, nil
 	default:
 		log.Println("Found Wrong Json Type Error ", t)
-		return false, err
+		return "", err
 	}
 }
 
-func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (bool, error) {
+func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (string, error) {
 
 	renewIp := pb.RenewingElasticIp{
 		InstanceId: h.instanceId,
@@ -154,10 +182,10 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (bool, error) {
 	result, err := awsClient.RenewElasticIp(context.Background(), &renewIp)
 	if err != nil {
 		log.Println("sendRenewElasticIpRequestToAmazonService Err: ", err)
-		return false, err
+		return "", err
 	}
 
-	return result.IsRenewed, nil
+	return result.ElasticIp, nil
 }
 
 func (h *HttpClient) Close() {
