@@ -279,8 +279,6 @@ workflows:
             branches:
               only: master
       - envoy-proxy:
-          requires:
-            - tests
           filters:
             branches:
               only: master
