@@ -37,7 +37,9 @@ services:
   # GRPC
   # ports: 4000 - 4999
   envoy-proxy:
-    build: "./api/envoy-proxy"
+    build: 
+      context: "."
+      dockerfile: "./api/envoy-proxy/Dockerfile"
     depends_on:
       - "grpc-server"
     ports:
