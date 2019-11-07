@@ -129,6 +129,25 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh insta_pics-downloader/Dockerfile codesmag/insta_pics_downloader
+  
+  grpc-server:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh api/grpcserver/Dockerfile codesmag/grpc-server
+  
+  envoy-proxy:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh api/envoy-proxy/Dockerfile codesmag/envoy-proxy
+
   cli:
     executor: job-runner
     steps:
@@ -253,3 +272,14 @@ workflows:
           filters:
             branches:
               only: master
+      - grpc-server:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - envoy-proxy:
+          filters:
+            branches:
+              only: master
+
