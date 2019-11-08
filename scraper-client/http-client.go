@@ -164,8 +164,12 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (string, error) {
 		}
 		return elasticIp, nil
 	default:
-		log.Println("Found Wrong Json Type Error ", t)
-		return "", err
+		log.Println("Type Error ", t)
+		elasticIp, err := h.sendRenewElasticIpRequestToAmazonService()
+		if err != nil {
+			return "", err
+		}
+		return elasticIp, nil
 	}
 }
 
