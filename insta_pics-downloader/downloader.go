@@ -81,9 +81,18 @@ func (d *Downloader) runStep() error {
 		return err
 	}
 
-	path, err := d.downloadImgToS3(job)
+	var path string
+	err = utils.WithRetries(5, func() error {
+		s3path, err := d.downloadImgToS3(job)
+		if err != nil {
+			return err
+		}
+		path = s3path
+		return nil
+	})
 	if err != nil {
-		return err
+		log.Printf("downloading failed url=%s err=%s \n", job.PictureURL, err)
+		return d.qReader.CommitMessages(context.Background(), m)
 	}
 
 	err = d.updatePost(job.PostID, path)
