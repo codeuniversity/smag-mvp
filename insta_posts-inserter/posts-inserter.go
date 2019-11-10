@@ -62,14 +62,14 @@ func (i *InstaPostInserter) runStep() error {
 	if err != nil {
 		return err
 	}
-
-	postId, err := i.insertPost(post)
+	log.Println(post)
+	postID, err := i.insertPost(post)
 
 	if err != nil {
 		return fmt.Errorf("posts inserter insertPost() failed %s ", err)
 	}
 
-	err = i.insertTaggedUser(postId, post.TaggedUsers)
+	err = i.insertTaggedUser(postID, post.TaggedUsers)
 
 	if err != nil {
 		return fmt.Errorf("posts inserter insertTaggedUser() failed %s ", err)
@@ -98,7 +98,7 @@ func (i *InstaPostInserter) findOrCreateUser(username string) (userID int, err e
 	return userID, nil
 }
 
-func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUsers []string) error {
+func (i *InstaPostInserter) insertTaggedUser(postID int, taggedUsers []string) error {
 	if taggedUsers == nil {
 		return nil
 	}
@@ -110,10 +110,10 @@ func (i *InstaPostInserter) insertTaggedUser(postId int, taggedUsers []string) e
 		if err != nil {
 			return err
 		}
-		var taggedId int
-		err = i.db.QueryRow("Select id from post_tagged_users where post_id=$1 AND user_id= $2", postId, userID).Scan(&taggedId)
+		var taggedID int
+		err = i.db.QueryRow("Select id from post_tagged_users where post_id=$1 AND user_id= $2", postID, userID).Scan(&taggedID)
 		if err == sql.ErrNoRows {
-			_, err = i.db.Exec("Insert INTO post_tagged_users(post_id,user_id) VALUES($1,$2)", postId, userID)
+			_, err = i.db.Exec("Insert INTO post_tagged_users(post_id,user_id) VALUES($1,$2)", postID, userID)
 			if err != nil {
 				return err
 			}
