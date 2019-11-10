@@ -1,11 +1,14 @@
 import React, { Component } from "react";
 import Form from "./components/Form";
 import Title from "./components/Title";
-import Results from "./components/Results";
+import Result from "./components/Result";
 import "./index.css";
 import {
   User,
-  UserSearchRequest,
+  UserNameRequest,
+  UserIdRequest,
+  Post,
+  UserIdResponse,
   UserSearchResponse
 } from "./protofiles/usersearch_pb.js";
 import { UserSearchServiceClient } from "./protofiles/usersearch_grpc_web_pb";
@@ -15,36 +18,28 @@ import PropTypes from "prop-types";
 // eslint-disable-next-line
 
 class App extends Component {
-  state = {
-    users: []
-  };
-
   handleSubmit = userName => {
     const userSearch = new UserSearchServiceClient("http://localhost:4000");
-    const request = new UserSearchRequest();
 
-    request.setUserName(userName);
-    userSearch.getAllUsersLikeUsername(request, {}, (err, response) => {
+    const requestUser = new UserNameRequest();
+
+    requestUser.setUserName(userName);
+    userSearch.getUserWithUsername(requestUser, {}, (err, response) => {
       if (err) {
         console.log(err);
         return;
       }
-      const users = response.getUserListList();
-      users.map(user => ({
-        bio: user.getBio(),
-        avatarurl: user.getAvatarUrl(),
-        username: user.getUserName(),
-        realname: user.getRealName()
-      }));
-      const userdata = users.map(user => ({
-        bio: user.getBio(),
-        avatarurl: user.getAvatarUrl(),
-        username: user.getUserName(),
-        realname: user.getRealName()
-      }));
+      const user = {
+        id: response.getId(),
+        bio: response.getBio(),
+        avatarurl: response.getAvatarUrl(),
+        username: response.getUserName(),
+        realname: response.getRealName()
+      };
+
       this.props.history.push({
-        pathname: "/results",
-        state: { results: userdata }
+        pathname: "/result",
+        state: { user }
       });
     });
   };

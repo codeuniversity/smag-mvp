@@ -55,6 +55,18 @@ code {
   justify-content: center;
   align-self: center;
 }
+.column-four-sixed-posts {
+  width: 66.6%;
+  justify-content: center;
+  align-self: center;
+  background: #f5f5f5;
+  border-radius: 20px;
+  padding: 20px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  display: flex;
+}
 .social-icon-box {
   margin-top: 20px;
   display: flex;
@@ -131,7 +143,18 @@ button {
   padding: 20px;
   float: right;
 }
-
+.ig-post {
+  width: 25%;
+  max-width: 600px;
+  float: left;
+}
+.post-image {
+  width: 100%;
+  max-width: 600px;
+}
+.ig-post-padding {
+  padding: 20px;
+}
 /*--------responsive-----------*/
 @media (max-width: 992px) {
   .container {
@@ -152,6 +175,10 @@ button {
     width: 100%;
     flex-direction: column;
   }
+  .column-four-sixed-posts {
+    width: 100%;
+    flex-direction: column;
+  }
   .container-center {
     display: flex;
     height: 100vh;
@@ -166,5 +193,9 @@ button {
   h1 {
     font-size: 1em;
     line-height: 1em;
+  }
+  .ig-post {
+    width: 100%;
+    float: left;
   }
 }
