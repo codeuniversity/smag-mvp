@@ -73,7 +73,10 @@ func getAmazonInstanceId() (string, error) {
 }
 
 func getPublicIp() string {
-	resp, err := http.Get("https://api.ipify.org?format=json")
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := client.Get("https://api.ipify.org?format=json")
 	if err != nil {
 		return ""
 	}
@@ -109,14 +112,14 @@ func (h *HttpClient) getBoundAddressClient(localIp string) (*http.Client, error)
 
 	d := net.Dialer{
 		LocalAddr: &localTCPAddr,
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
+		Timeout:   5 * time.Second,
+		KeepAlive: 5 * time.Second,
 	}
 
 	tr := &http.Transport{
 		Proxy:               http.ProxyFromEnvironment,
 		DialContext:         d.DialContext,
-		TLSHandshakeTimeout: 10 * time.Second,
+		TLSHandshakeTimeout: 7 * time.Second,
 	}
 
 	return &http.Client{Transport: tr}, nil
@@ -158,13 +161,14 @@ func (h *HttpClient) WithRetries(requestRetryCount int, f func() error) error {
 func (h *HttpClient) checkIfIPReachedTheLimit(err error) (string, error) {
 	switch t := err.(type) {
 	case *json.SyntaxError, *HTTPStatusError:
+		log.Println("HttpStatus & Syntax Error ", t)
 		elasticIp, err := h.sendRenewElasticIpRequestToAmazonService()
 		if err != nil {
 			return "", err
 		}
 		return elasticIp, nil
 	default:
-		log.Println("Type Error ", t)
+		log.Println("Default Error ", t)
 		elasticIp, err := h.sendRenewElasticIpRequestToAmazonService()
 		if err != nil {
 			return "", err
