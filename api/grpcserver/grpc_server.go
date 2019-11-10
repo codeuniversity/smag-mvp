@@ -112,15 +112,15 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 		return nil, err
 	}
 
-	u.Followings, err = s.getRelationsFromUser("SELECT follows.to_id as id, users.user_name FROM follows JOIN users ON follows.to_id=users.id WHERE follows.from_id=$1", u.Id, scanForIDAndUserName)
-	if err != nil {
-		return nil, err
-	}
+	// u.Followings, err = s.getRelationsFromUser("SELECT follows.to_id as id, users.user_name FROM follows JOIN users ON follows.to_id=users.id WHERE follows.from_id=$1", u.Id, scanForIDAndUserName)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	u.Followers, err = s.getRelationsFromUser("SELECT follows.from_id, users.user_name FROM follows JOIN users ON follows.from_id=users.id WHERE follows.to_id=$1", u.Id, scanForIDAndUserName)
-	if err != nil {
-		return nil, err
-	}
+	// u.Followers, err = s.getRelationsFromUser("SELECT follows.from_id, users.user_name FROM follows JOIN users ON follows.from_id=users.id WHERE follows.to_id=$1", u.Id, scanForIDAndUserName)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	return u, nil
 }
