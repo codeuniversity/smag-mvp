@@ -1,12 +1,12 @@
 package inserter
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/models"
@@ -58,14 +58,13 @@ func (i *InstaPostInserter) runStep() error {
 		return err
 	}
 
-	messageBytes := bytes.ToValidUTF8(message.Value, []byte(""))
-
 	var post models.InstagramPost
-	err = json.Unmarshal(messageBytes, &post)
+	err = json.Unmarshal(message.Value, &post)
 	if err != nil {
 		return err
 	}
 	log.Println(post)
+	post.Caption = strings.ReplaceAll(post.Caption, "\u0000", "")
 
 	postID, err := i.insertPost(post)
 
