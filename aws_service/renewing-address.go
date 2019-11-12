@@ -66,7 +66,7 @@ func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reac
 		networkInterfaceId, err = r.getNetworkInterfaceId(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
 
 		if err != nil {
-			return &pb.RenewedElasticResult{ElasticIp: ""}, err
+			return nil, err
 		}
 	} else {
 		networkInterfaceId = *ec2Address.NetworkInterfaceId
