@@ -112,9 +112,8 @@ func (r *RenewingAddressGrpcServer) getNetworkInterfaceId(instanceId string, loc
 
 	if len(networkInterfaces.NetworkInterfaces) == 0 {
 		return "", fmt.Errorf("No network interface Id %s", *r.ec2Service.Config.Region)
-	} else {
-		return *networkInterfaces.NetworkInterfaces[0].NetworkInterfaceId, nil
 	}
+	return *networkInterfaces.NetworkInterfaces[0].NetworkInterfaceId, nil
 }
 
 func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) (string, error) {
@@ -179,9 +178,8 @@ func (r *RenewingAddressGrpcServer) getElasticPublicAddresses(instanceId string,
 	if len(result.Addresses) == 0 {
 		log.Printf("No elastic IPs for %s region\n", *r.ec2Service.Config.Region)
 		return nil, &NoElasticIPError{*r.ec2Service.Config.Region}
-	} else {
-		return result.Addresses[0], nil
 	}
+	return result.Addresses[0], nil
 }
 
 // To disassociate an Elastic IP addresses in EC2-Classic
