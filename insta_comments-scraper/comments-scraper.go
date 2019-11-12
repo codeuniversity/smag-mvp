@@ -4,15 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/codeuniversity/smag-mvp/models"
+	client "github.com/codeuniversity/smag-mvp/scraper-client"
+	"github.com/codeuniversity/smag-mvp/worker"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
-	"time"
-
-	"github.com/codeuniversity/smag-mvp/models"
-	client "github.com/codeuniversity/smag-mvp/scraper-client"
-	"github.com/codeuniversity/smag-mvp/worker"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -29,20 +27,22 @@ type PostCommentScraper struct {
 	commentsInfoQWriter *kafka.Writer
 	errQWriter          *kafka.Writer
 
-	httpClient client.ScraperClient
+	httpClient        client.ScraperClient
+	requestRetryCount int
 }
 
 // New returns an initialized PostCommentScraper
-func New(awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
+func New(config *client.ScraperConfig, awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
 	s := &PostCommentScraper{}
 	s.postIDQReader = postIDQReader
 	s.commentsInfoQWriter = commentsInfoQWriter
 	s.errQWriter = errQWriter
+	s.requestRetryCount = config.RequestRetryCount
 
 	if awsServiceAddress == "" {
 		s.httpClient = client.NewSimpleScraperClient()
 	} else {
-		s.httpClient = client.NewHttpClient(awsServiceAddress)
+		s.httpClient = client.NewHttpClient(awsServiceAddress, config)
 	}
 	s.Worker = worker.Builder{}.WithName("insta_comments_scraper").
 		WithWorkStep(s.runStep).
@@ -96,14 +96,12 @@ func (s *PostCommentScraper) runStep() error {
 		return err
 	}
 
-	time.Sleep(time.Millisecond * 900)
 	return s.postIDQReader.CommitMessages(context.Background(), message)
 }
 
 func (s *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComments, error) {
 	var postsComments *instaPostComments
-	err := s.httpClient.WithRetries(3, func() error {
-		time.Sleep(1400 * time.Millisecond)
+	err := s.httpClient.WithRetries(s.requestRetryCount, func() error {
 		instaPostComments, err := s.scrapePostComment(shortCode)
 
 		if err != nil {
@@ -117,7 +115,9 @@ func (s *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComment
 }
 
 func (s *PostCommentScraper) sendComments(postsComments *instaPostComments, postID models.InstagramPost) error {
-	log.Println("sendComments: ", len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
+	if len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges) == 0 {
+		return nil
+	}
 	messages := make([]kafka.Message, 0, len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
 	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
 		if element.Node.ID != "" {

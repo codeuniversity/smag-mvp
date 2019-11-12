@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/models"
-	scraper_client "github.com/codeuniversity/smag-mvp/scraper-client"
+	client "github.com/codeuniversity/smag-mvp/scraper-client"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/segmentio/kafka-go"
 )
@@ -29,21 +29,23 @@ type InstaPostsScraper struct {
 	postsQWriter *kafka.Writer
 	errQWriter   *kafka.Writer
 
-	requestCounter int
-	httpClient     scraper_client.ScraperClient
+	requestCounter    int
+	httpClient        client.ScraperClient
+	requestRetryCount int
 }
 
 // New returns an initilized scraper
-func New(awsServiceAddress string, nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *InstaPostsScraper {
+func New(config *client.ScraperConfig, awsServiceAddress string, nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *InstaPostsScraper {
 	i := &InstaPostsScraper{}
 	i.nameQReader = nameQReader
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
+	i.requestRetryCount = config.RequestRetryCount
 
 	if awsServiceAddress == "" {
-		i.httpClient = scraper_client.NewSimpleScraperClient()
+		i.httpClient = client.NewSimpleScraperClient()
 	} else {
-		i.httpClient = scraper_client.NewHttpClient(awsServiceAddress)
+		i.httpClient = client.NewHttpClient(awsServiceAddress, config)
 	}
 
 	i.Worker = worker.Builder{}.WithName("insta_posts_scraper").
@@ -109,7 +111,6 @@ func (i *InstaPostsScraper) runStep() error {
 		if !accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.HasNextPage {
 			isPostsSendingFinished = true
 		}
-		time.Sleep(time.Millisecond * 100)
 	}
 	return i.nameQReader.CommitMessages(context.Background(), m)
 }
@@ -117,7 +118,7 @@ func (i *InstaPostsScraper) runStep() error {
 func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo, error) {
 	var instagramAccountInfo *instagramAccountInfo
 
-	err := i.httpClient.WithRetries(2, func() error {
+	err := i.httpClient.WithRetries(i.requestRetryCount, func() error {
 		accountInfo, err := i.scrapeAccountInfo(username)
 		if err != nil {
 			return err
@@ -136,7 +137,7 @@ func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo,
 func (i *InstaPostsScraper) accountPosts(userID string, cursor string) (*instagramMedia, error) {
 	var instagramAccountMedia *instagramMedia
 
-	err := i.httpClient.WithRetries(2, func() error {
+	err := i.httpClient.WithRetries(i.requestRetryCount, func() error {
 		accountInfo, err := i.scrapeProfileMedia(userID, cursor)
 		if err != nil {
 			return err
@@ -165,7 +166,7 @@ func (i *InstaPostsScraper) scrapeAccountInfo(username string) (instagramAccount
 		return userAccountInfo, err
 	}
 	if response.StatusCode != 200 {
-		return userAccountInfo, &scraper_client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return userAccountInfo, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -205,7 +206,7 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userID string, endCursor string) 
 		return media, err
 	}
 	if response.StatusCode != 200 {
-		return media, &scraper_client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return media, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
