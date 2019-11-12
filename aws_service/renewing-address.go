@@ -55,44 +55,76 @@ func (r *RenewingAddressGrpcServer) Listen() {
 
 // renewing the elastic ip using local ip and instanceId
 func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reachedRequestLimit *pb.RenewingElasticIp) (*pb.RenewedElasticResult, error) {
-	ec2Address, err := r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
 
 	log.Println("PodIp: ", reachedRequestLimit.PodIp)
 	log.Println("InstanceId: ", reachedRequestLimit.InstanceId)
+	var networkInterfaceId string
+	ec2Address, err := r.getElasticPublicAddresses(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
+
 	if err != nil {
 		log.Println(err)
-		return &pb.RenewedElasticResult{IsRenewed: false}, err
+		networkInterfaceId, err = r.getNetworkInterfaceId(reachedRequestLimit.InstanceId, reachedRequestLimit.PodIp)
+
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		networkInterfaceId = *ec2Address.NetworkInterfaceId
+		err = r.disassociateAddress(*ec2Address.PublicIp)
+		if err != nil {
+			log.Println("disassociateAddress Error: ", err)
+			return nil, err
+		}
+
+		err = r.releaseElasticAddresses(*ec2Address.AllocationId)
+		if err != nil {
+			log.Println("Error ReleaseElasticAddress: ", err)
+			return nil, err
+		}
 	}
 
-	err = r.disassociateAddress(*ec2Address.PublicIp)
-	if err != nil {
-		log.Println("disassociateAddress Error: ", err)
-		return nil, err
-	}
-
-	err = r.releaseElasticAddresses(*ec2Address.AllocationId)
-	if err != nil {
-		log.Println("Error ReleaseElasticAddress: ", err)
-		return nil, err
-	}
-
-	err = allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, *ec2Address.NetworkInterfaceId)
+	elasticIp, err := allocateAddresses(r.ec2Service, reachedRequestLimit.PodIp, networkInterfaceId)
 	if err != nil {
 		log.Println("Error AllocateAddress: ", err)
 		return nil, err
 	}
 
-	return &pb.RenewedElasticResult{IsRenewed: true}, nil
+	return &pb.RenewedElasticResult{ElasticIp: elasticIp}, nil
 }
 
-func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) error {
+func (r *RenewingAddressGrpcServer) getNetworkInterfaceId(instanceId string, localIp string) (string, error) {
+	networkInterfaces, err := r.ec2Service.DescribeNetworkInterfaces(&ec2.DescribeNetworkInterfacesInput{
+		Filters: []*ec2.Filter{
+			{
+				Name:   aws.String("attachment.instance-id"),
+				Values: aws.StringSlice([]string{instanceId}),
+			},
+			{
+				Name:   aws.String("addresses.private-ip-address"),
+				Values: aws.StringSlice([]string{localIp}),
+			},
+		},
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	if len(networkInterfaces.NetworkInterfaces) == 0 {
+		return "", fmt.Errorf("No network interface Id %s", *r.ec2Service.Config.Region)
+	}
+	return *networkInterfaces.NetworkInterfaces[0].NetworkInterfaceId, nil
+}
+
+func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) (string, error) {
 
 	allocRes, err := svc.AllocateAddress(&ec2.AllocateAddressInput{
 		Domain: aws.String("vpc"),
 	})
+
 	if err != nil {
 		log.Println("AllocateAddress Error : ")
-		return err
+		return "", err
 	}
 
 	_, err = svc.AssociateAddress(&ec2.AssociateAddressInput{
@@ -103,10 +135,10 @@ func allocateAddresses(svc *ec2.EC2, localIp string, networkInterfaceId string) 
 
 	if err != nil {
 		log.Println("AssociateAddress Error")
-		return err
+		return "", err
 	}
 
-	return nil
+	return *allocRes.PublicIp, nil
 }
 
 func (r *RenewingAddressGrpcServer) releaseElasticAddresses(allocationId string) error {
@@ -114,6 +146,7 @@ func (r *RenewingAddressGrpcServer) releaseElasticAddresses(allocationId string)
 	_, err := r.ec2Service.ReleaseAddress(&ec2.ReleaseAddressInput{
 		AllocationId: &allocationId,
 	})
+
 	if err != nil {
 		log.Println("Release Address Error ", err)
 		return err
@@ -145,9 +178,8 @@ func (r *RenewingAddressGrpcServer) getElasticPublicAddresses(instanceId string,
 	if len(result.Addresses) == 0 {
 		log.Printf("No elastic IPs for %s region\n", *r.ec2Service.Config.Region)
 		return nil, &NoElasticIPError{*r.ec2Service.Config.Region}
-	} else {
-		return result.Addresses[0], nil
 	}
+	return result.Addresses[0], nil
 }
 
 // To disassociate an Elastic IP addresses in EC2-Classic
