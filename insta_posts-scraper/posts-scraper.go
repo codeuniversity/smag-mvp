@@ -80,8 +80,11 @@ func (i *InstaPostsScraper) runStep() error {
 		if err != nil {
 			return err
 		}
-		i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
-		i.nameQReader.CommitMessages(context.Background(), m)
+		err = i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+		if err != nil {
+			return err
+		}
+		err = i.nameQReader.CommitMessages(context.Background(), m)
 		return nil
 	}
 
@@ -95,14 +98,25 @@ func (i *InstaPostsScraper) runStep() error {
 		if err != nil {
 			return err
 		}
-		i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
-		i.nameQReader.CommitMessages(context.Background(), m)
+		err = i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+
+		if err != nil {
+			return err
+		}
+		err = i.nameQReader.CommitMessages(context.Background(), m)
+
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 
 	if instagramAccountInfo.Graphql.User.IsPrivate {
 		log.Println("Username: ", username, " is private")
-		i.nameQReader.CommitMessages(context.Background(), m)
+		err := i.nameQReader.CommitMessages(context.Background(), m)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 	log.Println("Username: ", username, " Posts Init")
