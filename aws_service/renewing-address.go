@@ -111,7 +111,7 @@ func (r *RenewingAddressGrpcServer) getNetworkInterfaceId(instanceId string, loc
 	}
 
 	if len(networkInterfaces.NetworkInterfaces) == 0 {
-		return "", fmt.Errorf("No network interface Id %s \n", *r.ec2Service.Config.Region)
+		return "", fmt.Errorf("No network interface Id %s", *r.ec2Service.Config.Region)
 	} else {
 		return *networkInterfaces.NetworkInterfaces[0].NetworkInterfaceId, nil
 	}
