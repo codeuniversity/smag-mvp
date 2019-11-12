@@ -24,5 +24,5 @@ echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
 
 IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
 docker tag $IMAGE_NAME:latest $IMAGE_NAME:$IMAGE_TAG
-# docker push $IMAGE_NAME:latest
-# docker push $IMAGE_NAME:$IMAGE_TAG
+docker push $IMAGE_NAME:latest
+docker push $IMAGE_NAME:$IMAGE_TAG
