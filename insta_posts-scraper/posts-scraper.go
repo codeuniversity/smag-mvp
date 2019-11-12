@@ -284,6 +284,7 @@ func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia,
 			}
 		}
 	}
+	return nil
 }
 
 func (i *InstaPostsScraper) sendErrorMessage(m kafka.Message, username string, errToSend error) error {
