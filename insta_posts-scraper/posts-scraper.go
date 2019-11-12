@@ -84,8 +84,7 @@ func (i *InstaPostsScraper) runStep() error {
 		if err != nil {
 			return err
 		}
-		err = i.nameQReader.CommitMessages(context.Background(), m)
-		return nil
+		return i.nameQReader.CommitMessages(context.Background(), m)
 	}
 
 	if instagramAccountInfo == nil {
@@ -103,12 +102,7 @@ func (i *InstaPostsScraper) runStep() error {
 		if err != nil {
 			return err
 		}
-		err = i.nameQReader.CommitMessages(context.Background(), m)
-
-		if err != nil {
-			return err
-		}
-		return nil
+		return i.nameQReader.CommitMessages(context.Background(), m)
 	}
 
 	if instagramAccountInfo.Graphql.User.IsPrivate {
