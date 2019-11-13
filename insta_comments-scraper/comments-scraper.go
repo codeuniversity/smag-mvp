@@ -75,21 +75,11 @@ func (s *PostCommentScraper) runStep() error {
 
 	postsComments, err := s.scrapeCommentsInfo(post.ShortCode)
 	if err != nil {
-		errorMessage := models.InstaCommentScrapError{
-			PostID: post.PostID,
-			Error:  err.Error(),
-		}
-
-		errorMessageJSON, err := json.Marshal(errorMessage)
-		if err != nil {
-			panic(err)
-		}
-		err = s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
+		err := s.sendInstaCommentError(post.PostID, err)
 		if err != nil {
 			return err
 		}
 	} else {
-
 		err = s.sendComments(postsComments, post)
 		if err != nil {
 			return err
@@ -102,18 +92,8 @@ func (s *PostCommentScraper) runStep() error {
 		for commentCounter < s.commentsLimit && nextPage {
 			postComments, err := s.scrapeComments(post.ShortCode, endcursor)
 
-			// Todo
 			if err != nil {
-				errorMessage := models.InstaCommentScrapError{
-					PostID: post.PostID,
-					Error:  err.Error(),
-				}
-
-				errorMessageJSON, err := json.Marshal(errorMessage)
-				if err != nil {
-					panic(err)
-				}
-				err = s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
+				err := s.sendInstaCommentError(post.PostID, err)
 				if err != nil {
 					return err
 				}
@@ -129,6 +109,19 @@ func (s *PostCommentScraper) runStep() error {
 	}
 
 	return s.postIDQReader.CommitMessages(context.Background(), message)
+}
+
+func (s *PostCommentScraper) sendInstaCommentError(postId string, err error) error {
+	errorMessage := models.InstaCommentScrapError{
+		PostID: postId,
+		Error:  err.Error(),
+	}
+
+	errorMessageJSON, err := json.Marshal(errorMessage)
+	if err != nil {
+		panic(err)
+	}
+	return s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
 }
 
 func (s *PostCommentScraper) scrapeCommentsInfo(shortCode string) (*instaPostCommentsInfo, error) {
