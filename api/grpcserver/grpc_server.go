@@ -191,6 +191,44 @@ func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.U
 	return res, nil
 }
 
+//GetTaggedPostsWithUserId returns all Posts the given User is tagged on
+func (s *GrpcServer) GetTaggedPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
+	res := &proto.InstaPostsResponse{}
+
+	rows, err := s.db.Query(`SELECT post_tagged_users.id,
+										COALESCE(posts.post_id, '') as post_id,
+										COALESCE(posts.short_code, '') as short_code, 
+										COALESCE(posts.caption, '') as caption, 
+										COALESCE(posts.internal_picture_url, '') as internal_picture_url
+										FROM posts  
+										JOIN post_tagged_users 
+										ON posts.id=post_tagged_users.post_id 
+										WHERE post_tagged_users.user_id=$1`, request.UserId)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	res.UserId = request.UserId
+	for rows.Next() {
+		post := proto.InstaPost{}
+
+		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.Caption, &post.ImgUrl)
+
+		if post.ImgUrl != "" {
+			post.ImgUrl, err = s.getURLForPost(post.ImgUrl)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		res.InstaPosts = append(res.InstaPosts, &post)
+	}
+
+	return res, nil
+}
+
 //scanForIdAndUserName scans a sql row for user id and username
 func scanForIDAndUserName(row *sql.Rows) (proto.User, error) {
 	user := proto.User{}
