@@ -15,6 +15,7 @@ export class Result extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      // if this.props.location.state is true take this.props.location.state.user, othewise use empty state
       user: this.props.location.state && this.props.location.state.user,
       posts: []
     };
@@ -23,7 +24,7 @@ export class Result extends React.Component {
   componentDidMount() {
     const user = this.state.user;
     if (!user) {
-      console.log(":(");
+      console.log("no user found in database");
       return;
     }
     const client = new UserSearchServiceClient("http://localhost:4000");
@@ -34,7 +35,6 @@ export class Result extends React.Component {
         console.log(err);
         return;
       }
-      console.log(response);
       const posts = response.getInstaPostsList();
       const postdata = posts
         .map(posts => ({
@@ -44,11 +44,7 @@ export class Result extends React.Component {
           shortcode: posts.getShortCode()
         }))
         .filter(post => !!post.img);
-      // this.props.history.push({
-      //   pathname: "/results",
-      //   state: { results: postdata }
-      // });
-      console.log(postdata);
+      console.log("postdata:", postdata);
       this.setState({
         posts: postdata
       });
