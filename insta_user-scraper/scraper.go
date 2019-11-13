@@ -65,9 +65,12 @@ func (s *Scraper) runStep() error {
 		if serializationErr != nil {
 			return serializationErr
 		}
-		s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
-		s.nameQReader.CommitMessages(context.Background(), m)
-		return err
+		err := s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+		if err != nil {
+			return err
+		}
+
+		return s.nameQReader.CommitMessages(context.Background(), m)
 	}
 	serializedFollowInfo, err := json.Marshal(followInfo)
 	if err != nil {
