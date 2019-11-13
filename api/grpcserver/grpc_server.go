@@ -195,7 +195,7 @@ func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.U
 func (s *GrpcServer) GetTaggedPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
 	res := &proto.InstaPostsResponse{}
 
-	rows, err := s.db.Query(`SELECT post_tagged_users.id,
+	rows, err := s.db.Query(`SELECT posts.id,
 										COALESCE(posts.post_id, '') as post_id,
 										COALESCE(posts.short_code, '') as short_code, 
 										COALESCE(posts.caption, '') as caption, 
