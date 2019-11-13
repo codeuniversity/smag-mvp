@@ -6,6 +6,7 @@ import FBlogo from "./img/fb.png";
 import Twitterlogo from "./img/twitter.png";
 import LIlogo from "./img/linkedin.png";
 import IGPost from "./IGPost";
+import BackButton from "./BackButton";
 import {
   UserSearchServiceClient,
   UserIdRequest
@@ -59,6 +60,11 @@ export class Result extends React.Component {
 
     return (
       <div className="body">
+        <div className="container">
+          <div className="column">
+            <BackButton />
+          </div>
+        </div>
         <div className="container-card">
           <div className="column-one-third"></div>
           <div className="column-one-third">
@@ -111,13 +117,13 @@ export class Result extends React.Component {
         </div>
 
         <div className="container-plattforms">
-          <div classNme="column-one-sixed"></div>
+          <div className="column-one-sixed"></div>
           <div className="column-four-sixed-posts">
             {posts.map(post => (
               <IGPost key={post.shortcode} post={post} />
             ))}
           </div>
-          <div classNme="column-one-sixed"></div>
+          <div className="column-one-sixed"></div>
         </div>
       </div>
     );

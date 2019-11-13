@@ -22,6 +22,12 @@ code {
   line-height: 34px;
   color: #000000;
 }
+.container {
+  display: flex;
+}
+.column {
+  padding: 10px;
+}
 
 .container-center {
   display: flex;
@@ -154,6 +160,16 @@ button {
 }
 .ig-post-padding {
   padding: 20px;
+}
+.BackButton {
+  width: 40px;
+  height: 40px;
+  border: solid #000000 2px;
+}
+.BackButtonImg {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }
 /*--------responsive-----------*/
 @media (max-width: 992px) {
