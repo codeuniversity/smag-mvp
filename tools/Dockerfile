@@ -1,6 +1,6 @@
 FROM ubuntu
 
-RUN apt update && apt install curl wget file xz-utils postgresql-client zsh git kafkacat -y
+RUN apt update && apt install curl wget file xz-utils postgresql-client zsh git kafkacat jq -y
 
 # install github.com/fgeller/kt
 RUN wget https://github.com/fgeller/kt/releases/download/v12.1.0/kt-v12.1.0-linux-amd64.txz && \
