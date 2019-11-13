@@ -99,6 +99,11 @@ func (s *PostCommentScraper) runStep() error {
 				}
 				continue
 			}
+			err = s.sendKafkaComments(postsComments, post)
+			if err != nil {
+				return err
+			}
+
 			nextPage = postComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.HasNextPage
 			endcursor = postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.EndCursor
 			commentCounter += 12
