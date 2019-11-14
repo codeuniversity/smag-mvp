@@ -166,7 +166,7 @@ func (s *PostLikesScraper) sendKafkaComments(postsLikes *InstaPostLikes, postID 
 	messages := make([]kafka.Message, 0, len(postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges))
 	for _, element := range postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges {
 		if element.Node.ID != "" {
-			postComment := models.InstaLikes{
+			postComment := models.InstaLike{
 				ID:            element.Node.ID,
 				PostID:        postID.PostID,
 				OwnerUsername: element.Node.Username,
@@ -177,7 +177,7 @@ func (s *PostLikesScraper) sendKafkaComments(postsLikes *InstaPostLikes, postID 
 			postCommentJSON, err := json.Marshal(postComment)
 
 			if err != nil {
-				panic(fmt.Errorf("json marshal failed with InstaLikes: %s", err))
+				panic(fmt.Errorf("json marshal failed with InstaLike: %s", err))
 			}
 
 			m := kafka.Message{Value: postCommentJSON}
