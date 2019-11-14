@@ -74,8 +74,8 @@ type InstagramPost struct {
 	Caption     string   `json:"caption"`
 }
 
-// InstaCommentScrapError s are written to the error topic of the scraper when even after retries we can't scrape the comments
-type InstaCommentScrapError struct {
+// InstaPostScrapeError s are written to the error topic of the scraper when even after retries we can't scrape the comments
+type InstaPostScrapeError struct {
 	PostID string `json:"post_id,omitempty"`
 	Error  string `json:"error,omitempty"`
 }

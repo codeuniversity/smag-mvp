@@ -73,39 +73,39 @@ func (s *PostLikesScraper) runStep() error {
 
 	log.Println("ShortCode: ", post.ShortCode)
 
-	postsComments, err := s.scrapeLikesInfo(post.ShortCode)
+	postsLikes, err := s.scrapeLikesInfo(post.ShortCode)
 	if err != nil {
-		err := s.sendInstaCommentError(post.PostID, err)
+		err := s.sendInstaLikesError(post.PostID, err)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = s.sendKafkaLikes(postsComments, post)
+		err = s.sendKafkaLikes(postsLikes, post)
 		if err != nil {
 			return err
 		}
 
-		endcursor := postsComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.EndCursor
-		nextPage := postsComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.HasNextPage
+		endcursor := postsLikes.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.EndCursor
+		nextPage := postsLikes.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.HasNextPage
 
 		likeCounter := 24
 		for (likeCounter < s.LikesLimit) && nextPage {
-			postComments, err := s.scrapeLikes(post.ShortCode, endcursor)
+			postLikes, err := s.scrapeLikes(post.ShortCode, endcursor)
 
 			if err != nil {
-				err := s.sendInstaCommentError(post.PostID, err)
+				err := s.sendInstaLikesError(post.PostID, err)
 				if err != nil {
 					return err
 				}
 				continue
 			}
-			err = s.sendKafkaLikes(postsComments, post)
+			err = s.sendKafkaLikes(postsLikes, post)
 			if err != nil {
 				return err
 			}
 
-			nextPage = postComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.HasNextPage
-			endcursor = postsComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.EndCursor
+			nextPage = postLikes.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.HasNextPage
+			endcursor = postsLikes.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.EndCursor
 			likeCounter += 12
 		}
 	}
@@ -116,8 +116,8 @@ func (s *PostLikesScraper) runStep() error {
 	return s.postIDQReader.CommitMessages(context.Background(), message)
 }
 
-func (s *PostLikesScraper) sendInstaCommentError(postId string, err error) error {
-	errorMessage := models.InstaCommentScrapError{
+func (s *PostLikesScraper) sendInstaLikesError(postId string, err error) error {
+	errorMessage := models.InstaPostScrapeError{
 		PostID: postId,
 		Error:  err.Error(),
 	}
@@ -130,33 +130,33 @@ func (s *PostLikesScraper) sendInstaCommentError(postId string, err error) error
 }
 
 func (s *PostLikesScraper) scrapeLikesInfo(shortCode string) (*InstaPostLikes, error) {
-	var postsComments *InstaPostLikes
+	var postLikes *InstaPostLikes
 	err := s.httpClient.WithRetries(s.requestRetryCount, func() error {
-		instaPostComments, err := s.sendLikesInfoRequest(shortCode)
+		instaPostLikes, err := s.sendLikesInfoRequest(shortCode)
 
 		if err != nil {
 			return err
 		}
 
-		postsComments = &instaPostComments
+		postLikes = &instaPostLikes
 		return nil
 	})
-	return postsComments, err
+	return postLikes, err
 }
 
 func (s *PostLikesScraper) scrapeLikes(shortCode string, cursor string) (*InstaPostLikes, error) {
-	var postsComments *InstaPostLikes
+	var postLikes *InstaPostLikes
 	err := s.httpClient.WithRetries(s.requestRetryCount, func() error {
-		instaPostComments, err := s.sendLikesRequest(shortCode, cursor)
+		instaPostLikes, err := s.sendLikesRequest(shortCode, cursor)
 
 		if err != nil {
 			return err
 		}
 
-		postsComments = &instaPostComments
+		postLikes = &instaPostLikes
 		return nil
 	})
-	return postsComments, err
+	return postLikes, err
 }
 
 func (s *PostLikesScraper) sendKafkaLikes(postsLikes *InstaPostLikes, postID models.InstagramPost) error {
@@ -166,7 +166,7 @@ func (s *PostLikesScraper) sendKafkaLikes(postsLikes *InstaPostLikes, postID mod
 	messages := make([]kafka.Message, 0, len(postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges))
 	for _, element := range postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges {
 		if element.Node.ID != "" {
-			postComment := models.InstaLike{
+			postLike := models.InstaLike{
 				ID:            element.Node.ID,
 				PostID:        postID.PostID,
 				OwnerUsername: element.Node.Username,
@@ -174,13 +174,13 @@ func (s *PostLikesScraper) sendKafkaLikes(postsLikes *InstaPostLikes, postID mod
 				AvatarURL:     element.Node.ProfilePicURL,
 			}
 			log.Println("Likes: ", element.Node.Username)
-			postCommentJSON, err := json.Marshal(postComment)
+			postLikeJSON, err := json.Marshal(postLike)
 
 			if err != nil {
 				panic(fmt.Errorf("json marshal failed with InstaLike: %s", err))
 			}
 
-			m := kafka.Message{Value: postCommentJSON}
+			m := kafka.Message{Value: postLikeJSON}
 			messages = append(messages, m)
 		}
 	}
@@ -188,7 +188,7 @@ func (s *PostLikesScraper) sendKafkaLikes(postsLikes *InstaPostLikes, postID mod
 }
 
 func (s *PostLikesScraper) sendLikesInfoRequest(shortCode string) (InstaPostLikes, error) {
-	var instaPostComment InstaPostLikes
+	var instaPostLike InstaPostLikes
 	type Variables struct {
 		Shortcode   string `json:"shortcode"`
 		IncludeReel bool   `json:"include_reel"`
@@ -198,7 +198,7 @@ func (s *PostLikesScraper) sendLikesInfoRequest(shortCode string) (InstaPostLike
 	variable := &Variables{shortCode, true, 24}
 	variableJSON, err := json.Marshal(variable)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
 
 	queryEncoded := url.QueryEscape(string(variableJSON))
@@ -207,29 +207,29 @@ func (s *PostLikesScraper) sendLikesInfoRequest(shortCode string) (InstaPostLike
 	request, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
 	response, err := s.httpClient.Do(request)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
 	if response.StatusCode != 200 {
-		return instaPostComment, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return instaPostLike, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
-	err = json.Unmarshal(body, &instaPostComment)
+	err = json.Unmarshal(body, &instaPostLike)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
-	return instaPostComment, nil
+	return instaPostLike, nil
 }
 
 func (s *PostLikesScraper) sendLikesRequest(shortCode string, cursor string) (InstaPostLikes, error) {
 
-	var instaPostComment InstaPostLikes
+	var instaPostLike InstaPostLikes
 	type Variables struct {
 		Shortcode   string `json:"shortcode"`
 		IncludeReel bool   `json:"include_reel"`
@@ -241,7 +241,7 @@ func (s *PostLikesScraper) sendLikesRequest(shortCode string, cursor string) (In
 
 	variableJSON, err := json.Marshal(variable)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
 
 	queryEncoded := url.QueryEscape(string(variableJSON))
@@ -250,22 +250,22 @@ func (s *PostLikesScraper) sendLikesRequest(shortCode string, cursor string) (In
 	request, err := http.NewRequest("GET", url, nil)
 
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
 	response, err := s.httpClient.Do(request)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
 	if response.StatusCode != 200 {
-		return instaPostComment, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return instaPostLike, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
-	err = json.Unmarshal(body, &instaPostComment)
+	err = json.Unmarshal(body, &instaPostLike)
 	if err != nil {
-		return instaPostComment, err
+		return instaPostLike, err
 	}
-	return instaPostComment, nil
+	return instaPostLike, nil
 }
