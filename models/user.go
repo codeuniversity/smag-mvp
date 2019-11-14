@@ -55,6 +55,14 @@ type InstaComment struct {
 	OwnerUsername string `json:"owner_username"`
 }
 
+type InstaLikes struct {
+	ID            string `json:"id"`
+	PostID        string `json:"post_id"`
+	OwnerUsername string `json:"owner_username"`
+	AvatarURL     string `json:"avatar_url"`
+	RealName      string `json:"real_name"`
+}
+
 // InstagramPost is a Post on instagram
 type InstagramPost struct {
 	PostID      string   `json:"post_id"`
