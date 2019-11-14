@@ -80,7 +80,7 @@ func (s *PostLikesScraper) runStep() error {
 			return err
 		}
 	} else {
-		err = s.sendKafkaComments(postsComments, post)
+		err = s.sendKafkaLikes(postsComments, post)
 		if err != nil {
 			return err
 		}
@@ -99,7 +99,7 @@ func (s *PostLikesScraper) runStep() error {
 				}
 				continue
 			}
-			err = s.sendKafkaComments(postsComments, post)
+			err = s.sendKafkaLikes(postsComments, post)
 			if err != nil {
 				return err
 			}
@@ -159,7 +159,7 @@ func (s *PostLikesScraper) scrapeLikes(shortCode string, cursor string) (*InstaP
 	return postsComments, err
 }
 
-func (s *PostLikesScraper) sendKafkaComments(postsLikes *InstaPostLikes, postID models.InstagramPost) error {
+func (s *PostLikesScraper) sendKafkaLikes(postsLikes *InstaPostLikes, postID models.InstagramPost) error {
 	if len(postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges) == 0 {
 		return nil
 	}
