@@ -55,7 +55,7 @@ type InstaComment struct {
 	OwnerUsername string `json:"owner_username"`
 }
 
-type InstaLikes struct {
+type InstaLike struct {
 	ID            string `json:"id"`
 	PostID        string `json:"post_id"`
 	OwnerUsername string `json:"owner_username"`
