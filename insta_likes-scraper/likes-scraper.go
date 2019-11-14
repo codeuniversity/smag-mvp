@@ -20,7 +20,7 @@ const (
 	instaLikesURL = "https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=%s"
 )
 
-// PostLikesScraper scrapes the comments under post
+// PostLikesScraper scrapes the likes
 type PostLikesScraper struct {
 	*worker.Worker
 
@@ -34,13 +34,13 @@ type PostLikesScraper struct {
 }
 
 // New returns an initialized PostLikesScraper
-func New(config *client.ScraperConfig, awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer, commentLimit int) *PostLikesScraper {
+func New(config *client.ScraperConfig, awsServiceAddress string, postIDQReader *kafka.Reader, likesInfoQWriter *kafka.Writer, errQWriter *kafka.Writer, likesLimit int) *PostLikesScraper {
 	s := &PostLikesScraper{}
 	s.postIDQReader = postIDQReader
-	s.likesInfoQWriter = commentsInfoQWriter
+	s.likesInfoQWriter = likesInfoQWriter
 	s.errQWriter = errQWriter
 	s.requestRetryCount = config.RequestRetryCount
-	s.LikesLimit = commentLimit
+	s.LikesLimit = likesLimit
 
 	if awsServiceAddress == "" {
 		s.httpClient = client.NewSimpleScraperClient()
@@ -50,7 +50,7 @@ func New(config *client.ScraperConfig, awsServiceAddress string, postIDQReader *
 	s.Worker = worker.Builder{}.WithName("insta_likes_scraper").
 		WithWorkStep(s.runStep).
 		AddShutdownHook("postIDQReader", postIDQReader.Close).
-		AddShutdownHook("likesInfoQWriter", commentsInfoQWriter.Close).
+		AddShutdownHook("likesInfoQWriter", likesInfoQWriter.Close).
 		AddShutdownHook("errQWriter", errQWriter.Close).
 		MustBuild()
 
@@ -73,7 +73,7 @@ func (s *PostLikesScraper) runStep() error {
 
 	log.Println("ShortCode: ", post.ShortCode)
 
-	postsComments, err := s.scrapeCommentsInfo(post.ShortCode)
+	postsComments, err := s.scrapeLikesInfo(post.ShortCode)
 	if err != nil {
 		err := s.sendInstaCommentError(post.PostID, err)
 		if err != nil {
@@ -85,12 +85,12 @@ func (s *PostLikesScraper) runStep() error {
 			return err
 		}
 
-		endcursor := postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.EndCursor
-		nextPage := postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.HasNextPage
+		endcursor := postsComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.EndCursor
+		nextPage := postsComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.HasNextPage
 
-		commentCounter := 24
-		for (commentCounter < s.LikesLimit) && nextPage {
-			postComments, err := s.scrapeComments(post.ShortCode, endcursor)
+		likeCounter := 24
+		for (likeCounter < s.LikesLimit) && nextPage {
+			postComments, err := s.scrapeLikes(post.ShortCode, endcursor)
 
 			if err != nil {
 				err := s.sendInstaCommentError(post.PostID, err)
@@ -104,9 +104,9 @@ func (s *PostLikesScraper) runStep() error {
 				return err
 			}
 
-			nextPage = postComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.HasNextPage
-			endcursor = postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.EndCursor
-			commentCounter += 12
+			nextPage = postComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.HasNextPage
+			endcursor = postsComments.Data.ShortcodeMedia.EdgeLikedBy.PageInfo.EndCursor
+			likeCounter += 12
 		}
 	}
 	if err != nil {
@@ -129,10 +129,10 @@ func (s *PostLikesScraper) sendInstaCommentError(postId string, err error) error
 	return s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
 }
 
-func (s *PostLikesScraper) scrapeCommentsInfo(shortCode string) (*instaPostCommentsInfo, error) {
-	var postsComments *instaPostCommentsInfo
+func (s *PostLikesScraper) scrapeLikesInfo(shortCode string) (*InstaPostLikes, error) {
+	var postsComments *InstaPostLikes
 	err := s.httpClient.WithRetries(s.requestRetryCount, func() error {
-		instaPostComments, err := s.sendCommentsInfoRequest(shortCode)
+		instaPostComments, err := s.sendLikesInfoRequest(shortCode)
 
 		if err != nil {
 			return err
@@ -144,10 +144,10 @@ func (s *PostLikesScraper) scrapeCommentsInfo(shortCode string) (*instaPostComme
 	return postsComments, err
 }
 
-func (s *PostLikesScraper) scrapeComments(shortCode string, cursor string) (*instaPostComments, error) {
-	var postsComments *instaPostComments
+func (s *PostLikesScraper) scrapeLikes(shortCode string, cursor string) (*InstaPostLikes, error) {
+	var postsComments *InstaPostLikes
 	err := s.httpClient.WithRetries(s.requestRetryCount, func() error {
-		instaPostComments, err := s.sendCommentsRequest(shortCode, cursor)
+		instaPostComments, err := s.sendLikesRequest(shortCode, cursor)
 
 		if err != nil {
 			return err
@@ -159,26 +159,25 @@ func (s *PostLikesScraper) scrapeComments(shortCode string, cursor string) (*ins
 	return postsComments, err
 }
 
-func (s *PostLikesScraper) sendKafkaComments(postsComments *instaPostCommentsInfo, postID models.InstagramPost) error {
-	if len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges) == 0 {
+func (s *PostLikesScraper) sendKafkaComments(postsLikes *InstaPostLikes, postID models.InstagramPost) error {
+	if len(postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges) == 0 {
 		return nil
 	}
-	messages := make([]kafka.Message, 0, len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges))
-	for _, element := range postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges {
+	messages := make([]kafka.Message, 0, len(postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges))
+	for _, element := range postsLikes.Data.ShortcodeMedia.EdgeLikedBy.Edges {
 		if element.Node.ID != "" {
-			postComment := models.InstaComment{
+			postComment := models.InstaLikes{
 				ID:            element.Node.ID,
-				Text:          element.Node.Text,
-				CreatedAt:     element.Node.CreatedAt,
 				PostID:        postID.PostID,
-				ShortCode:     postID.ShortCode,
-				OwnerUsername: element.Node.Owner.Username,
+				OwnerUsername: element.Node.Username,
+				RealName:      element.Node.FullName,
+				AvatarURL:     element.Node.ProfilePicURL,
 			}
-			log.Println("CommentText: ", element.Node.Text)
+			log.Println("Likes: ", element.Node.Username)
 			postCommentJSON, err := json.Marshal(postComment)
 
 			if err != nil {
-				panic(fmt.Errorf("json marshal failed with InstaComment: %s", err))
+				panic(fmt.Errorf("json marshal failed with InstaLikes: %s", err))
 			}
 
 			m := kafka.Message{Value: postCommentJSON}
@@ -188,7 +187,7 @@ func (s *PostLikesScraper) sendKafkaComments(postsComments *instaPostCommentsInf
 	return s.likesInfoQWriter.WriteMessages(context.Background(), messages...)
 }
 
-func (s *PostLikesScraper) sendCommentsInfoRequest(shortCode string) (InstaPostLikes, error) {
+func (s *PostLikesScraper) sendLikesInfoRequest(shortCode string) (InstaPostLikes, error) {
 	var instaPostComment InstaPostLikes
 	type Variables struct {
 		Shortcode   string `json:"shortcode"`
@@ -217,7 +216,6 @@ func (s *PostLikesScraper) sendCommentsInfoRequest(shortCode string) (InstaPostL
 	if response.StatusCode != 200 {
 		return instaPostComment, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
-	log.Println("ScrapePostComments got response")
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return instaPostComment, err
@@ -229,7 +227,7 @@ func (s *PostLikesScraper) sendCommentsInfoRequest(shortCode string) (InstaPostL
 	return instaPostComment, nil
 }
 
-func (s *PostLikesScraper) sendCommentsRequest(shortCode string, cursor string) (InstaPostLikes, error) {
+func (s *PostLikesScraper) sendLikesRequest(shortCode string, cursor string) (InstaPostLikes, error) {
 
 	var instaPostComment InstaPostLikes
 	type Variables struct {
@@ -261,7 +259,6 @@ func (s *PostLikesScraper) sendCommentsRequest(shortCode string, cursor string) 
 	if response.StatusCode != 200 {
 		return instaPostComment, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
-	log.Println("ScrapePostComments got response")
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return instaPostComment, err
