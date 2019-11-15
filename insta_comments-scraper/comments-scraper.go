@@ -117,7 +117,7 @@ func (s *PostCommentScraper) runStep() error {
 }
 
 func (s *PostCommentScraper) sendInstaCommentError(postId string, err error) error {
-	errorMessage := models.InstaCommentScrapError{
+	errorMessage := models.InstaPostScrapeError{
 		PostID: postId,
 		Error:  err.Error(),
 	}
