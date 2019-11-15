@@ -185,7 +185,22 @@ jobs:
       - run:
           name: Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh twitter_scraper/Dockerfile codesmag/twitter_scraper twitter_scraper
-
+  insta_likes-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_likes-inserter/Dockerfile codesmag/insta_likes-inserter
+  insta_likes-scraper:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
 workflows:
   version: 2
   workflow:
@@ -286,6 +301,14 @@ workflows:
             branches:
               only: master
       - tools:
+          filters:
+            branches:
+              only: master
+      - insta_likes-inserter:
+          filters:
+            branches:
+              only: master
+      - insta_likes-scraper:
           filters:
             branches:
               only: master
