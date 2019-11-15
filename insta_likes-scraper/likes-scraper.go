@@ -16,7 +16,6 @@ import (
 )
 
 const (
-	//instaLikesInfoURL = "https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=%s"
 	instaLikesURL = "https://www.instagram.com/graphql/query/?query_hash=d5d763b1e2acf209d62d22d184488e57&variables=%s"
 )
 
