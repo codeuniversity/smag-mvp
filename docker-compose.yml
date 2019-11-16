@@ -46,6 +46,15 @@ services:
       IMGPROXY_S3_ENDPOINT: "http://minio:9000"
       IMGPROXY_USE_S3: "true"
 
+  face_recognizer:
+    build:
+      context: "./faces"
+    ports:
+      - "6666:6666"
+      - "6690:6690"
+    environment:
+      GRPC_PORT: "6666"
+      METRICS_PORT: "6690"
   # GRPC
   # ports: 4000 - 4999
   envoy-proxy:
