@@ -39,6 +39,7 @@ RUN pip install -r requirements.txt
 COPY recognizer_pb2_grpc.py .
 COPY recognizer_pb2.py .
 COPY recognizer.py .
+COPY metrics.py .
 COPY server.py .
 
 CMD [ "python", "server.py" ]

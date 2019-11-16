@@ -2,13 +2,20 @@
 from concurrent import futures
 import time
 import grpc
+import os
+import prometheus_client
+
 import recognizer_pb2_grpc as grpc_proto
 import recognizer_pb2 as proto
-import os
 import recognizer
+import metrics
 
 
 class Servicer(grpc_proto.FaceRecognizerServicer):
+    RECOGNIZE_HISTOGRAM = metrics.request_latency_histogram.labels(
+        'recognize_faces')
+
+    @RECOGNIZE_HISTOGRAM.time()
     def RecognizeFaces(self, request, context):
 
         faces = recognizer.recognize(request.url)
@@ -19,6 +26,8 @@ class Servicer(grpc_proto.FaceRecognizerServicer):
             proto_face = proto.Face(x=area['x'], y=area['y'], width=area['width'],
                                     height=area['height'], encoding=encoding)
             proto_faces.append(proto_face)
+
+        metrics.request_counter.labels('recognize_faces').inc()
 
         return proto.RegognizeResponse(faces=proto_faces)
 
@@ -44,4 +53,5 @@ def serve():
 
 
 if __name__ == '__main__':
+    prometheus_client.start_http_server(int(os.environ['METRICS_PORT']))
     serve()
