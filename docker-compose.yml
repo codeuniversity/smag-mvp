@@ -33,7 +33,7 @@ services:
       MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
       MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     command: "server /data"
-  improxy:
+  imgproxy:
     image: darthsim/imgproxy
     ports:
       - 8080:8080
