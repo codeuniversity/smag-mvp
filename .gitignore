@@ -10,3 +10,6 @@ __pycache__/
 .vscode
 
 node_modules
+env
+faces/images
+faces/img.jpg
