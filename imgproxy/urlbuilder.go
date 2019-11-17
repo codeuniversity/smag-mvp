@@ -51,3 +51,8 @@ func (b *URLBuilder) GetCropURL(x, y, width, height int, sourceURL string) strin
 
 	return fmt.Sprintf("http://localhost:8080/%s%s \n", signature, path)
 }
+
+// GetS3Url returns a url in the form "s3://<bucket_name>/<path_to_image>"
+func (b *URLBuilder) GetS3Url(bucketName, path string) string {
+	return fmt.Sprintf("s3://%s/%s", bucketName, path)
+}
