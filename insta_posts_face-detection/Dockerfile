@@ -50,7 +50,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
             rm -rf /var/lib/apt/lists/*
 
 # for circleci
-ENV DOCKERVER="17.03.0-ce"
+ENV DOCKERVER="19.03.4-ce"
 RUN curl -L -o /tmp/docker-$DOCKERVER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$DOCKERVER.tgz && \
       tar -xz -C /tmp -f /tmp/docker-$DOCKERVER.tgz && \
       mv /tmp/docker/* /usr/bin
