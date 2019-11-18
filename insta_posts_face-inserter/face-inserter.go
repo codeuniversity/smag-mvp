@@ -10,6 +10,8 @@ import (
 	// necessary for gorm :pointup:
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
+	dbutils "github.com/codeuniversity/smag-mvp/db"
+
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
@@ -97,29 +99,11 @@ func (i *Inserter) insertEncoding(p []*models.FaceData) error {
 
 	for _, face := range p {
 		filter := &models.FaceData{PostID: face.PostID}
-		err := createOrUpdate(i.db, &fromEncoding, filter, p)
+		err := dbutils.CreateOrUpdate(i.db, &fromEncoding, filter, face)
 		if err != nil {
 			return err
 		}
 	}
-
-	return nil
-}
-
-func createOrUpdate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {
-	var err error
-
-	tx := db.Begin()
-	if tx.Where(where).First(out).RecordNotFound() {
-		err = tx.Create(update).Scan(out).Error
-	} else {
-		err = tx.Model(out).Update(update).Scan(out).Error
-	}
-	if err != nil {
-		tx.Rollback()
-		return err
-	}
-	tx.Commit()
 
 	return nil
 }
