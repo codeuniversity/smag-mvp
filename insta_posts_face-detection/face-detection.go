@@ -82,13 +82,13 @@ func (d *Detector) runStep() error {
 		return err
 	}
 
-	job := models.FaceReconJob{}
+	job := models.PostDownloadJob{}
 	err = json.Unmarshal(m.Value, &job)
 	if err != nil {
 		return err
 	}
 
-	err = d.fetchPost(job.InternalImageURL, job.PostID)
+	err = d.fetchPost(job.PictureURL, job.PostID)
 	if err != nil {
 		return err
 	}
