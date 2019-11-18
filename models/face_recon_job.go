@@ -2,7 +2,7 @@ package models
 
 // FaceReconJob represents the data for a face recon job
 type FaceReconJob struct {
-	ID               int    `json:"id"`
+	PostID           int    `json:"post_id"`
 	InternalImageURL string `json:"internal_image_url"`
 	X                int    `json:"x"`
 	Y                int    `json:"y"`

@@ -54,27 +54,18 @@ func New(jobQReader *kgo.Reader, resultQWriter *kgo.Writer, faceRecognizerAddres
 	return w
 }
 
-type jobMessage struct {
-	PostID             int    `json:"post_id"`
-	InternalPictureURL string `json:"internal_picture_url"`
-	X                  int    `json:"x"`
-	Y                  int    `json:"y"`
-	Width              int    `json:"width"`
-	Height             int    `json:"height"`
-}
-
 func (w *Worker) step() error {
 	m, err := w.jobQReader.FetchMessage(context.Background())
 	if err != nil {
 		return err
 	}
 
-	job := &jobMessage{}
+	job := &models.FaceReconJob{}
 	err = json.Unmarshal(m.Value, job)
 	if err != nil {
 		return err
 	}
-	url := w.urlBuilder.GetCropURL(job.X, job.Y, job.Width, job.Height, w.urlBuilder.GetS3Url(w.bucketName, job.InternalPictureURL))
+	url := w.urlBuilder.GetCropURL(job.X, job.Y, job.Width, job.Height, w.urlBuilder.GetS3Url(w.bucketName, job.InternalImageURL))
 	response, err := w.recognizerClient.RecognizeFaces(context.Background(), &proto.RecognizeRequest{
 		Url: url,
 	})
@@ -92,7 +83,7 @@ func (w *Worker) step() error {
 		y := int(face.Y)
 		width := int(face.Width)
 		height := int(face.Height)
-		url := w.urlBuilder.GetCropURL(x, y, width, height, w.urlBuilder.GetS3Url(w.bucketName, job.InternalPictureURL))
+		url := w.urlBuilder.GetCropURL(x, y, width, height, w.urlBuilder.GetS3Url(w.bucketName, job.InternalImageURL))
 		fmt.Println(url)
 
 		if len(face.Encoding) != 128 {

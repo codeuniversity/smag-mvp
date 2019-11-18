@@ -76,7 +76,7 @@ func (d *Detector) runStep() error {
 		return err
 	}
 
-	return d.fetchPost(job.InternalImageURL, job.ID)
+	return d.fetchPost(job.InternalImageURL, job.PostID)
 }
 
 func (d *Detector) fetchPost(internalImgURL string, postID int) error {
@@ -120,7 +120,7 @@ func (d *Detector) analyzeForFaces(localImagePath string, postID int) error {
 	rects := classifier.DetectMultiScale(img)
 
 	faceReconJob := &models.FaceReconJob{}
-	faceReconJob.ID = postID
+	faceReconJob.PostID = postID
 	faceReconJob.InternalImageURL = localImagePath
 
 	if len(rects) > 1 {
