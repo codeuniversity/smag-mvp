@@ -8,5 +8,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o filter kafka/changes
 FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
-COPY --from=builder /app/face-recon_filter .
-CMD ["./face-recon_filter"]
+COPY --from=builder /app/filter .
+CMD ["./filter"]
