@@ -3,7 +3,7 @@ version: 2.1
 executors:
   job-runner:
     docker:
-      - image: circleci/golang:1.13
+      - image: codesmag/opencv
     working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     environment:
       GO111MODULE: "on"
@@ -201,6 +201,17 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
+  face_recognition:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh faces/Dockerfile codesmag/face_recognizer faces
+            ./build_and_upload_image.sh face-recognition/Dockerfile codesmag/faceface-recognition-worker
+
 workflows:
   version: 2
   workflow:
@@ -309,6 +320,10 @@ workflows:
             branches:
               only: master
       - insta_likes-scraper:
+          filters:
+            branches:
+              only: master
+      - face_recognition:
           filters:
             branches:
               only: master
