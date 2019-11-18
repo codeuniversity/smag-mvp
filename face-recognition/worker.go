@@ -26,13 +26,13 @@ type Worker struct {
 }
 
 // New returns an intialized worker
-func New(jobQReader *kgo.Reader, resultQWriter *kgo.Writer, faceRecognizerAddress string, pictureBucketName string) *Worker {
+func New(jobQReader *kgo.Reader, resultQWriter *kgo.Writer, faceRecognizerAddress string, pictureBucketName string, imgProxyKey, imgProxySalt string) *Worker {
 	con, err := grpc.Dial("localhost:6666", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
 	client := proto.NewFaceRecognizerClient(con)
-	urlBuilder, err := imgproxy.New("localhost:8080", "5800c215e5cd5110365c390e83752526fa40758efa4dcc406e3a4fdd6e22877c", "520f986b998545b4785e0defbc4f3c1203f22de2374a3d53cb7a7fe9fea309c5")
+	urlBuilder, err := imgproxy.New("localhost:8080", imgProxyKey, imgProxySalt)
 	if err != nil {
 		panic(err)
 	}

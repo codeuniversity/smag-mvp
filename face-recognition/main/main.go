@@ -13,10 +13,11 @@ func main() {
 	jobsWriteTopic := utils.MustGetStringFromEnv("KAFKA_FACE_DETECTION_RESULTS_TOPIC")
 	faceRecognizerAddress := utils.MustGetStringFromEnv("FACE_RECOGNIZER_ADDRESS")
 	pictureBucketName := utils.MustGetStringFromEnv("S3_PICTURE_BUCKET_NAME")
-
+	imgProxyKey := utils.MustGetStringFromEnv("IMGPROXY_KEY")
+	imgProxySalt := utils.MustGetStringFromEnv("IMGPROXY_SALT")
 	qReader := kafka.NewReader(kafka.NewReaderConfig(kafkaAddress, groupID, jobsReadTopic))
 	qWriter := kafka.NewWriter(kafka.NewWriterConfig(kafkaAddress, jobsWriteTopic, true))
-	r := recognition.New(qReader, qWriter, faceRecognizerAddress, pictureBucketName)
+	r := recognition.New(qReader, qWriter, faceRecognizerAddress, pictureBucketName, imgProxyKey, imgProxySalt)
 	wait := r.Start()
 
 	wait()
