@@ -1,15 +1,21 @@
 version: 2.1
 
 executors:
-  job-runner:
+  test-runner:
     docker:
       - image: codesmag/opencv
     working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
     environment:
       GO111MODULE: "on"
+  job-runner:
+    docker:
+      - image: circleci/golang:1.13
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    environment:
+      GO111MODULE: "on"
 jobs:
   tests:
-    executor: job-runner
+    executor: test-runner
     steps:
       - checkout
       # specify any bash command here prefixed with `run: `
