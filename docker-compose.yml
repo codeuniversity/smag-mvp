@@ -267,6 +267,13 @@ services:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
+    
+  # NEO4J
+  neo4j:
+    image: "neo4j:latest"
+    ports:
+      - "7474:7474"
+      - "7687:7687"
 
   # FILTER
   insta-user-filter:
@@ -300,3 +307,4 @@ services:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_user_names-filter"
 
+  
