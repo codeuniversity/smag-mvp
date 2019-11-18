@@ -206,7 +206,11 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
+          command: |
+            ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
+            ./build_and_upload_image.sh kafka/changestream/insta_post_face-recon-filter codesmag/face-recon-filter
+            ./build_and_upload_image.sh insta_posts_face-detection/Dockerfile.worker codesmag/face-detection-prefilter
+
   face_recognition:
     executor: job-runner
     steps:
@@ -216,7 +220,7 @@ jobs:
           name: Build and Publish Docker Image to Docker Hub
           command: |
             ./build_and_upload_image.sh faces/Dockerfile codesmag/face_recognizer faces
-            ./build_and_upload_image.sh face-recognition/Dockerfile codesmag/faceface-recognition-worker
+            ./build_and_upload_image.sh face-recognition/Dockerfile codesmag/face-recognition-worker
 
 workflows:
   version: 2
