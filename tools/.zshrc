@@ -18,4 +18,4 @@ plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
 
-export RPROMPT="%{$fg_bold[blue]%} codesmag/tools %{$fg_bold[blue]%} [%D{%y/%m/%f}|%@]"
+export RPROMPT="%{$fg_bold[blue]%} codesmag/tools %{$fg_bold[blue]%} [%D{%y/%m/%f}|%@] %{$reset_color%}%%"

@@ -1,0 +1,17 @@
+certifi==2019.9.11
+chardet==3.0.4
+Click==7.0
+dlib==19.9.0
+face-recognition==1.2.3
+face-recognition-models==0.3.0
+grpcio==1.18.0
+grpcio-tools==1.18.0
+idna==2.8
+numpy==1.17.4
+Pillow==6.2.1
+prometheus-client==0.7.1
+protobuf==3.10.0
+pycodestyle==2.5.0
+requests==2.22.0
+six==1.13.0
+urllib3==1.25.7

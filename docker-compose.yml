@@ -33,11 +33,33 @@ services:
       MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
       MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     command: "server /data"
+  imgproxy:
+    image: darthsim/imgproxy
+    ports:
+      - 8080:8080
+    environment:
+      IMGPROXY_KEY: 5800c215e5cd5110365c390e83752526fa40758efa4dcc406e3a4fdd6e22877c
+      IMGPROXY_SALT: 520f986b998545b4785e0defbc4f3c1203f22de2374a3d53cb7a7fe9fea309c5
+      IMGPROXY_SIGNATURE_SIZE: "32"
+      AWS_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+      AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      AWS_REGION: "eu-central-1"
+      IMGPROXY_S3_ENDPOINT: "http://minio:9000"
+      IMGPROXY_USE_S3: "true"
 
+  face_recognizer:
+    build:
+      context: "./faces"
+    ports:
+      - "6666:6666"
+      - "6690:6690"
+    environment:
+      GRPC_PORT: "6666"
+      METRICS_PORT: "6690"
   # GRPC
   # ports: 4000 - 4999
   envoy-proxy:
-    build: 
+    build:
       context: "."
       dockerfile: "./api/envoy-proxy/Dockerfile"
     depends_on:
@@ -306,5 +328,8 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_user_names-filter"
+<<<<<<< HEAD
 
   
+=======
+>>>>>>> master

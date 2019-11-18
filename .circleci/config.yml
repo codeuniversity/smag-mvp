@@ -1,6 +1,12 @@
 version: 2.1
 
 executors:
+  test-runner:
+    docker:
+      - image: codesmag/opencv
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    environment:
+      GO111MODULE: "on"
   job-runner:
     docker:
       - image: circleci/golang:1.13
@@ -9,7 +15,7 @@ executors:
       GO111MODULE: "on"
 jobs:
   tests:
-    executor: job-runner
+    executor: test-runner
     steps:
       - checkout
       # specify any bash command here prefixed with `run: `
@@ -185,6 +191,36 @@ jobs:
       - run:
           name: Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh twitter_scraper/Dockerfile codesmag/twitter_scraper twitter_scraper
+  insta_likes-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_likes-inserter/Dockerfile codesmag/insta_likes-inserter
+  insta_likes-scraper:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
+            ./build_and_upload_image.sh kafka/changestream/insta_post_face-recon-filter/Dockerfile codesmag/face-recon-filter
+            ./build_and_upload_image.sh insta_posts_face-detection/Dockerfile.worker codesmag/face-detection-prefilter
+
+  face_recognition:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh faces/Dockerfile codesmag/face_recognizer faces
+            ./build_and_upload_image.sh face-recognition/Dockerfile codesmag/face-recognition-worker
 
 workflows:
   version: 2
@@ -286,6 +322,18 @@ workflows:
             branches:
               only: master
       - tools:
+          filters:
+            branches:
+              only: master
+      - insta_likes-inserter:
+          filters:
+            branches:
+              only: master
+      - insta_likes-scraper:
+          filters:
+            branches:
+              only: master
+      - face_recognition:
           filters:
             branches:
               only: master

@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	userPostsCommentURL = "https://www.instagram.com/graphql/query/?query_hash=865589822932d1b43dfe312121dd353a&variables=%s"
+	instaCommentInfoURL = "https://www.instagram.com/graphql/query/?query_hash=fead941d698dc1160a298ba7bec277ac&variables=%s"
+	instaCommentURL     = "https://www.instagram.com/graphql/query/?query_hash=97b41c52301f77ce508f55e66d17620e&variables=%s"
 )
 
 // PostCommentScraper scrapes the comments under post
@@ -29,15 +30,17 @@ type PostCommentScraper struct {
 
 	httpClient        client.ScraperClient
 	requestRetryCount int
+	commentLimit      int
 }
 
 // New returns an initialized PostCommentScraper
-func New(config *client.ScraperConfig, awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer) *PostCommentScraper {
+func New(config *client.ScraperConfig, awsServiceAddress string, postIDQReader *kafka.Reader, commentsInfoQWriter *kafka.Writer, errQWriter *kafka.Writer, commentLimit int) *PostCommentScraper {
 	s := &PostCommentScraper{}
 	s.postIDQReader = postIDQReader
 	s.commentsInfoQWriter = commentsInfoQWriter
 	s.errQWriter = errQWriter
 	s.requestRetryCount = config.RequestRetryCount
+	s.commentLimit = commentLimit
 
 	if awsServiceAddress == "" {
 		s.httpClient = client.NewSimpleScraperClient()
@@ -70,26 +73,40 @@ func (s *PostCommentScraper) runStep() error {
 
 	log.Println("ShortCode: ", post.ShortCode)
 
-	postsComments, err := s.scrapeComments(post.ShortCode)
-
+	postsComments, err := s.scrapeCommentsInfo(post.ShortCode)
 	if err != nil {
-		errorMessage := models.InstaCommentScrapError{
-			PostID: post.PostID,
-			Error:  err.Error(),
-		}
-
-		errorMessageJSON, err := json.Marshal(errorMessage)
-		if err != nil {
-			panic(err)
-		}
-		err = s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
+		err := s.sendInstaCommentError(post.PostID, err)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = s.sendComments(postsComments, post)
+		err = s.sendKafkaComments(postsComments, post)
 		if err != nil {
 			return err
+		}
+
+		endcursor := postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.EndCursor
+		nextPage := postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.HasNextPage
+
+		commentCounter := 24
+		for (commentCounter < s.commentLimit) && nextPage {
+			postComments, err := s.scrapeComments(post.ShortCode, endcursor)
+
+			if err != nil {
+				err := s.sendInstaCommentError(post.PostID, err)
+				if err != nil {
+					return err
+				}
+				continue
+			}
+			err = s.sendKafkaComments(postsComments, post)
+			if err != nil {
+				return err
+			}
+
+			nextPage = postComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.HasNextPage
+			endcursor = postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.EndCursor
+			commentCounter += 12
 		}
 	}
 	if err != nil {
@@ -99,10 +116,23 @@ func (s *PostCommentScraper) runStep() error {
 	return s.postIDQReader.CommitMessages(context.Background(), message)
 }
 
-func (s *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComments, error) {
-	var postsComments *instaPostComments
+func (s *PostCommentScraper) sendInstaCommentError(postId string, err error) error {
+	errorMessage := models.InstaPostScrapeError{
+		PostID: postId,
+		Error:  err.Error(),
+	}
+
+	errorMessageJSON, err := json.Marshal(errorMessage)
+	if err != nil {
+		panic(err)
+	}
+	return s.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: errorMessageJSON})
+}
+
+func (s *PostCommentScraper) scrapeCommentsInfo(shortCode string) (*instaPostCommentsInfo, error) {
+	var postsComments *instaPostCommentsInfo
 	err := s.httpClient.WithRetries(s.requestRetryCount, func() error {
-		instaPostComments, err := s.scrapePostComment(shortCode)
+		instaPostComments, err := s.sendCommentsInfoRequest(shortCode)
 
 		if err != nil {
 			return err
@@ -114,7 +144,22 @@ func (s *PostCommentScraper) scrapeComments(shortCode string) (*instaPostComment
 	return postsComments, err
 }
 
-func (s *PostCommentScraper) sendComments(postsComments *instaPostComments, postID models.InstagramPost) error {
+func (s *PostCommentScraper) scrapeComments(shortCode string, cursor string) (*instaPostComments, error) {
+	var postsComments *instaPostComments
+	err := s.httpClient.WithRetries(s.requestRetryCount, func() error {
+		instaPostComments, err := s.sendCommentsRequest(shortCode, cursor)
+
+		if err != nil {
+			return err
+		}
+
+		postsComments = &instaPostComments
+		return nil
+	})
+	return postsComments, err
+}
+
+func (s *PostCommentScraper) sendKafkaComments(postsComments *instaPostCommentsInfo, postID models.InstagramPost) error {
 	if len(postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.Edges) == 0 {
 		return nil
 	}
@@ -143,8 +188,8 @@ func (s *PostCommentScraper) sendComments(postsComments *instaPostComments, post
 	return s.commentsInfoQWriter.WriteMessages(context.Background(), messages...)
 }
 
-func (s *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComments, error) {
-	var instaPostComment instaPostComments
+func (s *PostCommentScraper) sendCommentsInfoRequest(shortCode string) (instaPostCommentsInfo, error) {
+	var instaPostComment instaPostCommentsInfo
 	type Variables struct {
 		Shortcode           string `json:"shortcode"`
 		ChildCommentCount   int    `json:"child_comment_count"`
@@ -160,7 +205,50 @@ func (s *PostCommentScraper) scrapePostComment(shortCode string) (instaPostComme
 	}
 
 	queryEncoded := url.QueryEscape(string(variableJSON))
-	url := fmt.Sprintf(userPostsCommentURL, queryEncoded)
+	url := fmt.Sprintf(instaCommentInfoURL, queryEncoded)
+
+	request, err := http.NewRequest("GET", url, nil)
+
+	if err != nil {
+		return instaPostComment, err
+	}
+	response, err := s.httpClient.Do(request)
+	if err != nil {
+		return instaPostComment, err
+	}
+	if response.StatusCode != 200 {
+		return instaPostComment, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+	}
+	log.Println("ScrapePostComments got response")
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return instaPostComment, err
+	}
+	err = json.Unmarshal(body, &instaPostComment)
+	if err != nil {
+		return instaPostComment, err
+	}
+	return instaPostComment, nil
+}
+
+func (s *PostCommentScraper) sendCommentsRequest(shortCode string, cursor string) (instaPostComments, error) {
+
+	var instaPostComment instaPostComments
+	type Variables struct {
+		Shortcode string `json:"shortcode"`
+		First     int    `json:"first"`
+		After     string `json:"after"`
+	}
+
+	variable := &Variables{shortCode, 12, cursor}
+
+	variableJSON, err := json.Marshal(variable)
+	if err != nil {
+		return instaPostComment, err
+	}
+
+	queryEncoded := url.QueryEscape(string(variableJSON))
+	url := fmt.Sprintf(instaCommentURL, queryEncoded)
 
 	request, err := http.NewRequest("GET", url, nil)
 
