@@ -49,7 +49,7 @@ func (b *URLBuilder) GetCropURL(x, y, width, height int, sourceURL string) strin
 	mac.Write([]byte(path))
 	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))[:32]
 
-	return fmt.Sprintf("http://%s/%s%s \n", b.proxyAddress, signature, path)
+	return fmt.Sprintf("http://%s/%s%s", b.proxyAddress, signature, path)
 }
 
 // GetS3Url returns a url in the form "s3://<bucket_name>/<path_to_image>"
