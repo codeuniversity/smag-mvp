@@ -58,6 +58,10 @@ func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
 }
 
 func constructDownloadJobMessage(p *post) ([]kafka.Message, error) {
+	if p.InternalPictureURL == "" {
+		return nil, nil
+	}
+
 	job := &models.PostDownloadJob{
 		PostID:     p.ID,
 		PictureURL: p.InternalPictureURL,

@@ -47,7 +47,7 @@ func (b *URLBuilder) GetCropURL(x, y, width, height int, sourceURL string) strin
 	mac := hmac.New(sha256.New, b.keyBin)
 	mac.Write(b.saltBin)
 	mac.Write([]byte(path))
-	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))
+	signature := base64.RawURLEncoding.EncodeToString(mac.Sum(nil))[:32]
 
 	return fmt.Sprintf("http://%s/%s%s \n", b.proxyAddress, signature, path)
 }

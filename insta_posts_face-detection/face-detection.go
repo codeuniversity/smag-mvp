@@ -88,9 +88,11 @@ func (d *Detector) runStep() error {
 		return err
 	}
 
-	err = d.fetchPost(job.PictureURL, job.PostID)
-	if err != nil {
-		return err
+	if job.PictureURL != "" {
+		err = d.fetchPost(job.PictureURL, job.PostID)
+		if err != nil {
+			return err
+		}
 	}
 
 	return d.nameQReader.CommitMessages(context.Background(), m)
