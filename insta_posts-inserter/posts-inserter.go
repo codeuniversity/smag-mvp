@@ -134,7 +134,7 @@ func (i *InstaPostInserter) insertPost(post models.InstagramPost) (int, error) {
 	}
 
 	var postID int
-	err = i.db.QueryRow(`INSERT INTO posts(user_id, post_id, short_code, picture_url, caption) VALUES($1,$2,$3,$4,$5) ON CONFLICT(post_id) DO UPDATE SET short_code=$2, picture_url=$4, caption=$5 RETURNING id`, userID, post.PostID, post.ShortCode, post.PictureURL, post.Caption).Scan(&postID)
+	err = i.db.QueryRow(`INSERT INTO posts(user_id, post_id, short_code, picture_url, caption) VALUES($1,$2,$3,$4,$5) ON CONFLICT(post_id) DO UPDATE SET short_code=$3, picture_url=$4, caption=$5 RETURNING id`, userID, post.PostID, post.ShortCode, post.PictureURL, post.Caption).Scan(&postID)
 	if err != nil {
 		return 0, err
 	}

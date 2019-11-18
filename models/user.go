@@ -55,6 +55,14 @@ type InstaComment struct {
 	OwnerUsername string `json:"owner_username"`
 }
 
+type InstaLike struct {
+	ID            string `json:"id"`
+	PostID        string `json:"post_id"`
+	OwnerUsername string `json:"owner_username"`
+	AvatarURL     string `json:"avatar_url"`
+	RealName      string `json:"real_name"`
+}
+
 // InstagramPost is a Post on instagram
 type InstagramPost struct {
 	PostID      string   `json:"post_id"`
@@ -66,8 +74,8 @@ type InstagramPost struct {
 	Caption     string   `json:"caption"`
 }
 
-// InstaCommentScrapError s are written to the error topic of the scraper when even after retries we can't scrape the comments
-type InstaCommentScrapError struct {
+// InstaPostScrapeError s are written to the error topic of the scraper when even after retries we can't scrape the comments
+type InstaPostScrapeError struct {
 	PostID string `json:"post_id,omitempty"`
 	Error  string `json:"error,omitempty"`
 }

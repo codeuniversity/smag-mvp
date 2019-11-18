@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/models"
-	scraper_client "github.com/codeuniversity/smag-mvp/scraper-client"
+	client "github.com/codeuniversity/smag-mvp/scraper-client"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/segmentio/kafka-go"
 )
@@ -29,21 +29,23 @@ type InstaPostsScraper struct {
 	postsQWriter *kafka.Writer
 	errQWriter   *kafka.Writer
 
-	requestCounter int
-	httpClient     scraper_client.ScraperClient
+	requestCounter    int
+	httpClient        client.ScraperClient
+	requestRetryCount int
 }
 
 // New returns an initilized scraper
-func New(awsServiceAddress string, nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *InstaPostsScraper {
+func New(config *client.ScraperConfig, awsServiceAddress string, nameQReader *kafka.Reader, infoQWriter *kafka.Writer, errQWriter *kafka.Writer) *InstaPostsScraper {
 	i := &InstaPostsScraper{}
 	i.nameQReader = nameQReader
 	i.postsQWriter = infoQWriter
 	i.errQWriter = errQWriter
+	i.requestRetryCount = config.RequestRetryCount
 
 	if awsServiceAddress == "" {
-		i.httpClient = scraper_client.NewSimpleScraperClient()
+		i.httpClient = client.NewSimpleScraperClient()
 	} else {
-		i.httpClient = scraper_client.NewHttpClient(awsServiceAddress)
+		i.httpClient = client.NewHttpClient(awsServiceAddress, config)
 	}
 
 	i.Worker = worker.Builder{}.WithName("insta_posts_scraper").
@@ -78,15 +80,34 @@ func (i *InstaPostsScraper) runStep() error {
 		if err != nil {
 			return err
 		}
-		i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
-		i.nameQReader.CommitMessages(context.Background(), m)
-		return nil
+		err = i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+		if err != nil {
+			return err
+		}
+		return i.nameQReader.CommitMessages(context.Background(), m)
+	}
+
+	if instagramAccountInfo == nil {
+		log.Println("InstagramAccount is nil")
+
+		errMessage := &models.InstagramScrapeError{
+			Name: username,
+		}
+		serializedErr, err := json.Marshal(errMessage)
+		if err != nil {
+			return err
+		}
+		err = i.errQWriter.WriteMessages(context.Background(), kafka.Message{Value: serializedErr})
+
+		if err != nil {
+			return err
+		}
+		return i.nameQReader.CommitMessages(context.Background(), m)
 	}
 
 	if instagramAccountInfo.Graphql.User.IsPrivate {
 		log.Println("Username: ", username, " is private")
-		i.nameQReader.CommitMessages(context.Background(), m)
-		return nil
+		return i.nameQReader.CommitMessages(context.Background(), m)
 	}
 	log.Println("Username: ", username, " Posts Init")
 	userID := instagramAccountInfo.Graphql.User.ID
@@ -104,12 +125,14 @@ func (i *InstaPostsScraper) runStep() error {
 		}
 
 		cursor = accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.EndCursor
-		i.sendUserTimlinePostsID(accountMedia, username, userID)
+		err = i.sendUserTimlinePostsID(accountMedia, username, userID)
 
+		if err != nil {
+			return err
+		}
 		if !accountMedia.Data.User.EdgeOwnerToTimelineMedia.PageInfo.HasNextPage {
 			isPostsSendingFinished = true
 		}
-		time.Sleep(time.Millisecond * 100)
 	}
 	return i.nameQReader.CommitMessages(context.Background(), m)
 }
@@ -117,7 +140,7 @@ func (i *InstaPostsScraper) runStep() error {
 func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo, error) {
 	var instagramAccountInfo *instagramAccountInfo
 
-	err := i.httpClient.WithRetries(2, func() error {
+	err := i.httpClient.WithRetries(i.requestRetryCount, func() error {
 		accountInfo, err := i.scrapeAccountInfo(username)
 		if err != nil {
 			return err
@@ -128,7 +151,7 @@ func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo,
 	})
 
 	if err != nil {
-		return instagramAccountInfo, err
+		return nil, err
 	}
 	return instagramAccountInfo, err
 }
@@ -136,7 +159,7 @@ func (i *InstaPostsScraper) accountInfo(username string) (*instagramAccountInfo,
 func (i *InstaPostsScraper) accountPosts(userID string, cursor string) (*instagramMedia, error) {
 	var instagramAccountMedia *instagramMedia
 
-	err := i.httpClient.WithRetries(2, func() error {
+	err := i.httpClient.WithRetries(i.requestRetryCount, func() error {
 		accountInfo, err := i.scrapeProfileMedia(userID, cursor)
 		if err != nil {
 			return err
@@ -165,7 +188,7 @@ func (i *InstaPostsScraper) scrapeAccountInfo(username string) (instagramAccount
 		return userAccountInfo, err
 	}
 	if response.StatusCode != 200 {
-		return userAccountInfo, &scraper_client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return userAccountInfo, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -205,7 +228,7 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userID string, endCursor string) 
 		return media, err
 	}
 	if response.StatusCode != 200 {
-		return media, &scraper_client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
+		return media, &client.HTTPStatusError{S: fmt.Sprintf("Error HttpStatus: %d", response.StatusCode)}
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
@@ -219,7 +242,7 @@ func (i *InstaPostsScraper) scrapeProfileMedia(userID string, endCursor string) 
 	return media, nil
 }
 
-func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia, username string, userID string) {
+func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia, username string, userID string) error {
 	for _, element := range accountMedia.Data.User.EdgeOwnerToTimelineMedia.Edges {
 		if element.Node.ID != "" {
 
@@ -246,17 +269,16 @@ func (i *InstaPostsScraper) sendUserTimlinePostsID(accountMedia *instagramMedia,
 			instagramPostJSON, err := json.Marshal(instagramPost)
 
 			if err != nil {
-				log.Println(err)
-				break
+				return err
 			}
 
 			err = i.postsQWriter.WriteMessages(context.Background(), kafka.Message{Value: instagramPostJSON})
 			if err != nil {
-				log.Println(err)
-				break
+				return err
 			}
 		}
 	}
+	return nil
 }
 
 func (i *InstaPostsScraper) sendErrorMessage(m kafka.Message, username string, errToSend error) error {
