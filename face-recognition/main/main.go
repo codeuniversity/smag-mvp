@@ -3,6 +3,7 @@ package main
 import (
 	recognition "github.com/codeuniversity/smag-mvp/face-recognition"
 	"github.com/codeuniversity/smag-mvp/kafka"
+	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
@@ -18,8 +19,11 @@ func main() {
 	imgProxySalt := utils.MustGetStringFromEnv("IMGPROXY_SALT")
 	qReader := kafka.NewReader(kafka.NewReaderConfig(kafkaAddress, groupID, jobsReadTopic))
 	qWriter := kafka.NewWriter(kafka.NewWriterConfig(kafkaAddress, jobsWriteTopic, true))
-	r := recognition.New(qReader, qWriter, faceRecognizerAddress, pictureBucketName, imgProxyAddress, imgProxyKey, imgProxySalt)
-	wait := r.Start()
 
-	wait()
+	r := recognition.New(qReader, qWriter, faceRecognizerAddress, pictureBucketName, imgProxyAddress, imgProxyKey, imgProxySalt)
+
+	service.CloseOnSignal(r)
+	waitUntilDone := r.Start()
+
+	waitUntilDone()
 }
