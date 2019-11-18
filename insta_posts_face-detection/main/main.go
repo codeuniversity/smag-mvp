@@ -14,7 +14,7 @@ func main() {
 	jobsReadTopic := utils.MustGetStringFromEnv("KAFKA_PICTURE_FACE_RECON_TOPIC")
 	jobsWriteTopic := utils.MustGetStringFromEnv("KAFKA_PICTURE_FACE_RECONED_TOPIC")
 	qReader := kafka.NewReader(kafka.NewReaderConfig(kafkaAddress, groupID, jobsReadTopic))
-	qWriter := kafka.NewWriter(kafka.NewWriterConfig(kafkaAddress, groupID, jobsWriteTopic))
+	qWriter := kafka.NewWriter(kafka.NewWriterConfig(kafkaAddress, jobsWriteTopic, true))
 
 	config := detection.Config{
 		S3BucketName:      utils.GetStringFromEnvWithDefault("S3_BUCKET_NAME", "insta_pics"),
