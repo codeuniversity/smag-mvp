@@ -3,7 +3,6 @@ package detection
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -29,6 +28,8 @@ type Detector struct {
 	minioClient *minio.Client
 	bucketName  string
 	region      string
+
+	classifier gocv.CascadeClassifier
 }
 
 // Config holds all s3 related configs
@@ -55,10 +56,20 @@ func New(nameQReader *kafka.Reader, infoQWriter *kafka.Writer, config Config) *D
 	utils.MustBeNil(err)
 	d.minioClient = minioClient
 
+	xmlFileFrontal := "haarcascade_frontalface_alt.xml"
+
+	// load classifier to recognize faces
+	d.classifier = gocv.NewCascadeClassifier()
+
+	if !d.classifier.Load(xmlFileFrontal) {
+		panic("error reading cascade file")
+	}
+
 	d.Worker = worker.Builder{}.WithName("insta_posts_face-detector").
 		WithWorkStep(d.runStep).
 		AddShutdownHook("nameQReader", nameQReader.Close).
 		AddShutdownHook("infoQWriter", infoQWriter.Close).
+		AddShutdownHook("classifier", d.classifier.Close).
 		MustBuild()
 	return d
 }
@@ -70,13 +81,20 @@ func (d *Detector) runStep() error {
 		return err
 	}
 
-	job := models.FaceReconJob{}
+	job := models.PostDownloadJob{}
 	err = json.Unmarshal(m.Value, &job)
 	if err != nil {
 		return err
 	}
 
-	return d.fetchPost(job.InternalImageURL, job.ID)
+	if job.PictureURL != "" {
+		err = d.fetchPost(job.PictureURL, job.PostID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return d.nameQReader.CommitMessages(context.Background(), m)
 }
 
 func (d *Detector) fetchPost(internalImgURL string, postID int) error {
@@ -89,20 +107,10 @@ func (d *Detector) fetchPost(internalImgURL string, postID int) error {
 }
 
 func (d *Detector) analyzeForFaces(localImagePath string, postID int) error {
-
-	xmlFileFrontal := "haarcascade_frontalface_alt.xml"
-
-	// load classifier to recognize faces
-	classifier := gocv.NewCascadeClassifier()
-	defer classifier.Close()
-
-	if !classifier.Load(xmlFileFrontal) {
-		return errors.New("error reading cascade file")
-	}
-
 	img := gocv.IMRead(localImagePath, gocv.IMReadColor)
 	if img.Empty() {
-		return errors.New("error reading image")
+		fmt.Println("error reading image - image is empty")
+		return nil
 	}
 
 	picture, err := img.ToImage()
@@ -117,27 +125,27 @@ func (d *Detector) analyzeForFaces(localImagePath string, postID int) error {
 		}
 	}()
 	// detect frontals
-	rects := classifier.DetectMultiScale(img)
+	rects := d.classifier.DetectMultiScale(img)
+
+	if len(rects) == 0 {
+		return nil
+	}
 
 	faceReconJob := &models.FaceReconJob{}
-	faceReconJob.ID = postID
+	faceReconJob.PostID = postID
 	faceReconJob.InternalImageURL = localImagePath
 
-	if len(rects) > 1 {
+	if len(rects) == 1 {
+		r := rects[0]
+		faceReconJob.X = r.Bounds().Min.X
+		faceReconJob.Y = r.Bounds().Min.Y
+		faceReconJob.Width = r.Bounds().Dx()
+		faceReconJob.Height = r.Bounds().Dy()
+	} else {
 		faceReconJob.X = 0
 		faceReconJob.Y = 0
 		faceReconJob.Width = picture.Bounds().Dx()
 		faceReconJob.Height = picture.Bounds().Dy()
-	}
-
-	if len(rects) == 1 {
-		for _, r := range rects {
-			faceReconJob.X = r.Bounds().Min.X
-			faceReconJob.Y = r.Bounds().Min.Y
-			faceReconJob.Width = r.Bounds().Dx()
-			faceReconJob.Height = r.Bounds().Dy()
-
-		}
 	}
 
 	return d.writeFilteredResult(faceReconJob)
@@ -149,9 +157,5 @@ func (d *Detector) writeFilteredResult(job *models.FaceReconJob) error {
 		return err
 	}
 
-	err = d.infoQWriter.WriteMessages(context.Background(), kafka.Message{Value: payload})
-	if err != nil {
-		return err
-	}
-	return nil
+	return d.infoQWriter.WriteMessages(context.Background(), kafka.Message{Value: payload})
 }
