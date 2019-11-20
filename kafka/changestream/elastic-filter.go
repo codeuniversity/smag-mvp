@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
@@ -53,6 +54,8 @@ func New(kafkaAddress, kafkaGroupID, changesTopic string, elasticAddresses []str
 }
 
 func (f *KafkaToElasticFilter) runStep() error {
+	var wg sync.WaitGroup
+
 	m, err := f.changesReader.FetchMessage(context.Background())
 	if err != nil {
 		return err
@@ -69,18 +72,25 @@ func (f *KafkaToElasticFilter) runStep() error {
 	}
 
 	for _, userJSON := range elasticMessages {
-		req := esapi.IndexRequest{
-			Index: "user",
-			// DocumentID: strconv.Itoa(i + 1), // not sure if it's needed to explicitly set the DocumentID
-			Body:    strings.NewReader(userJSON),
-			Refresh: "true",
-		}
-		res, err := req.Do(context.Background(), f.elasticWriter)
-		if err != nil {
-			log.Fatalf("Error getting response: %s", err)
-		}
-		defer res.Body.Close()
+		wg.Add(1)
+
+		go func(msg string) {
+			defer wg.Done()
+
+			req := esapi.IndexRequest{
+				Index: "user",
+				// DocumentID: strconv.Itoa(i + 1), // not sure if it's needed to explicitly set the DocumentID
+				Body:    strings.NewReader(msg),
+				Refresh: "true",
+			}
+			res, err := req.Do(context.Background(), f.elasticWriter)
+			if err != nil {
+				log.Fatalf("Error getting response: %s", err)
+			}
+			defer res.Body.Close()
+		}(userJSON)
 	}
+	wg.Wait()
 
 	return f.changesReader.CommitMessages(context.Background(), m)
 }
