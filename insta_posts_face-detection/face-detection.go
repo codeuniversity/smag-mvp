@@ -3,7 +3,6 @@ package detection
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -114,7 +113,8 @@ func (d *Detector) analyzeForFaces(localImagePath string, postID int) error {
 
 	img := gocv.IMRead(localImagePath, gocv.IMReadColor)
 	if img.Empty() {
-		return errors.New("error reading image - image is empty")
+		fmt.Println("error reading image - image is empty")
+		return nil
 	}
 
 	picture, err := img.ToImage()
