@@ -292,7 +292,7 @@ services:
     
   # NEO4J
   neo4j:
-    image: "neo4j:latest"
+    image: "neo4j:3.5.12"
     ports:
       - "7474:7474"
       - "7687:7687"
@@ -328,8 +328,3 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_user_names-filter"
-<<<<<<< HEAD
-
-  
-=======
->>>>>>> master
