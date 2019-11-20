@@ -17,7 +17,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// KafkaToElasticFilter represents the scraper containing all clients it uses
+// KafkaToElasticFilter contains all neccessary clients
 type KafkaToElasticFilter struct {
 	*worker.Worker
 
@@ -103,9 +103,8 @@ type user struct {
 	Username string `json:"user_name"`
 }
 
-// TODO: Adapt return value to Elsatic search
 func filterChange(m *ChangeMessage) ([]string, error) {
-	// use create (c) or update (u) events
+	// only care for create (c) or update (u) events
 	if (m.Payload.Op != "c") || (m.Payload.Op != "u") {
 		return nil, nil
 	}
@@ -117,7 +116,7 @@ func filterChange(m *ChangeMessage) ([]string, error) {
 		return nil, err
 	}
 
-	// marshal the relevant data again
+	// marshal the relevant data again and convert to string
 	v, err := json.Marshal(u)
 	if err != nil {
 		return nil, err
