@@ -26,8 +26,8 @@ type KafkaToElasticFilter struct {
 	elasticWriter *elasticsearch.Client
 }
 
-// New returns an initilized KafkaToElasticFilter
-func New(kafkaAddress, kafkaGroupID, changesTopic string, elasticAddresses []string) *KafkaToElasticFilter {
+// NewKafkaToElasticFilter returns an initilized KafkaToElasticFilter
+func NewKafkaToElasticFilter(kafkaAddress, kafkaGroupID, changesTopic string, elasticAddresses []string) *KafkaToElasticFilter {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	f := &KafkaToElasticFilter{
