@@ -7,6 +7,8 @@ import (
 	"log"
 	"time"
 
+	"github.com/elastic/go-elasticsearch/v7"
+
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/segmentio/kafka-go"
@@ -18,25 +20,30 @@ type KafkaToElasticFilter struct {
 
 	changesReader *kafka.Reader
 
-	// TODO: Add elasticWriter to KafkaToElasticFilter
-	// elasticWriter connection
+	elasticWriter *elasticsearch.Client
 }
 
 // New returns an initilized KafkaToElasticFilter
-func New(kafkaAddress, kafkaGroupID, changesTopic, elasticTopic string) *KafkaToElasticFilter {
+func New(kafkaAddress, kafkaGroupID, changesTopic string, elasticAddresses []string) *KafkaToElasticFilter {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	f := &KafkaToElasticFilter{
 		changesReader: kf.NewReader(readerConfig),
 	}
 
+	cfg := elasticsearch.Config{Addresses: elasticAddresses}
+	es, err := elasticsearch.NewClient(cfg)
+	if err != nil {
+		log.Fatalf("Error creating elasticsearch client: %s", err)
+	}
+	f.elasticWriter = es
+
 	b := worker.Builder{}.
-		WithName(fmt.Sprintf("KafkaToElasticFilter[%s->%s]", changesTopic, elasticTopic)).
+		WithName(fmt.Sprintf("KafkaToElasticFilter[%s->%v]", changesTopic, elasticAddresses)).
 		WithWorkStep(f.runStep).
 		WithStopTimeout(10*time.Second).
-		AddShutdownHook("changesReader", f.changesReader.Close) //.
-		// AddShutdownHook("elasticWriter", ...)
-		// TODO: Add ShutdownHook for elasticWriter
+		AddShutdownHook("changesReader", f.changesReader.Close)
+		// No shutdown hook for elasticWriter :(
 
 	f.Worker = b.MustBuild()
 
