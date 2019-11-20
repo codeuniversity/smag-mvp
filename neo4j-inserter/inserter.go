@@ -21,9 +21,12 @@ type Inserter struct {
 	qReader *kf.Reader
 	conn    bolt.Conn
 
-	inserFunc InserterFunc
+	inserterFunc InserterFunc
 }
 
+// InserterFunc is responsible to unmashal to the
+// needed Data from the change Message and inserts
+// it into neo4j
 type InserterFunc func(*changestream.ChangeMessage, bolt.Conn) error
 
 // New returns an initilized scraper
@@ -31,7 +34,7 @@ func New(neo4jAddress, neo4jUsername, neo4jPassword string, userQReader *kf.Read
 	i := &Inserter{}
 
 	i.qReader = userQReader
-	i.inserFunc = inserterFunc
+	i.inserterFunc = inserterFunc
 
 	conn, err := initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress)
 
@@ -67,7 +70,7 @@ func (i *Inserter) runStep() error {
 		return err
 	}
 
-	err = i.inserFunc(changeMessage, i.conn)
+	err = i.inserterFunc(changeMessage, i.conn)
 
 	if err != nil {
 		return err
