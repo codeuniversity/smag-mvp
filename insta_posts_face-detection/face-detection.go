@@ -108,9 +108,13 @@ func (d *Detector) fetchPost(internalImgURL string, postID int) error {
 }
 
 func (d *Detector) analyzeForFaces(localImagePath string, postID int) error {
+
+	fmt.Printf("Reading image: %s \n", localImagePath)
+	fmt.Printf("Image is form post: %v \n", postID)
+
 	img := gocv.IMRead(localImagePath, gocv.IMReadColor)
 	if img.Empty() {
-		return errors.New("error reading image")
+		return errors.New("error reading image - image is empty")
 	}
 
 	picture, err := img.ToImage()
