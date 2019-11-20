@@ -7,6 +7,7 @@ import (
 	"time"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
+	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/worker"
 
 	"github.com/segmentio/kafka-go"
@@ -26,7 +27,7 @@ type Filter struct {
 
 // FilterFunc given a ChangeMessage from the changesTopic
 // returns zero, one or multiple kafka Messages that should be written to the filteredTopic
-type FilterFunc func(*ChangeMessage) ([]kafka.Message, error)
+type FilterFunc func(*models.ChangeMessage) ([]kafka.Message, error)
 
 // NewFilter returns an initilized Filter
 func NewFilter(kafkaAddress, kafkaGroupID, changesTopic, filteredTopic string, filter FilterFunc) *Filter {
@@ -56,7 +57,7 @@ func (t *Filter) runStep() error {
 		return err
 	}
 
-	changeMessage := &ChangeMessage{}
+	changeMessage := &models.ChangeMessage{}
 	err = json.Unmarshal(m.Value, changeMessage)
 	if err != nil {
 		return err
