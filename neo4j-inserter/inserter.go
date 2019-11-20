@@ -45,6 +45,7 @@ func New(neo4jAddress, neo4jUsername, neo4jPassword string, userQReader *kf.Read
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("userQReader", userQReader.Close).
+		AddShutdownHook("Neo4j", conn.Close).
 		MustBuild()
 
 	return i
