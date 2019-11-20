@@ -5,9 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esapi"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/worker"
@@ -67,15 +69,19 @@ func (f *KafkaToElasticFilter) runStep() error {
 		return err
 	}
 
-	log.Println(elasticMessages)
-
-	// TODO: Write elasticMessages to elasticsearch
-	// if len(elasticMessages) > 0 {
-	// 	err = elasticWriter.Write(...)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// }
+	for _, userJSON := range elasticMessages {
+		req := esapi.IndexRequest{
+			Index: "user",
+			// DocumentID: strconv.Itoa(i + 1), // not sure if it's needed to explicitly set the DocumentID
+			Body:    strings.NewReader(userJSON),
+			Refresh: "true",
+		}
+		res, err := req.Do(context.Background(), f.elasticWriter)
+		if err != nil {
+			log.Fatalf("Error getting response: %s", err)
+		}
+		defer res.Body.Close()
+	}
 
 	return f.changesReader.CommitMessages(context.Background(), m)
 }
@@ -89,7 +95,7 @@ type user struct {
 }
 
 // TODO: Adapt return value to Elsatic search
-func filterChange(m *ChangeMessage) ([]kafka.Message, error) {
+func filterChange(m *ChangeMessage) ([]string, error) {
 	// use create (c) or update (u) events
 	if (m.Payload.Op != "c") || (m.Payload.Op != "u") {
 		return nil, nil
@@ -103,10 +109,11 @@ func filterChange(m *ChangeMessage) ([]kafka.Message, error) {
 	}
 
 	// marshal the relevant data again
-	b, err := json.Marshal(u)
+	v, err := json.Marshal(u)
 	if err != nil {
 		return nil, err
 	}
+	w := string(v)
 
-	return []kafka.Message{{Value: b}}, nil
+	return []string{w}, nil
 }
