@@ -1,4 +1,4 @@
-package changestream
+package models
 
 import (
 	"encoding/json"
