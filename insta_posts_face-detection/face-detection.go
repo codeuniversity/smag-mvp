@@ -123,6 +123,7 @@ func (d *Detector) analyzeForFaces(localImagePath string, postID int) error {
 	}
 
 	defer func() {
+		img.Close()
 		err := os.Remove(localImagePath)
 		if err != nil {
 			panic(err)
