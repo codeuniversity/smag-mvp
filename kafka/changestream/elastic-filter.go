@@ -59,8 +59,7 @@ func (f *KafkaToElasticFilter) runStep() error {
 	}
 
 	changeMessage := &ChangeMessage{}
-	err = json.Unmarshal(m.Value, changeMessage)
-	if err != nil {
+	if err := json.Unmarshal(m.Value, changeMessage); err != nil {
 		return err
 	}
 
