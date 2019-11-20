@@ -1,4 +1,4 @@
-package changestream
+package filter
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
+	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/segmentio/kafka-go"
 )
@@ -61,7 +62,7 @@ func (f *KafkaToElasticFilter) runStep() error {
 		return err
 	}
 
-	changeMessage := &ChangeMessage{}
+	changeMessage := &models.ChangeMessage{}
 	if err := json.Unmarshal(m.Value, changeMessage); err != nil {
 		return err
 	}
@@ -103,7 +104,7 @@ type user struct {
 	Username string `json:"user_name"`
 }
 
-func filterChange(m *ChangeMessage) ([]string, error) {
+func filterChange(m *models.ChangeMessage) ([]string, error) {
 	// only care for create (c) or update (u) events
 	if (m.Payload.Op != "c") || (m.Payload.Op != "u") {
 		return nil, nil
