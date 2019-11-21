@@ -12,16 +12,11 @@ import (
 )
 
 func main() {
-	neo4jHost := utils.GetStringFromEnvWithDefault("NEO4J_HOST", "localhost")
-	neo4jUsername := utils.GetStringFromEnvWithDefault("NEO4J_USERNAME", "neo4j")
-	neo4jPassword := utils.GetStringFromEnvWithDefault("NEO4J_PASSWORD", "12345678")
 
-	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.post_tagged_users")
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
-	groupID := utils.GetStringFromEnvWithDefault("KAFKA_GROUPID", "neo4j-tagged-users")
-	qReaderConfig := kafka.NewReaderConfig(kafkaAddress, groupID, changesTopic)
+	readerConfig := kafka.GetInserterConfig()
+	neo4jConfig := utils.GetNeo4jConfig()
 
-	i := inserter.New(neo4jHost, neo4jUsername, neo4jPassword, kafka.NewReader(qReaderConfig), addTaggedUsersRelationship)
+	i := inserter.New(neo4jConfig, kafka.NewReader(readerConfig), addTaggedUsersRelationship)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()

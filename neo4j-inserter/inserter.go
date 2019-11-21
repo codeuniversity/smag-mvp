@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
+	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 
@@ -30,13 +31,13 @@ type Inserter struct {
 type InserterFunc func(*changestream.ChangeMessage, bolt.Conn) error
 
 // New returns an initilized scraper
-func New(neo4jAddress, neo4jUsername, neo4jPassword string, userQReader *kf.Reader, inserterFunc InserterFunc) *Inserter {
+func New(neo4jConfig *utils.Neo4jConfig, userQReader *kf.Reader, inserterFunc InserterFunc) *Inserter {
 	i := &Inserter{}
 
 	i.qReader = userQReader
 	i.inserterFunc = inserterFunc
 
-	conn, err := initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress)
+	conn, err := initializeNeo4j(neo4jConfig)
 
 	if err != nil {
 		panic(err)
@@ -81,9 +82,8 @@ func (i *Inserter) runStep() error {
 }
 
 //initializeNeo4j sets connection and constraints for neo4j
-func initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress string) (bolt.Conn, error) {
+func initializeNeo4j(config *utils.Neo4jConfig) (bolt.Conn, error) {
 	driver := bolt.NewDriver()
-	address := fmt.Sprintf("bolt://%s:%s@%s:7687", neo4jUsername, neo4jPassword, neo4jAddress)
 	address := fmt.Sprintf("bolt://%s:%s@%s:7687", config.Username, config.Password, config.Host)
 	con, err := driver.OpenNeo(address)
 
