@@ -80,20 +80,18 @@ func (i *Inserter) runStep() error {
 	return i.qReader.CommitMessages(context.Background(), m)
 }
 
-// insertUser creates user in neo4j if thats not the case already
-
 //initializeNeo4j sets connection and constraints for neo4j
 func initializeNeo4j(neo4jUsername, neo4jPassword, neo4jAddress string) (bolt.Conn, error) {
 	driver := bolt.NewDriver()
 	address := fmt.Sprintf("bolt://%s:%s@%s:7687", neo4jUsername, neo4jPassword, neo4jAddress)
-	fmt.Println(neo4jPassword)
+	address := fmt.Sprintf("bolt://%s:%s@%s:7687", config.Username, config.Password, config.Host)
 	con, err := driver.OpenNeo(address)
 
 	if err != nil {
 		return nil, err
 	}
 
-	// _, err = con.ExecNeo("CREATE CONSTRAINT ON (U:USER) ASSERT U.id IS UNIQUE", nil)
+	_, err = con.ExecNeo("CREATE CONSTRAINT ON (U:USER) ASSERT U.id IS UNIQUE", nil)
 
 	if err != nil {
 		return nil, err
