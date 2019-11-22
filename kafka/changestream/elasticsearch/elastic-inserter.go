@@ -1,9 +1,10 @@
-package insta_post_text_filter
+package elasticsearch_inserter
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/elastic/go-elasticsearch/v7"
@@ -26,10 +27,12 @@ type Inserter struct {
 
 type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
 
-func New(elasticSearchAddress string, kReader *kafka.Reader, inserterFunc InserterFunc) *Inserter {
+func New(elasticSearchAddress string, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
+	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
+
 	inserter := &Inserter{}
 
-	inserter.kReader = kReader
+	inserter.kReader = kf.NewReader(readerConfig)
 	inserter.insertFunc = inserterFunc
 
 	inserter.initializeMongo(elasticSearchAddress)
