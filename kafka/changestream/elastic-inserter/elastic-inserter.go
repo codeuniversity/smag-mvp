@@ -19,7 +19,7 @@ const (
 type Inserter struct {
 	*worker.Worker
 
-	client  *elasticsearch.Client
+	Client  *elasticsearch.Client
 	kReader *kafka.Reader
 
 	insertFunc InserterFunc
@@ -31,7 +31,6 @@ func New(elasticSearchAddress string, kafkaAddress, changesTopic, kafkaGroupID s
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	inserter := &Inserter{}
-
 	inserter.kReader = kf.NewReader(readerConfig)
 	inserter.insertFunc = inserterFunc
 
@@ -54,7 +53,7 @@ func (i *Inserter) runStep() error {
 		return err
 	}
 
-	err = i.insertFunc(changeMessage, i.client)
+	err = i.insertFunc(changeMessage, i.Client)
 
 	if err != nil {
 		return err
