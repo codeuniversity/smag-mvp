@@ -121,7 +121,7 @@ func createPost(post *post, client *elasticsearch.Client) error {
 	}
 
 	if response.StatusCode != 201 {
-		return fmt.Errorf("FindPostId Search Query Failed StatusCode: %d", response.StatusCode)
+		return fmt.Errorf("createPost Create Post Failed StatusCode: %d", response.StatusCode)
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func updateDocumentId(documentId string, caption string, client *elasticsearch.C
 	}
 
 	if response.StatusCode != 200 {
-		return fmt.Errorf("FindPostId Search Query Failed StatusCode: %d", response.StatusCode)
+		return fmt.Errorf("FindPostId Update Document Failed StatusCode: %d", response.StatusCode)
 	}
 	return nil
 }
