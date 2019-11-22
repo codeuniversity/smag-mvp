@@ -116,7 +116,7 @@ func createUserProfile(userProfile *user, client *elasticsearch.Client) error {
 	}
 
 	if response.StatusCode != 201 {
-		return fmt.Errorf("createUserProfile Search Query Failed StatusCode: %d", response.StatusCode)
+		return fmt.Errorf("createUserProfile Create Document Failed StatusCode: %d", response.StatusCode)
 	}
 
 	return nil
@@ -132,7 +132,7 @@ func updateDocumentId(documentId string, bio string, client *elasticsearch.Clien
 	}
 
 	if response.StatusCode != 200 {
-		return fmt.Errorf("FindPostId Search Query Failed StatusCode: %d", response.StatusCode)
+		return fmt.Errorf("updateDocumentId Update Document Failed StatusCode: %d", response.StatusCode)
 	}
 	return nil
 }
