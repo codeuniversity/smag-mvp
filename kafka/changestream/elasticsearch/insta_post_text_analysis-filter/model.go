@@ -14,8 +14,8 @@ type QueryResult struct {
 			ID     string  `json:"_id"`
 			Score  float64 `json:"_score"`
 			Source struct {
-				PostID string `json:"postId"`
-				Text   string `json:"text"`
+				PostID  string `json:"postId"`
+				Caption string `json:"caption"`
 			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
