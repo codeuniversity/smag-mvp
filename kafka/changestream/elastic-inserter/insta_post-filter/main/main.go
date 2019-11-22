@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/kafka/changestream/elasticsearch"
-	insta_post_text_filter "github.com/codeuniversity/smag-mvp/kafka/changestream/elasticsearch/insta_post_text_analysis-filter"
+	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/kafka/changestream/elastic-inserter"
+	insta_post_text_filter "github.com/codeuniversity/smag-mvp/kafka/changestream/elastic-inserter/insta_post-filter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/elastic/go-elasticsearch/v7"
@@ -33,15 +33,15 @@ func main() {
 
 	elasticAddress := utils.MustGetStringFromEnv("ELASTIC_SEARCH_ADDRESS")
 
-	inserter := elasticsearch_inserter.New(elasticAddress, kafkaAddress, changesTopic, groupID, insertPostText)
+	elasticInserter := elasticsearch_inserter.New(elasticAddress, kafkaAddress, changesTopic, groupID, insertPost)
 
-	service.CloseOnSignal(inserter)
-	waitUntilClosed := inserter.Start()
+	service.CloseOnSignal(elasticInserter)
+	waitUntilClosed := elasticInserter.Start()
 
 	waitUntilClosed()
 }
 
-func insertPostText(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
+func insertPost(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
 	post := &post{}
 	err := json.Unmarshal(m.Payload.After, post)
 
