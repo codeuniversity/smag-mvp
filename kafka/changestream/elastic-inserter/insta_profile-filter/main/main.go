@@ -77,7 +77,7 @@ func findUserId(userId string, client *elasticsearch.Client) (string, error) {
 	}
 
 	if response.StatusCode != 200 {
-		return "", fmt.Errorf("FindPostId Search Query Failed StatusCode: %d", response.StatusCode)
+		return "", fmt.Errorf("findUserId Search Query Failed StatusCode: %d", response.StatusCode)
 	}
 
 	searchResult := insta_profile_filter.QueryResult{}
