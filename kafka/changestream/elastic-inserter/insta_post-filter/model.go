@@ -22,6 +22,6 @@ type QueryResult struct {
 }
 
 type InstaPost struct {
-	PostId  string `json:"post_id"`
+	PostId  string `json:"postId"`
 	Caption string `json:"caption"`
 }
