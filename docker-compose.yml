@@ -289,6 +289,53 @@ services:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
+    
+  # NEO4J
+  neo4j:
+    image: "neo4j:3.5.12"
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  neo4j-followings-inserter:
+    build:
+      context: "."
+      dockerfile: "neo4j-inserter/insta_user-inserter/Dockerfile"
+    depends_on:
+      - "neo4j"
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "neo4j-followings-inserter"
+      KAFKA_INFO_TOPIC: "postgres.public.followings"
+      NEO4j_PASSWORD: "12345678"
+  
+    neo4j-posts-inserter:
+      build:
+        context: "."
+        dockerfile: "neo4j-inserter/posts-inserter/Dockerfile"
+      depends_on:
+        - "neo4j"
+        - "my-kafka"
+      environment:
+        KAFKA_ADDRESS: "my-kafka:9092"
+        KAFKA_GROUPID: "neo4j-followings-inserter"
+        KAFKA_INFO_TOPIC: "postgres.public.posts"
+        NEO4j_PASSWORD: "12345678"
+    
+    neo4j-followings-inserter:
+      build:
+        context: "."
+        dockerfile: "neo4j-inserter/insta_tagged_users-inserter/Dockerfile"
+      depends_on:
+        - "neo4j"
+        - "my-kafka"
+      environment:
+        KAFKA_ADDRESS: "my-kafka:9092"
+        KAFKA_GROUPID: "neo4j-followings-inserter"
+        KAFKA_INFO_TOPIC: "postgres.public.tagged_users"
+        NEO4j_PASSWORD: "12345678"
+
 
   # FILTER
   insta-user-filter:
