@@ -1,13 +1,17 @@
 package models
 
+import (
+	"github.com/jinzhu/gorm/dialects/postgres"
+)
+
 // FaceData represents the face encoding table
 type FaceData struct {
-	PostID   int          `json:"post_id"`
-	X        int          `json:"x"`
-	Y        int          `json:"y"`
-	Width    int          `json:"width"`
-	Height   int          `json:"height"`
-	Encoding [128]float32 `json:"encoding"`
+	PostID   int            `json:"post_id"`
+	X        int            `json:"x"`
+	Y        int            `json:"y"`
+	Width    int            `json:"width"`
+	Height   int            `json:"height"`
+	Encoding postgres.Jsonb `json:"encoding"`
 }
 
 // FaceRecognitionResult is the result of the face recognizer
