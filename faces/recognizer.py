@@ -36,7 +36,8 @@ def recognize(url):
 
 
 def download_and_read_image(url):
-    with open('img.jpg', 'wb') as handle:
+    file_name = random_string() + ".jpg"
+    with open(file_name, 'wb') as handle:
         response = requests.get(url, stream=True)
 
         if not response.ok:
@@ -48,6 +49,12 @@ def download_and_read_image(url):
                 break
 
             handle.write(block)
-    image = face_recognition.load_image_file('img.jpg')
-    os.remove('img.jpg')
+    image = face_recognition.load_image_file(file_name)
+
+    os.remove(file_name)
+
     return image
+
+
+def random_string(n=12):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=n))
