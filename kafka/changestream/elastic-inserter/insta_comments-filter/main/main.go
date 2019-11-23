@@ -68,8 +68,8 @@ func insertComment(m *changestream.ChangeMessage, client *elasticsearch.Client) 
 //these operator u, o to find documentId
 func findCommentId(commentId string, client *elasticsearch.Client) (string, error) {
 
-	postQuery := "commentId: \"%s\""
-	query := fmt.Sprintf(postQuery, commentId)
+	commentQuery := "commentId: \"%s\""
+	query := fmt.Sprintf(commentQuery, commentId)
 	response, err := client.Search(client.Search.WithIndex("insta_comments"), client.Search.WithQuery(query))
 
 	if err != nil {
@@ -77,7 +77,7 @@ func findCommentId(commentId string, client *elasticsearch.Client) (string, erro
 	}
 
 	if response.StatusCode != 200 {
-		return "", fmt.Errorf("FindPostId Search Query Failed StatusCode: %d", response.StatusCode)
+		return "", fmt.Errorf("search Query Failed StatusCode: %d", response.StatusCode)
 	}
 
 	searchResult := insta_comments_filter.QueryResult{}
@@ -93,7 +93,7 @@ func findCommentId(commentId string, client *elasticsearch.Client) (string, erro
 	}
 
 	if len(searchResult.Hits.Hits) == 1 {
-		return "", fmt.Errorf("found Duplicate Documents: PostId: %s Duplicates: %d", commentId, len(searchResult.Hits.Hits))
+		return "", fmt.Errorf("found Duplicate Documents: CommentId: %s Duplicates: %d", commentId, len(searchResult.Hits.Hits))
 	}
 
 	return searchResult.Hits.Hits[0].ID, nil
@@ -108,9 +108,9 @@ type comment struct {
 //these operator c, r
 func createComment(comment *comment, client *elasticsearch.Client) error {
 
-	instaPost := insta_comments_filter.InstaComment{CommentID: strconv.Itoa(comment.ID), PostID: comment.PostId, Comment: comment.Comment}
+	instaComment := insta_comments_filter.InstaComment{CommentID: strconv.Itoa(comment.ID), PostID: comment.PostId, Comment: comment.Comment}
 
-	instaPostJson, err := json.Marshal(instaPost)
+	instaPostJson, err := json.Marshal(instaComment)
 
 	if err != nil {
 		panic(err)
@@ -130,8 +130,8 @@ func createComment(comment *comment, client *elasticsearch.Client) error {
 
 //these operator u
 func updateDocumentId(documentId string, comment string, client *elasticsearch.Client) error {
-	instaPost := fmt.Sprintf(instaPostUpdate, comment)
-	response, err := client.Update("insta_comments", documentId, strings.NewReader(instaPost))
+	instaComment := fmt.Sprintf(instaPostUpdate, comment)
+	response, err := client.Update("insta_comments", documentId, strings.NewReader(instaComment))
 
 	if err != nil {
 		return err
