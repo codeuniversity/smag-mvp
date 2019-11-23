@@ -2,6 +2,8 @@ import face_recognition
 import tempfile
 import os
 import requests
+import random
+import string
 
 
 def recognize(url):
