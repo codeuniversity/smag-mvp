@@ -114,6 +114,33 @@ services:
       KAFKA_GROUPID: "insta_user_inserter"
       KAFKA_INFO_TOPIC: "user_follow_infos"
 
+  insta_face-indexer:
+    build:
+      context: "."
+      dockerfile: "./es_face-indexer/Dockerfile"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "es-face-indexer2"
+      KAFKA_CHANGE_TOPIC: "postgres.public.face_data"
+      ES_HOSTS: "http://es-with-plugin:9200"
+
+  es-with-plugin:
+    build:
+      context: "./elasticsearch-build"
+      dockerfile: "Dockerfile"
+    environment:
+      "discovery.type": "single-node"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  kibana:
+    image: kibana:7.1.0
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=["http://es-with-plugin:9200"]
+
   insta_user_names-filter:
     build:
       context: "."
