@@ -15,6 +15,7 @@ import (
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
+	"github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -38,7 +39,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.FaceData{})
 	i.db = db
 
 	b := worker.Builder{}.WithName("insta_postgres_inserter").
@@ -80,13 +81,18 @@ func (i *Inserter) InsertFaceEncoding(reconResult *models.FaceRecognitionResult)
 
 	p := []*models.FaceData{}
 	for _, face := range reconResult.Faces {
+		encodingJSON, err := json.Marshal(face.Encoding)
+		if err != nil {
+			return err
+		}
+
 		q := &models.FaceData{
 			PostID:   reconResult.PostID,
 			X:        face.X,
 			Y:        face.Y,
 			Width:    face.Width,
 			Height:   face.Height,
-			Encoding: face.Encoding,
+			Encoding: postgres.Jsonb{RawMessage: encodingJSON},
 		}
 		p = append(p, q)
 	}
