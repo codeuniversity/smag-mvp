@@ -34,7 +34,7 @@ func New(elasticSearchAddress string, kafkaAddress, changesTopic, kafkaGroupID s
 	inserter.kReader = kf.NewReader(readerConfig)
 	inserter.insertFunc = inserterFunc
 
-	inserter.initializeMongo(elasticSearchAddress)
+	inserter.initializeElasticSearch(elasticSearchAddress)
 	return inserter
 }
 
@@ -63,7 +63,7 @@ func (i *Inserter) runStep() error {
 	return i.kReader.CommitMessages(context.Background(), m)
 }
 
-func (i *Inserter) initializeMongo(elasticSearchAddress string) *elasticsearch.Client {
+func (i *Inserter) initializeElasticSearch(elasticSearchAddress string) *elasticsearch.Client {
 	url := fmt.Sprintf(elasticProtocol, elasticSearchAddress)
 
 	cfg := elasticsearch.Config{
