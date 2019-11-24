@@ -25,3 +25,16 @@ func CreateOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 
 	return nil
 }
+
+//Create just create a new entry in the database
+func Create(db *gorm.DB, out interface{}, update interface{}) error {
+	tx := db.Begin()
+	err := tx.Create(update).Scan(out).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+
+	return nil
+}

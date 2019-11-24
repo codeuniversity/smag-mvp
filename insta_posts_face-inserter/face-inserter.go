@@ -104,8 +104,7 @@ func (i *Inserter) insertEncoding(p []*models.FaceData) error {
 	fromEncoding := models.FaceData{}
 
 	for _, face := range p {
-		filter := &models.FaceData{PostID: face.PostID}
-		err := dbutils.CreateOrUpdate(i.db, &fromEncoding, filter, face)
+		err := dbutils.Create(i.db, &fromEncoding, face)
 		if err != nil {
 			return err
 		}
