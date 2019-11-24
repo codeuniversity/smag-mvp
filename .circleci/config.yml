@@ -232,6 +232,16 @@ jobs:
           command: |
             ./build_and_upload_image.sh elasticsearch-build/Dockerfile codesmag/elasticsearch elasticsearch-build
 
+  es_face_indexer:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh es_face-indexer/Dockerfile codesmag/es_face_indexer
+
 workflows:
   version: 2
   workflow:
@@ -348,6 +358,12 @@ workflows:
             branches:
               only: master
       - elasticsearch:
+          filters:
+            branches:
+              only: master
+      - es_face_indexer:
+          requires:
+            - tests
           filters:
             branches:
               only: master
