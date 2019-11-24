@@ -47,6 +47,15 @@ jobs:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh insta_comments-inserter/Dockerfile codesmag/insta_comments-inserter
 
+  insta-face-encoding-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_posts_face-inserter/Dockerfile codesmag/insta_posts_face-inserter
+
   insta-comments-scraper:
     executor: job-runner
     steps:
