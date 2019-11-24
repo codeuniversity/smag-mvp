@@ -78,7 +78,6 @@ func (i *Inserter) runStep() error {
 
 // InsertFaceEncoding inserts the encoded face data into postgres
 func (i *Inserter) InsertFaceEncoding(reconResult *models.FaceRecognitionResult) error {
-
 	p := []*models.FaceData{}
 	for _, face := range reconResult.Faces {
 		encodingJSON, err := json.Marshal(face.Encoding)
