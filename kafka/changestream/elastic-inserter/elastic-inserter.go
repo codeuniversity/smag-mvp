@@ -1,15 +1,19 @@
 package elasticsearch_inserter
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
+	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/segmentio/kafka-go"
+	"io/ioutil"
 	"log"
+	"time"
 )
 
 const (
@@ -19,23 +23,30 @@ const (
 type Inserter struct {
 	*worker.Worker
 
-	Client  *elasticsearch.Client
-	kReader *kafka.Reader
+	esClient *elasticsearch.Client
+	kReader  *kafka.Reader
 
 	insertFunc InserterFunc
 }
 
 type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
 
-func New(elasticSearchAddress, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
-	inserter := &Inserter{}
-	inserter.kReader = kf.NewReader(readerConfig)
-	inserter.insertFunc = inserterFunc
+	i := &Inserter{}
+	i.kReader = kf.NewReader(readerConfig)
+	i.insertFunc = inserterFunc
 
-	inserter.initializeElasticSearch(elasticSearchAddress)
-	return inserter
+	i.esClient = i.initializeElasticSearch(esHosts)
+
+	i.Worker = worker.Builder{}.WithName("elasticsearch-inserter").
+		WithWorkStep(i.runStep).
+		WithStopTimeout(10 * time.Second).
+		MustBuild()
+
+	utils.PanicIfNotNil(i.createIndex(esIndex, esMapping))
+	return i
 }
 
 func (i *Inserter) runStep() error {
@@ -53,7 +64,7 @@ func (i *Inserter) runStep() error {
 		return err
 	}
 
-	err = i.insertFunc(changeMessage, i.Client)
+	err = i.insertFunc(changeMessage, i.esClient)
 
 	if err != nil {
 		return err
@@ -63,13 +74,16 @@ func (i *Inserter) runStep() error {
 	return i.kReader.CommitMessages(context.Background(), m)
 }
 
-func (i *Inserter) initializeElasticSearch(elasticSearchAddress string) *elasticsearch.Client {
-	url := fmt.Sprintf(elasticProtocol, elasticSearchAddress)
+func (i *Inserter) initializeElasticSearch(esHosts []string) *elasticsearch.Client {
+
+	var hosts []string
+	for _, address := range esHosts {
+		url := fmt.Sprintf(elasticProtocol, address)
+		hosts = append(hosts, url)
+	}
 
 	cfg := elasticsearch.Config{
-		Addresses: []string{
-			url,
-		},
+		Addresses: hosts,
 	}
 	client, err := elasticsearch.NewClient(cfg)
 
@@ -77,4 +91,40 @@ func (i *Inserter) initializeElasticSearch(elasticSearchAddress string) *elastic
 		panic(err)
 	}
 	return client
+}
+
+func (i *Inserter) createIndex(esIndex, esMapping string) error {
+	response, err := i.esClient.Indices.Exists(
+		[]string{esIndex},
+		i.esClient.Indices.Exists.WithHuman(),
+		i.esClient.Indices.Exists.WithPretty(),
+	)
+	if err != nil {
+		return err
+	}
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode == 404 {
+		bodyReader := bytes.NewReader([]byte(esMapping))
+		response, err := i.esClient.Indices.Create(
+			esIndex,
+			i.esClient.Indices.Create.WithHuman(),
+			i.esClient.Indices.Create.WithPretty(),
+			i.esClient.Indices.Create.WithBody(bodyReader),
+		)
+
+		if err != nil {
+			return err
+		}
+		log.Println(response)
+	} else if response.StatusCode == 200 {
+		return nil
+	} else {
+		return fmt.Errorf("error finding index: %d %s", response.StatusCode, string(body))
+	}
+	return nil
 }
