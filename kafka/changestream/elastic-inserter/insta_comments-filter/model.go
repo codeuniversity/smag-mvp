@@ -14,16 +14,14 @@ type QueryResult struct {
 			ID     string  `json:"_id"`
 			Score  float64 `json:"_score"`
 			Source struct {
-				PostID    string `json:"postId"`
-				CommentID string `json:"commentId"`
-				Comment   string `json:"comment"`
+				PostID  string `json:"postId"`
+				Comment string `json:"comment"`
 			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
 }
 
 type InstaComment struct {
-	PostID    string `json:"postId"`
-	CommentID string `json:"commentId"`
-	Comment   string `json:"comment"`
+	PostID  string `json:"postId"`
+	Comment string `json:"comment"`
 }

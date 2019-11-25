@@ -27,7 +27,7 @@ type Inserter struct {
 
 type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
 
-func New(elasticSearchAddress string, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
+func New(elasticSearchAddress, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	inserter := &Inserter{}
