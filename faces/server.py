@@ -34,7 +34,7 @@ class Servicer(grpc_proto.FaceRecognizerServicer):
 
 def serve():
 
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
     grpc_proto.add_FaceRecognizerServicer_to_server(
         Servicer(),
