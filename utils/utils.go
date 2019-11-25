@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -51,6 +52,15 @@ func MustGetStringFromEnv(enVarName string) string {
 	}
 
 	return envValue
+}
+
+func GetMultipliesStringsFromEnvDefault(envVarName string, defaultValue []string) []string {
+	envValue := os.Getenv(envVarName)
+	if envValue == "" {
+		return defaultValue
+	}
+	envValues := strings.Split(envVarName, ",")
+	return envValues
 }
 
 // GetBoolFromEnvWithDefault parses an OS Environment Variable as bool
