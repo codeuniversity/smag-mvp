@@ -14,14 +14,16 @@ type QueryResult struct {
 			ID     string  `json:"_id"`
 			Score  float64 `json:"_score"`
 			Source struct {
-				UserID string `json:"userId"`
-				Bio    string `json:"bio"`
+				UserId   string `json:"userId"`
+				RealName string `json:"realName"`
+				Bio      string `json:"bio"`
 			} `json:"_source"`
 		} `json:"hits"`
 	} `json:"hits"`
 }
 
 type InstaProfile struct {
-	UserId string `json:"userId"`
-	Bio    string `json:"bio"`
+	UserId   string `json:"userId"`
+	RealName string `json:"realName"`
+	Bio      string `json:"bio"`
 }

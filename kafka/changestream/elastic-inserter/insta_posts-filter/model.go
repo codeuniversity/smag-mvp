@@ -14,7 +14,8 @@ type QueryResult struct {
 			ID     string  `json:"_id"`
 			Score  float64 `json:"_score"`
 			Source struct {
-				PostID  string `json:"postId"`
+				PostId  string `json:"postId"`
+				UserId  string `json:"userId"`
 				Caption string `json:"caption"`
 			} `json:"_source"`
 		} `json:"hits"`
@@ -23,5 +24,6 @@ type QueryResult struct {
 
 type InstaPost struct {
 	PostId  string `json:"postId"`
+	UserId  string `json:"userId"`
 	Caption string `json:"caption"`
 }
