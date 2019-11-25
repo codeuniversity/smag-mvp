@@ -1,11 +1,13 @@
 package models
 
 import (
+	"github.com/jinzhu/gorm"
 	"github.com/jinzhu/gorm/dialects/postgres"
 )
 
 // FaceData represents the face encoding table
 type FaceData struct {
+	gorm.Model
 	PostID   int            `json:"post_id"`
 	X        int            `json:"x"`
 	Y        int            `json:"y"`
