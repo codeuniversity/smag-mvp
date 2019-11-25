@@ -12,17 +12,6 @@ import (
 	"strings"
 )
 
-const instaPostUpdate = `
-{
-    "script" : {
-        "source": "ctx._source.caption = params.caption",
-        "lang": "painless",
-        "params" : {
-            "caption" : "%s"
-        }
-    }
-}
-`
 const instaPostUpsert = `
 	{
     "script" : {
