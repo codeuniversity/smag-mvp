@@ -22,7 +22,7 @@ const instaCommentUpsert = `
         }
     },
     "upsert" : {
-        "postId" : "%s",
+        "post_id" : "%s",
 		"comment": "%s"
     }
 }
@@ -35,7 +35,7 @@ const instaCommentsMapping = `
         "comment" : {
           "type" : "text"
         },
-        "postId" : {
+        "post_id" : {
           "type" : "keyword"
         }
       }

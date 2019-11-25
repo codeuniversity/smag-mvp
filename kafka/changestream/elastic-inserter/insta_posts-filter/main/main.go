@@ -22,7 +22,7 @@ const instaPostUpsert = `
         }
     },
     "upsert" : {
-		"userId": "%s"
+		"user_id": "%s"
 		"caption": "%s"
     }
 }
@@ -35,7 +35,7 @@ const instaPostMapping = `
         "caption" : {
           "type" : "text"
         },
-        "userId" : {
+        "user_id" : {
           "type" : "keyword"
         }
       }
