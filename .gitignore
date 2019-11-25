@@ -10,3 +10,4 @@ __pycache__/
 .vscode
 
 node_modules
+frontend/yarn.lock

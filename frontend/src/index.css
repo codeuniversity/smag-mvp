@@ -171,6 +171,17 @@ button {
   margin-left: auto;
   margin-right: auto;
 }
+.Button-center {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+}
+video {
+  padding: 20px;
+}
 /*--------responsive-----------*/
 @media (max-width: 992px) {
   .container {
