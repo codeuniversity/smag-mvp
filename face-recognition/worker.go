@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/codeuniversity/smag-mvp/faces/proto"
 	"github.com/codeuniversity/smag-mvp/imgproxy"
@@ -65,6 +66,12 @@ func (w *Worker) step() error {
 	if err != nil {
 		return err
 	}
+
+	if strings.Trim(job.InternalImageURL, " ") == "" {
+		log.Println("Empty image URL for post", job.PostID)
+		return w.jobQReader.CommitMessages(context.Background(), m)
+	}
+
 	url := w.urlBuilder.GetCropURL(job.X, job.Y, job.Width, job.Height, w.urlBuilder.GetS3Url(w.bucketName, job.InternalImageURL))
 	response, err := w.recognizerClient.RecognizeFaces(context.Background(), &proto.RecognizeRequest{
 		Url: url,

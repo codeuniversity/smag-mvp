@@ -11,7 +11,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	dbutils "github.com/codeuniversity/smag-mvp/db"
-
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
