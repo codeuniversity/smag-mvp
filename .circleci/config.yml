@@ -210,6 +210,34 @@ jobs:
             ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
             ./build_and_upload_image.sh kafka/changestream/insta_post_face-recon-filter/Dockerfile codesmag/face-recon-filter
             ./build_and_upload_image.sh insta_posts_face-detection/Dockerfile.worker codesmag/face-detection-prefilter
+  neo4j_insta_posts-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh neo4j-inserter/insta_posts-inserter/Dockerfile codesmag/neo4j_insta_posts-inserter
+  neo4j_insta_user-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh neo4j-inserter/insta_user-inserter/Dockerfile codesmag/neo4j_insta_user-inserter
+  neo4j_insta_tagged_users-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh neo4j-inserter/tagged_users-inserter/Dockerfile codesmag/neo4j_insta_tagged_users-inserter
+
 
   face_recognition:
     executor: job-runner
@@ -221,6 +249,26 @@ jobs:
           command: |
             ./build_and_upload_image.sh faces/Dockerfile codesmag/face_recognizer faces
             ./build_and_upload_image.sh face-recognition/Dockerfile codesmag/face-recognition-worker
+
+  elasticsearch:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh elasticsearch-build/Dockerfile codesmag/elasticsearch elasticsearch-build
+
+  es_face_indexer:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh es_face-indexer/Dockerfile codesmag/es_face_indexer
 
 workflows:
   version: 2
@@ -311,6 +359,24 @@ workflows:
           filters:
             branches:
               only: master
+      - neo4j_insta_posts-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - neo4j_insta_user-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - neo4j_insta_tagged_users-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
       - grpc-server:
           requires:
             - tests
@@ -334,6 +400,16 @@ workflows:
             branches:
               only: master
       - face_recognition:
+          filters:
+            branches:
+              only: master
+      - elasticsearch:
+          filters:
+            branches:
+              only: master
+      - es_face_indexer:
+          requires:
+            - tests
           filters:
             branches:
               only: master

@@ -15,6 +15,7 @@ import (
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
+	"github.com/jinzhu/gorm/dialects/postgres"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -38,10 +39,10 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
-	db.AutoMigrate(&models.User{})
+	db.AutoMigrate(&models.FaceData{})
 	i.db = db
 
-	b := worker.Builder{}.WithName("insta_postgres_inserter").
+	b := worker.Builder{}.WithName("insta_face_inserter").
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("qReader", qReader.Close).
@@ -77,16 +78,20 @@ func (i *Inserter) runStep() error {
 
 // InsertFaceEncoding inserts the encoded face data into postgres
 func (i *Inserter) InsertFaceEncoding(reconResult *models.FaceRecognitionResult) error {
-
 	p := []*models.FaceData{}
 	for _, face := range reconResult.Faces {
+		encodingJSON, err := json.Marshal(face.Encoding)
+		if err != nil {
+			return err
+		}
+
 		q := &models.FaceData{
 			PostID:   reconResult.PostID,
 			X:        face.X,
 			Y:        face.Y,
 			Width:    face.Width,
 			Height:   face.Height,
-			Encoding: face.Encoding,
+			Encoding: postgres.Jsonb{RawMessage: encodingJSON},
 		}
 		p = append(p, q)
 	}
@@ -98,8 +103,7 @@ func (i *Inserter) insertEncoding(p []*models.FaceData) error {
 	fromEncoding := models.FaceData{}
 
 	for _, face := range p {
-		filter := &models.FaceData{PostID: face.PostID}
-		err := dbutils.CreateOrUpdate(i.db, &fromEncoding, filter, face)
+		err := dbutils.Create(i.db, &fromEncoding, face)
 		if err != nil {
 			return err
 		}

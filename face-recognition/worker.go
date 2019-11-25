@@ -78,7 +78,6 @@ func (w *Worker) step() error {
 	}
 	result := &models.FaceRecognitionResult{PostID: job.PostID}
 	for _, face := range faces {
-		fmt.Println(face)
 		x := int(face.X)
 		y := int(face.Y)
 		width := int(face.Width)

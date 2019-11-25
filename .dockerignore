@@ -15,3 +15,5 @@ Dockerfile
 # PYTHON stuff
 __pycache__/
 *.pyc
+*faces/env/*
+*faces/images/*
