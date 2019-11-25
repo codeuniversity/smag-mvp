@@ -52,7 +52,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaPostMapping, kafkaAddress, changesTopic, groupID, insertPost)
+	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaPostMapping, kafkaAddress, changesTopic, groupID, handlePost)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -60,7 +60,7 @@ func main() {
 	waitUntilClosed()
 }
 
-func insertPost(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
+func handlePost(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
 	currentPost := &post{}
 	err := json.Unmarshal(m.Payload.After, currentPost)
 
