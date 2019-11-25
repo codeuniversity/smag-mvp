@@ -33,11 +33,33 @@ services:
       MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
       MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     command: "server /data"
+  imgproxy:
+    image: darthsim/imgproxy
+    ports:
+      - 8080:8080
+    environment:
+      IMGPROXY_KEY: 5800c215e5cd5110365c390e83752526fa40758efa4dcc406e3a4fdd6e22877c
+      IMGPROXY_SALT: 520f986b998545b4785e0defbc4f3c1203f22de2374a3d53cb7a7fe9fea309c5
+      IMGPROXY_SIGNATURE_SIZE: "32"
+      AWS_ACCESS_KEY_ID: "AKIAIOSFODNN7EXAMPLE"
+      AWS_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+      AWS_REGION: "eu-central-1"
+      IMGPROXY_S3_ENDPOINT: "http://minio:9000"
+      IMGPROXY_USE_S3: "true"
 
+  face_recognizer:
+    build:
+      context: "./faces"
+    ports:
+      - "6666:6666"
+      - "6690:6690"
+    environment:
+      GRPC_PORT: "6666"
+      METRICS_PORT: "6690"
   # GRPC
   # ports: 4000 - 4999
   envoy-proxy:
-    build: 
+    build:
       context: "."
       dockerfile: "./api/envoy-proxy/Dockerfile"
     depends_on:
@@ -91,6 +113,33 @@ services:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_user_inserter"
       KAFKA_INFO_TOPIC: "user_follow_infos"
+
+  insta_face-indexer:
+    build:
+      context: "."
+      dockerfile: "./es_face-indexer/Dockerfile"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "es-face-indexer2"
+      KAFKA_CHANGE_TOPIC: "postgres.public.face_data"
+      ES_HOSTS: "http://es-with-plugin:9200"
+
+  es-with-plugin:
+    build:
+      context: "./elasticsearch-build"
+      dockerfile: "Dockerfile"
+    environment:
+      "discovery.type": "single-node"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  kibana:
+    image: kibana:7.1.0
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=["http://es-with-plugin:9200"]
 
   insta_user_names-filter:
     build:
@@ -267,6 +316,53 @@ services:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
+    
+  # NEO4J
+  neo4j:
+    image: "neo4j:3.5.12"
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  neo4j-followings-inserter:
+    build:
+      context: "."
+      dockerfile: "neo4j-inserter/insta_user-inserter/Dockerfile"
+    depends_on:
+      - "neo4j"
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "neo4j-followings-inserter"
+      KAFKA_INFO_TOPIC: "postgres.public.followings"
+      NEO4j_PASSWORD: "12345678"
+  
+    neo4j-posts-inserter:
+      build:
+        context: "."
+        dockerfile: "neo4j-inserter/posts-inserter/Dockerfile"
+      depends_on:
+        - "neo4j"
+        - "my-kafka"
+      environment:
+        KAFKA_ADDRESS: "my-kafka:9092"
+        KAFKA_GROUPID: "neo4j-followings-inserter"
+        KAFKA_INFO_TOPIC: "postgres.public.posts"
+        NEO4j_PASSWORD: "12345678"
+    
+    neo4j-followings-inserter:
+      build:
+        context: "."
+        dockerfile: "neo4j-inserter/insta_tagged_users-inserter/Dockerfile"
+      depends_on:
+        - "neo4j"
+        - "my-kafka"
+      environment:
+        KAFKA_ADDRESS: "my-kafka:9092"
+        KAFKA_GROUPID: "neo4j-followings-inserter"
+        KAFKA_INFO_TOPIC: "postgres.public.tagged_users"
+        NEO4j_PASSWORD: "12345678"
+
 
   # FILTER
   insta-user-filter:
@@ -299,4 +395,3 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "twitter_user_names-filter"
-

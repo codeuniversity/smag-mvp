@@ -1,6 +1,12 @@
 version: 2.1
 
 executors:
+  test-runner:
+    docker:
+      - image: codesmag/opencv
+    working_directory: /go/src/github.com/{{ORG_NAME}}/{{REPO_NAME}}
+    environment:
+      GO111MODULE: "on"
   job-runner:
     docker:
       - image: circleci/golang:1.13
@@ -9,7 +15,7 @@ executors:
       GO111MODULE: "on"
 jobs:
   tests:
-    executor: job-runner
+    executor: test-runner
     steps:
       - checkout
       # specify any bash command here prefixed with `run: `
@@ -129,7 +135,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh insta_pics-downloader/Dockerfile codesmag/insta_pics_downloader
-  
+
   grpc-server:
     executor: job-runner
     steps:
@@ -138,7 +144,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh api/grpcserver/Dockerfile codesmag/grpc-server
-  
+
   envoy-proxy:
     executor: job-runner
     steps:
@@ -164,6 +170,14 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh aws_service/Dockerfile codesmag/aws_service
+  tools:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh tools/Dockerfile codesmag/tools tools
   twitter_scraper:
     executor: job-runner
     environment:
@@ -173,15 +187,88 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build Docker Image
-          command: docker build -t $TWITTER_SCRAPER_IMAGE twitter_scraper/
+          command: docker build -t codesmag/twitter_scraper twitter_scraper/
       - run:
           name: Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh twitter_scraper/Dockerfile codesmag/twitter_scraper twitter_scraper
+  insta_likes-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh insta_likes-inserter/Dockerfile codesmag/insta_likes-inserter
+  insta_likes-scraper:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
           command: |
-            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            IMAGE_TAG=$(date "+%Y-%m-%dT%H-%M-%S")
-            docker tag $TWITTER_SCRAPER_IMAGE:latest $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
-            docker push $TWITTER_SCRAPER_IMAGE:latest
-            docker push $TWITTER_SCRAPER_IMAGE:$IMAGE_TAG
+            ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
+            ./build_and_upload_image.sh kafka/changestream/insta_post_face-recon-filter/Dockerfile codesmag/face-recon-filter
+            ./build_and_upload_image.sh insta_posts_face-detection/Dockerfile.worker codesmag/face-detection-prefilter
+  neo4j_insta_posts-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh neo4j-inserter/insta_posts-inserter/Dockerfile codesmag/neo4j_insta_posts-inserter
+  neo4j_insta_user-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh neo4j-inserter/insta_user-inserter/Dockerfile codesmag/neo4j_insta_user-inserter
+  neo4j_insta_tagged_users-inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh neo4j-inserter/tagged_users-inserter/Dockerfile codesmag/neo4j_insta_tagged_users-inserter
+
+
+  face_recognition:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh faces/Dockerfile codesmag/face_recognizer faces
+            ./build_and_upload_image.sh face-recognition/Dockerfile codesmag/face-recognition-worker
+
+  elasticsearch:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh elasticsearch-build/Dockerfile codesmag/elasticsearch elasticsearch-build
+
+  es_face_indexer:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh es_face-indexer/Dockerfile codesmag/es_face_indexer
 
 workflows:
   version: 2
@@ -272,6 +359,24 @@ workflows:
           filters:
             branches:
               only: master
+      - neo4j_insta_posts-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - neo4j_insta_user-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - neo4j_insta_tagged_users-inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
       - grpc-server:
           requires:
             - tests
@@ -282,4 +387,29 @@ workflows:
           filters:
             branches:
               only: master
-
+      - tools:
+          filters:
+            branches:
+              only: master
+      - insta_likes-inserter:
+          filters:
+            branches:
+              only: master
+      - insta_likes-scraper:
+          filters:
+            branches:
+              only: master
+      - face_recognition:
+          filters:
+            branches:
+              only: master
+      - elasticsearch:
+          filters:
+            branches:
+              only: master
+      - es_face_indexer:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master

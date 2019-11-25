@@ -1,6 +1,6 @@
 package scraper
 
-type instaPostComments struct {
+type instaPostCommentsInfo struct {
 	Data struct {
 		ShortcodeMedia struct {
 			Typename   string `json:"__typename"`
@@ -10,11 +10,12 @@ type instaPostComments struct {
 				Height int `json:"height"`
 				Width  int `json:"width"`
 			} `json:"dimensions"`
-			GatingInfo           interface{} `json:"gating_info"`
-			FactCheckInformation interface{} `json:"fact_check_information"`
-			MediaPreview         string      `json:"media_preview"`
-			DisplayURL           string      `json:"display_url"`
-			DisplayResources     []struct {
+			GatingInfo             interface{} `json:"gating_info"`
+			FactCheckOverallRating interface{} `json:"fact_check_overall_rating"`
+			FactCheckInformation   interface{} `json:"fact_check_information"`
+			MediaPreview           string      `json:"media_preview"`
+			DisplayURL             string      `json:"display_url"`
+			DisplayResources       []struct {
 				Src          string `json:"src"`
 				ConfigWidth  int    `json:"config_width"`
 				ConfigHeight int    `json:"config_height"`
@@ -23,19 +24,7 @@ type instaPostComments struct {
 			IsVideo               bool   `json:"is_video"`
 			TrackingToken         string `json:"tracking_token"`
 			EdgeMediaToTaggedUser struct {
-				Edges []struct {
-					Node struct {
-						User struct {
-							FullName      string `json:"full_name"`
-							ID            string `json:"id"`
-							IsVerified    bool   `json:"is_verified"`
-							ProfilePicURL string `json:"profile_pic_url"`
-							Username      string `json:"username"`
-						} `json:"user"`
-						X float64 `json:"x"`
-						Y float64 `json:"y"`
-					} `json:"node"`
-				} `json:"edges"`
+				Edges []interface{} `json:"edges"`
 			} `json:"edge_media_to_tagged_user"`
 			EdgeMediaToCaption struct {
 				Edges []struct {
@@ -49,8 +38,8 @@ type instaPostComments struct {
 			EdgeMediaToParentComment struct {
 				Count    int `json:"count"`
 				PageInfo struct {
-					HasNextPage bool        `json:"has_next_page"`
-					EndCursor   interface{} `json:"end_cursor"`
+					HasNextPage bool   `json:"has_next_page"`
+					EndCursor   string `json:"end_cursor"`
 				} `json:"page_info"`
 				Edges []struct {
 					Node struct {
@@ -109,18 +98,12 @@ type instaPostComments struct {
 			EdgeMediaToSponsorUser struct {
 				Edges []interface{} `json:"edges"`
 			} `json:"edge_media_to_sponsor_user"`
-			Location struct {
-				ID            string `json:"id"`
-				HasPublicPage bool   `json:"has_public_page"`
-				Name          string `json:"name"`
-				Slug          string `json:"slug"`
-				AddressJSON   string `json:"address_json"`
-			} `json:"location"`
-			ViewerHasLiked             bool `json:"viewer_has_liked"`
-			ViewerHasSaved             bool `json:"viewer_has_saved"`
-			ViewerHasSavedToCollection bool `json:"viewer_has_saved_to_collection"`
-			ViewerInPhotoOfYou         bool `json:"viewer_in_photo_of_you"`
-			ViewerCanReshare           bool `json:"viewer_can_reshare"`
+			Location                   interface{} `json:"location"`
+			ViewerHasLiked             bool        `json:"viewer_has_liked"`
+			ViewerHasSaved             bool        `json:"viewer_has_saved"`
+			ViewerHasSavedToCollection bool        `json:"viewer_has_saved_to_collection"`
+			ViewerInPhotoOfYou         bool        `json:"viewer_in_photo_of_you"`
+			ViewerCanReshare           bool        `json:"viewer_can_reshare"`
 			Owner                      struct {
 				ID                string `json:"id"`
 				IsVerified        bool   `json:"is_verified"`
@@ -138,6 +121,47 @@ type instaPostComments struct {
 			EdgeWebMediaToRelatedMedia struct {
 				Edges []interface{} `json:"edges"`
 			} `json:"edge_web_media_to_related_media"`
+		} `json:"shortcode_media"`
+	} `json:"data"`
+	Status string `json:"status"`
+}
+
+type instaPostComments struct {
+	Data struct {
+		ShortcodeMedia struct {
+			EdgeMediaToParentComment struct {
+				Count    int `json:"count"`
+				PageInfo struct {
+					HasNextPage bool   `json:"has_next_page"`
+					EndCursor   string `json:"end_cursor"`
+				} `json:"page_info"`
+				Edges []struct {
+					Node struct {
+						ID              string `json:"id"`
+						Text            string `json:"text"`
+						CreatedAt       int    `json:"created_at"`
+						DidReportAsSpam bool   `json:"did_report_as_spam"`
+						Owner           struct {
+							ID            string `json:"id"`
+							IsVerified    bool   `json:"is_verified"`
+							ProfilePicURL string `json:"profile_pic_url"`
+							Username      string `json:"username"`
+						} `json:"owner"`
+						ViewerHasLiked bool `json:"viewer_has_liked"`
+						EdgeLikedBy    struct {
+							Count int `json:"count"`
+						} `json:"edge_liked_by"`
+						EdgeThreadedComments struct {
+							Count    int `json:"count"`
+							PageInfo struct {
+								HasNextPage bool        `json:"has_next_page"`
+								EndCursor   interface{} `json:"end_cursor"`
+							} `json:"page_info"`
+							Edges []interface{} `json:"edges"`
+						} `json:"edge_threaded_comments"`
+					} `json:"node"`
+				} `json:"edges"`
+			} `json:"edge_media_to_parent_comment"`
 		} `json:"shortcode_media"`
 	} `json:"data"`
 	Status string `json:"status"`

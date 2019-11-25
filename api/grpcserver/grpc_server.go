@@ -82,7 +82,11 @@ func (s *GrpcServer) Listen() {
 //GetAllUsersLikeUsername returns a List of users that are like the given username
 func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.UserNameRequest) (*proto.UserSearchResponse, error) {
 	response := &proto.UserSearchResponse{}
-	rows, err := s.db.Query("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE LOWER(user_name) LIKE LOWER($1)", fmt.Sprintf("%%%s%%", username.UserName))
+	rows, err := s.db.Query(`SELECT id,  COALESCE(user_name, '') as user_name, 
+										COALESCE(real_name, '') as real_name,
+										COALESCE(bio, '') as bio, 
+										COALESCE(avatar_url, '') as avatar_url 
+										FROM users WHERE LOWER(user_name) LIKE LOWER($1)`, fmt.Sprintf("%%%s%%", username.UserName))
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +111,11 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	u := &proto.User{}
 	log.Println(username)
 
-	err := s.db.QueryRow("SELECT id, user_name, real_name, bio, avatar_url FROM users WHERE user_name = $1", username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+	err := s.db.QueryRow(`SELECT id, COALESCE(user_name, '') as user_name, 
+									COALESCE(real_name, '') as real_name,
+									COALESCE(bio, '') as bio, 
+									COALESCE(avatar_url, '') as avatar_url
+									FROM users WHERE user_name = $1`, username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -154,7 +162,49 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc 
 func (s *GrpcServer) GetInstaPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
 	res := &proto.InstaPostsResponse{}
 
-	rows, err := s.db.Query("SELECT id, post_id, short_code, caption, internal_picture_url FROM posts WHERE user_id=$1", request.UserId)
+	rows, err := s.db.Query(`SELECT id, COALESCE(post_id, '') as post_id, 
+										COALESCE(short_code, '') as short_code, 
+										COALESCE(caption, '') as caption, 
+										COALESCE(internal_picture_url, '') as internal_picture_url
+										FROM posts WHERE user_id=$1`, request.UserId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	res.UserId = request.UserId
+	for rows.Next() {
+		post := proto.InstaPost{}
+
+		rows.Scan(&post.Id, &post.PostId, &post.ShortCode, &post.Caption, &post.ImgUrl)
+
+		if post.ImgUrl != "" {
+			post.ImgUrl, err = s.getURLForPost(post.ImgUrl)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		res.InstaPosts = append(res.InstaPosts, &post)
+	}
+
+	return res, nil
+}
+
+//GetTaggedPostsWithUserId returns all Posts the given User is tagged on
+func (s *GrpcServer) GetTaggedPostsWithUserId(_ context.Context, request *proto.UserIdRequest) (*proto.InstaPostsResponse, error) {
+	res := &proto.InstaPostsResponse{}
+
+	rows, err := s.db.Query(`SELECT posts.id,
+										COALESCE(posts.post_id, '') as post_id,
+										COALESCE(posts.short_code, '') as short_code, 
+										COALESCE(posts.caption, '') as caption, 
+										COALESCE(posts.internal_picture_url, '') as internal_picture_url
+										FROM posts  
+										JOIN post_tagged_users 
+										ON posts.id=post_tagged_users.post_id 
+										WHERE post_tagged_users.user_id=$1`, request.UserId)
+
 	if err != nil {
 		return nil, err
 	}

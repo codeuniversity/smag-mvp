@@ -3,6 +3,8 @@
 
 - [About](#about)
 - [Architectural overview](#architectural-overview)
+  - [Api](#api)
+  - [Postgres DB](#postgres-db)
 - [Requirements](#requirements)
 - [Getting started](#getting-started)
   - [scraper in docker](#scraper-in-docker)
@@ -15,6 +17,12 @@ The results will be available via an API, used for some kind of art exhibition.
 
 ## Architectural overview
 You can find a overview about our architecture on this [miro board](https://miro.com/app/board/o9J_kw7a-qM=/)
+
+### Api
+see details [here](api/README.md)
+
+### Postgres DB
+see details [here](db/README.md)
 
 ## Requirements
 

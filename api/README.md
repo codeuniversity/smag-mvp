@@ -30,6 +30,8 @@
     > Queries the database for all users that have a similar usenames and returns array of user
 - `getInstaPostssWithUserid(UserIdRequest) InstaPostsResponse`
     > GetInstaPostsWithUserId takes the User id and returns all Instagram Posts of a User
+- `getTaggedPostsWithUserId(UserIdRequest) InstaPostsResponse`
+    > GetTaggedPostsWithUserId returns all Posts the given User is tagged on
 
 ## Testing
 1. `docker-compose up`

@@ -110,6 +110,10 @@ func (d *Downloader) downloadImgToS3(job models.PostDownloadJob) (path string, e
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("couldn't download: %d %s", response.StatusCode, response.Status)
+	}
+
 	path = randSeq()
 	n, err := d.minioClient.PutObject(d.bucketName, path, response.Body, response.ContentLength, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
@@ -117,7 +121,6 @@ func (d *Downloader) downloadImgToS3(job models.PostDownloadJob) (path string, e
 	}
 	log.Println("downloaded", job.PictureURL, "size:", n, "to", path)
 	return path, nil
-
 }
 
 func (d *Downloader) updatePost(postID int, internalPath string) error {
