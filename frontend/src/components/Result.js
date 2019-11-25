@@ -60,13 +60,11 @@ export class Result extends React.Component {
 
     return (
       <div className="body">
-        <div className="container">
-          <div className="column">
-            <BackButton />
-          </div>
+        <div className="container column">
+          <BackButton />
         </div>
         <div className="container-card">
-          <div className="column-one-third"></div>
+          <div className="column-one-third" />
           <div className="column-one-third">
             <div className="box">
               <div>
@@ -84,11 +82,11 @@ export class Result extends React.Component {
               <div className="body-text">{user.bio}</div>
             </div>
           </div>
-          <div className="column-one-third"></div>
+          <div className="column-one-third" />
         </div>
 
         <div className="container-plattforms">
-          <div className="column-one-sixed"></div>
+          <div className="column-one-sixed" />
           <div className="column-four-sixed">
             <div className="social-icon-box">
               <div className="sub-headline">
@@ -113,17 +111,17 @@ export class Result extends React.Component {
               </div>
             </div>
           </div>
-          <div className="column-one-sixed"></div>
+          <div className="column-one-sixed" />
         </div>
 
         <div className="container-plattforms">
-          <div className="column-one-sixed"></div>
+          <div className="column-one-sixed" />
           <div className="column-four-sixed-posts">
             {posts.map(post => (
               <IGPost key={post.shortcode} post={post} />
             ))}
           </div>
-          <div className="column-one-sixed"></div>
+          <div className="column-one-sixed" />
         </div>
       </div>
     );
