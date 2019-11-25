@@ -55,22 +55,16 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 
 func (i *Inserter) runStep() error {
 	m, err := i.kReader.FetchMessage(context.Background())
-
 	if err != nil {
 		return err
 	}
 
 	changeMessage := &changestream.ChangeMessage{}
-
-	err = json.Unmarshal(m.Value, changeMessage)
-
-	if err != nil {
+	if err := json.Unmarshal(m.Value, changeMessage); err != nil {
 		return err
 	}
 
-	err = i.insertFunc(changeMessage, i.esClient)
-
-	if err != nil {
+	if err := i.insertFunc(changeMessage, i.esClient); err != nil {
 		return err
 	}
 
@@ -90,10 +84,10 @@ func (i *Inserter) initializeElasticSearch(esHosts []string) *elasticsearch.Clie
 		Addresses: hosts,
 	}
 	client, err := elasticsearch.NewClient(cfg)
-
 	if err != nil {
 		panic(err)
 	}
+
 	return client
 }
 
