@@ -5,21 +5,23 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"time"
+
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/segmentio/kafka-go"
-	"io/ioutil"
-	"log"
-	"time"
 )
 
 const (
 	elasticProtocol = "http://%s"
 )
 
+// Inserter is the type definition of the esInserter
 type Inserter struct {
 	*worker.Worker
 
@@ -29,8 +31,10 @@ type Inserter struct {
 	insertFunc InserterFunc
 }
 
+// InserterFunc is the type for the functions which will insert data into elasticsearch
 type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
 
+// New return a set up esInserter
 func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
