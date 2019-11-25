@@ -31,7 +31,7 @@ type Inserter struct {
 // InserterFunc is the type for the functions which will insert data into elasticsearch
 type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
 
-// New return a set up esInserter
+// New returns a set up esInserter
 func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
