@@ -42,7 +42,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	i.kReader = kf.NewReader(readerConfig)
 	i.insertFunc = inserterFunc
 
-	i.esClient = i.initializeElasticSearch(esHosts)
+	i.esClient = initializeElasticSearch(esHosts)
 
 	i.Worker = worker.Builder{}.WithName("elasticsearch-inserter").
 		WithWorkStep(i.runStep).
@@ -78,7 +78,7 @@ func (i *Inserter) runStep() error {
 	return i.kReader.CommitMessages(context.Background(), m)
 }
 
-func (i *Inserter) initializeElasticSearch(esHosts []string) *elasticsearch.Client {
+func initializeElasticSearch(esHosts []string) *elasticsearch.Client {
 
 	var hosts []string
 	for _, address := range esHosts {
