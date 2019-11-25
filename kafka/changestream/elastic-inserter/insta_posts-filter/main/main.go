@@ -79,7 +79,7 @@ func handlePost(m *changestream.ChangeMessage, client *elasticsearch.Client) err
 			return err
 		}
 
-		if previousPost.Caption != previousPost.Caption {
+		if previousPost.Caption != currentPost.Caption {
 			return upsertPost(currentPost, client)
 		}
 	}
