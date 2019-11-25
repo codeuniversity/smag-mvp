@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/codeuniversity/smag-mvp/elastic"
 	"io/ioutil"
 	"log"
 	"time"
@@ -15,10 +16,6 @@ import (
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/segmentio/kafka-go"
-)
-
-const (
-	elasticProtocol = "http://%s"
 )
 
 // Inserter is the type definition of the esInserter
@@ -42,7 +39,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	i.kReader = kf.NewReader(readerConfig)
 	i.insertFunc = inserterFunc
 
-	i.esClient = initializeElasticSearch(esHosts)
+	i.esClient = elastic.InitializeElasticSearch(esHosts)
 
 	i.Worker = worker.Builder{}.WithName("elasticsearch-inserter").
 		WithWorkStep(i.runStep).
@@ -76,25 +73,6 @@ func (i *Inserter) runStep() error {
 
 	log.Println("Inserted")
 	return i.kReader.CommitMessages(context.Background(), m)
-}
-
-func initializeElasticSearch(esHosts []string) *elasticsearch.Client {
-
-	var hosts []string
-	for _, address := range esHosts {
-		url := fmt.Sprintf(elasticProtocol, address)
-		hosts = append(hosts, url)
-	}
-
-	cfg := elasticsearch.Config{
-		Addresses: hosts,
-	}
-	client, err := elasticsearch.NewClient(cfg)
-
-	if err != nil {
-		panic(err)
-	}
-	return client
 }
 
 func (i *Inserter) createIndex(esIndex, esMapping string) error {
