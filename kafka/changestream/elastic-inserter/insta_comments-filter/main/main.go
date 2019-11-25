@@ -28,14 +28,34 @@ const instaCommentUpsert = `
 }
 `
 
+const instaCommentsMapping = `
+{
+    "mappings" : {
+      "properties" : {
+        "comment" : {
+          "type" : "text"
+        },
+        "commentId" : {
+          "type" : "keyword"
+        },
+        "postId" : {
+          "type" : "keyword"
+        }
+      }
+    }
+  }
+`
+
+const esIndex = "insta_comments"
+
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.posts")
 
-	elasticAddress := utils.MustGetStringFromEnv("ELASTIC_SEARCH_ADDRESS")
+	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(elasticAddress, kafkaAddress, changesTopic, groupID, insertComment)
+	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaCommentsMapping, kafkaAddress, changesTopic, groupID, insertComment)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -61,7 +81,7 @@ func insertComment(m *changestream.ChangeMessage, client *elasticsearch.Client) 
 
 func upsertComment(comment *comment, client *elasticsearch.Client) error {
 	instaComment := fmt.Sprintf(instaCommentUpsert, comment.Comment, comment.PostId, comment.Comment)
-	response, err := client.Update("insta_comments", strconv.Itoa(comment.ID), strings.NewReader(instaComment))
+	response, err := client.Update(esIndex, strconv.Itoa(comment.ID), strings.NewReader(instaComment))
 
 	if err != nil {
 		return err
