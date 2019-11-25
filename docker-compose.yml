@@ -114,6 +114,33 @@ services:
       KAFKA_GROUPID: "insta_user_inserter"
       KAFKA_INFO_TOPIC: "user_follow_infos"
 
+  insta_face-indexer:
+    build:
+      context: "."
+      dockerfile: "./es_face-indexer/Dockerfile"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "es-face-indexer2"
+      KAFKA_CHANGE_TOPIC: "postgres.public.face_data"
+      ES_HOSTS: "http://es-with-plugin:9200"
+
+  es-with-plugin:
+    build:
+      context: "./elasticsearch-build"
+      dockerfile: "Dockerfile"
+    environment:
+      "discovery.type": "single-node"
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+
+  kibana:
+    image: kibana:7.1.0
+    ports:
+      - 5601:5601
+    environment:
+      - ELASTICSEARCH_HOSTS=["http://es-with-plugin:9200"]
+
   insta_user_names-filter:
     build:
       context: "."
@@ -289,6 +316,53 @@ services:
       - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
+    
+  # NEO4J
+  neo4j:
+    image: "neo4j:3.5.12"
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+
+  neo4j-followings-inserter:
+    build:
+      context: "."
+      dockerfile: "neo4j-inserter/insta_user-inserter/Dockerfile"
+    depends_on:
+      - "neo4j"
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "neo4j-followings-inserter"
+      KAFKA_INFO_TOPIC: "postgres.public.followings"
+      NEO4j_PASSWORD: "12345678"
+  
+    neo4j-posts-inserter:
+      build:
+        context: "."
+        dockerfile: "neo4j-inserter/posts-inserter/Dockerfile"
+      depends_on:
+        - "neo4j"
+        - "my-kafka"
+      environment:
+        KAFKA_ADDRESS: "my-kafka:9092"
+        KAFKA_GROUPID: "neo4j-followings-inserter"
+        KAFKA_INFO_TOPIC: "postgres.public.posts"
+        NEO4j_PASSWORD: "12345678"
+    
+    neo4j-followings-inserter:
+      build:
+        context: "."
+        dockerfile: "neo4j-inserter/insta_tagged_users-inserter/Dockerfile"
+      depends_on:
+        - "neo4j"
+        - "my-kafka"
+      environment:
+        KAFKA_ADDRESS: "my-kafka:9092"
+        KAFKA_GROUPID: "neo4j-followings-inserter"
+        KAFKA_INFO_TOPIC: "postgres.public.tagged_users"
+        NEO4j_PASSWORD: "12345678"
+
 
   # FILTER
   insta-user-filter:
