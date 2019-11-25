@@ -140,13 +140,7 @@ func (d *Detector) analyzeForFaces(localImagePath string, postID int) error {
 	faceReconJob.PostID = postID
 	faceReconJob.InternalImageURL = localImagePath
 
-	if len(rects) == 1 {
-		r := rects[0]
-		faceReconJob.X = r.Bounds().Min.X
-		faceReconJob.Y = r.Bounds().Min.Y
-		faceReconJob.Width = r.Bounds().Dx()
-		faceReconJob.Height = r.Bounds().Dy()
-	} else {
+	if len(rects) >= 1 {
 		faceReconJob.X = 0
 		faceReconJob.Y = 0
 		faceReconJob.Width = picture.Bounds().Dx()
