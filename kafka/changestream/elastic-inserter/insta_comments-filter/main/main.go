@@ -35,9 +35,6 @@ const instaCommentsMapping = `
         "comment" : {
           "type" : "text"
         },
-        "commentId" : {
-          "type" : "keyword"
-        },
         "postId" : {
           "type" : "keyword"
         }
