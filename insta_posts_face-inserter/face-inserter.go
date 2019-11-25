@@ -42,7 +42,7 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter
 	db.AutoMigrate(&models.FaceData{})
 	i.db = db
 
-	b := worker.Builder{}.WithName("insta_postgres_inserter").
+	b := worker.Builder{}.WithName("insta_face_inserter").
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("qReader", qReader.Close).
@@ -78,7 +78,6 @@ func (i *Inserter) runStep() error {
 
 // InsertFaceEncoding inserts the encoded face data into postgres
 func (i *Inserter) InsertFaceEncoding(reconResult *models.FaceRecognitionResult) error {
-
 	p := []*models.FaceData{}
 	for _, face := range reconResult.Faces {
 		encodingJSON, err := json.Marshal(face.Encoding)
@@ -104,8 +103,7 @@ func (i *Inserter) insertEncoding(p []*models.FaceData) error {
 	fromEncoding := models.FaceData{}
 
 	for _, face := range p {
-		filter := &models.FaceData{PostID: face.PostID}
-		err := dbutils.CreateOrUpdate(i.db, &fromEncoding, filter, face)
+		err := dbutils.Create(i.db, &fromEncoding, face)
 		if err != nil {
 			return err
 		}

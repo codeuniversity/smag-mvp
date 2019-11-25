@@ -8,6 +8,7 @@ require (
 	github.com/antchfx/xmlquery v1.1.0 // indirect
 	github.com/antchfx/xpath v1.1.0 // indirect
 	github.com/aws/aws-sdk-go v1.25.16
+	github.com/elastic/go-elasticsearch/v7 v7.4.1
 	github.com/go-ini/ini v1.51.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/gocolly/colly v1.2.0
