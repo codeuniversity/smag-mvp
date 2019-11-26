@@ -9,7 +9,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 
 	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
-	indexer "github.com/codeuniversity/smag-mvp/elastic/indexer/insta_face"
+	indexer "github.com/codeuniversity/smag-mvp/elastic/indexer/insta_faces"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
