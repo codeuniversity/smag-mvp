@@ -8,8 +8,8 @@ import (
 
 	"github.com/elastic/go-elasticsearch/v7"
 
+	esIndexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	esInserter "github.com/codeuniversity/smag-mvp/elastic/inserter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
@@ -24,7 +24,7 @@ func main() {
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"http://localhost:9201"})
 
 	// create and run esInserter
-	i := esInserter.New(esHosts, esIndex, instaUserMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
+	i := esIndexer.New(esHosts, esIndex, instaUserMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
