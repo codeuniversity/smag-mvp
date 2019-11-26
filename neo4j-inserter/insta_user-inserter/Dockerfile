@@ -4,7 +4,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o neo4j_user-inserter kafka-connect/neo4j-inserter/tagged_users-inserter/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o neo4j_user-inserter neo4j-inserter/insta_user-inserter/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates

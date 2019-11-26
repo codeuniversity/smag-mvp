@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/codeuniversity/smag-mvp/kafka-connect/neo4j-inserter"
+	"github.com/codeuniversity/smag-mvp/neo4j-inserter"
 
 	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
