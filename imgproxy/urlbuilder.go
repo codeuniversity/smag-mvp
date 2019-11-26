@@ -41,7 +41,7 @@ func New(proxyAddress, key, salt string) (*URLBuilder, error) {
 func (b *URLBuilder) GetCropURL(x, y, width, height int, sourceURL string) string {
 	encodedURL := base64.RawURLEncoding.EncodeToString([]byte(sourceURL))
 	gravity := fmt.Sprintf("nowe:%d:%d", x, y)
-	extension := "png"
+	extension := "jpg"
 	path := fmt.Sprintf("/crop:%d:%d:%s/%s.%s", width, height, gravity, encodedURL, extension)
 
 	mac := hmac.New(sha256.New, b.keyBin)

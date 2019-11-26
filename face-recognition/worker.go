@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/codeuniversity/smag-mvp/faces/proto"
 	"github.com/codeuniversity/smag-mvp/imgproxy"
@@ -17,38 +18,32 @@ import (
 // Worker reads from the face recognition kafka queue,
 // calls the face_recognition grpc service and writes the found faces into another queue
 type Worker struct {
-	jobQReader       *kgo.Reader
-	resultQWriter    *kgo.Writer
-	recognizerClient proto.FaceRecognizerClient
-	urlBuilder       *imgproxy.URLBuilder
-	bucketName       string
+	jobQReader            *kgo.Reader
+	resultQWriter         *kgo.Writer
+	faceRecognizerAddress string
+	urlBuilder            *imgproxy.URLBuilder
+	bucketName            string
 	*worker.Worker
 }
 
 // New returns an intialized worker
 func New(jobQReader *kgo.Reader, resultQWriter *kgo.Writer, faceRecognizerAddress string, pictureBucketName string, imgProxyAddress, imgProxyKey, imgProxySalt string) *Worker {
-	con, err := grpc.Dial(faceRecognizerAddress, grpc.WithInsecure())
-	if err != nil {
-		panic(err)
-	}
-	client := proto.NewFaceRecognizerClient(con)
 	urlBuilder, err := imgproxy.New(imgProxyAddress, imgProxyKey, imgProxySalt)
 	if err != nil {
 		panic(err)
 	}
 	w := &Worker{
-		jobQReader:       jobQReader,
-		resultQWriter:    resultQWriter,
-		recognizerClient: client,
-		urlBuilder:       urlBuilder,
-		bucketName:       pictureBucketName,
+		jobQReader:            jobQReader,
+		resultQWriter:         resultQWriter,
+		urlBuilder:            urlBuilder,
+		bucketName:            pictureBucketName,
+		faceRecognizerAddress: faceRecognizerAddress,
 	}
 
 	w.Worker = worker.Builder{}.WithName("face_recognition_worker").
 		WithWorkStep(w.step).
 		AddShutdownHook("jobQReader", jobQReader.Close).
 		AddShutdownHook("resultQWriter", resultQWriter.Close).
-		AddShutdownHook("face_recognizer_connection", con.Close).
 		MustBuild()
 
 	return w
@@ -65,8 +60,22 @@ func (w *Worker) step() error {
 	if err != nil {
 		return err
 	}
-	url := w.urlBuilder.GetCropURL(job.X, job.Y, job.Width, job.Height, w.urlBuilder.GetS3Url(w.bucketName, job.InternalImageURL))
-	response, err := w.recognizerClient.RecognizeFaces(context.Background(), &proto.RecognizeRequest{
+
+	if strings.Trim(job.InternalImageURL, " ") == "" {
+		log.Println("Empty image URL for post", job.PostID)
+		return w.jobQReader.CommitMessages(context.Background(), m)
+	}
+
+	con, err := grpc.Dial(w.faceRecognizerAddress, grpc.WithInsecure())
+	if err != nil {
+		return err
+	}
+	defer con.Close()
+
+	client := proto.NewFaceRecognizerClient(con)
+
+	url := w.urlBuilder.GetCropURL(0, 0, 50000, 50000, w.urlBuilder.GetS3Url(w.bucketName, job.InternalImageURL))
+	response, err := client.RecognizeFaces(context.Background(), &proto.RecognizeRequest{
 		Url: url,
 	})
 	if err != nil {

@@ -12,38 +12,38 @@ import (
 	"strings"
 )
 
-const instaCommentUpsert = `
+const instaPostUpsert = `
 	{
     "script" : {
-        "source": "ctx._source.comment = params.comment",
+        "source": "ctx._source.caption = params.caption",
         "lang": "painless",
         "params" : {
-            "comment" : %s
+            "caption" : %s
         }
     },
     "upsert" : {
-        "post_id" : "%s",
-		"comment": "%s"
+		"user_id": "%s"
+		"caption": "%s"
     }
 }
 `
 
-const instaCommentsMapping = `
-{
+const instaPostMapping = `
+	{
     "mappings" : {
       "properties" : {
-        "comment" : {
+        "caption" : {
           "type" : "text"
         },
-        "post_id" : {
+        "user_id" : {
           "type" : "keyword"
         }
       }
     }
-  }
+}
 `
 
-const esIndex = "insta_comments"
+const esIndex = "insta_posts"
 
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
@@ -52,7 +52,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaCommentsMapping, kafkaAddress, changesTopic, groupID, handleComment)
+	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaPostMapping, kafkaAddress, changesTopic, groupID, handlePost)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -60,9 +60,9 @@ func main() {
 	waitUntilClosed()
 }
 
-func handleComment(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
-	comment := &comment{}
-	err := json.Unmarshal(m.Payload.After, comment)
+func handlePost(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
+	currentPost := &post{}
+	err := json.Unmarshal(m.Payload.After, currentPost)
 
 	if err != nil {
 		return err
@@ -70,15 +70,32 @@ func handleComment(m *changestream.ChangeMessage, client *elasticsearch.Client) 
 
 	switch m.Payload.Op {
 	case "r", "c":
-		return upsertComment(comment, client)
+		return upsertPost(currentPost, client)
+	case "u":
+		previousPost := &post{}
+		err := json.Unmarshal(m.Payload.Before, previousPost)
+
+		if err != nil {
+			return err
+		}
+
+		if previousPost.Caption != currentPost.Caption {
+			return upsertPost(currentPost, client)
+		}
 	}
 
 	return nil
 }
 
-func upsertComment(comment *comment, client *elasticsearch.Client) error {
-	instaComment := fmt.Sprintf(instaCommentUpsert, comment.Comment, comment.PostId, comment.Comment)
-	response, err := client.Update(esIndex, strconv.Itoa(comment.ID), strings.NewReader(instaComment))
+type post struct {
+	ID      int    `json:"id"`
+	UserId  string `json:"user_id"`
+	Caption string `json:"caption"`
+}
+
+func upsertPost(post *post, client *elasticsearch.Client) error {
+	instaComment := fmt.Sprintf(instaPostUpsert, post.Caption, post.UserId, post.Caption)
+	response, err := client.Update("insta_comments", strconv.Itoa(post.ID), strings.NewReader(instaComment))
 
 	if err != nil {
 		return err
@@ -88,10 +105,4 @@ func upsertComment(comment *comment, client *elasticsearch.Client) error {
 		return fmt.Errorf("FindPostId Update Document Failed StatusCode: %d", response.StatusCode)
 	}
 	return nil
-}
-
-type comment struct {
-	ID      int    `json:"id"`
-	PostId  string `json:"post_id"`
-	Comment string `json:"comment_text"`
 }

@@ -8,6 +8,9 @@ import string
 
 def recognize(url):
     image = download_and_read_image(url)
+    if image is None:
+        return []
+
     locations = face_recognition.face_locations(image)
     encodings = face_recognition.face_encodings(
         image, known_face_locations=locations)
@@ -43,8 +46,8 @@ def download_and_read_image(url):
         response = requests.get(url, stream=True)
 
         if not response.ok:
-            print(response)
-            raise Exception("coudln't download file: ", response)
+            print("failed to get file with name: " + file_name)
+            return None
 
         for block in response.iter_content(1024):
             if not block:
