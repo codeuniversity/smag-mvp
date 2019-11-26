@@ -5,7 +5,6 @@ The frontend for Social Record
 
 ## Table of content
 
-- [Social Record FrontEnd](#social-record-frontend)
   - [Table of content](#table-of-content)
   - [About](#about)
   - [Getting started](#getting-started)
@@ -24,27 +23,27 @@ Due to privacy reasons it is not planned to launch Social Record in the public w
 
 **1. clone repo**
 
-`[https://github.com/codeuniversity/smag-mvp.git] (https://github.com/codeuniversity/smag-mvp.git)`
+[https://github.com/codeuniversity/smag-mvp.git] (https://github.com/codeuniversity/smag-mvp.git)
 
-**2.Switch to the FrontEnd folder**
+**2. Switch to the FrontEnd folder**
 
 `cd frontend`
 
-**3.Install all the npm packages. Type the following command to install all npm packages**
+**3. Install all the npm packages. Type the following command to install all npm packages**
 
 `npm install`
 
-**4.In order to run the application in development mode type the following command**
+**4. In order to run the application in development mode type the following command**
 
 `npm start`
 
 The application runs on localhost:3000
 
-**5.When you’re ready to deploy to production you can create a minified bundle**
+**5. When you’re ready to deploy to production you can create a minified bundle**
 
 `npm run build`
 
-**6.To connect to the Social Record database you need to connect the node.js server to the Social Record kubernetes cluster. You can also run the application locaon a local test environment.** 
+**6. To connect to the Social Record database you need to connect the node.js server to the Social Record kubernetes cluster. You can also run the application locaon a local test environment.** 
 
 1. Connect to the Kubernetes cluster of Social Records 
 2. Run kubectl: ```kubectl get pods```
@@ -62,6 +61,8 @@ The application runs on localhost:3000
 6. **IGPost** component: This component displays the instagram post in the Result component. 
 7. **BackButton** component: This component displays a button in the Result component to go back the App component
 8. **camera-feed** component: This component displays the camera functionality in the Start component. 
+
+All styles are defined in the `index.css`
 
 ## Usage
 
@@ -85,7 +86,7 @@ The default address for the database is localhost. If you want to change that si
 
 
 ## Testing
-To test Social Record on a local machine you can follow the guideline in the [general documentation](https://github.com/codeuniversity/smag-mvp)
+To test Social Record on a local machine you can follow the guideline in the [general documentation](https://github.com/codeuniversity/smag-mvp).
 
 ## Collaboration
 
