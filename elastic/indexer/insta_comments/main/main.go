@@ -3,14 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"strconv"
-	"strings"
-
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
+	"github.com/codeuniversity/smag-mvp/elastic"
+	es_indexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/elastic/go-elasticsearch/v7"
+	"strconv"
+	"strings"
 )
 
 const instaCommentUpsert = `
@@ -29,23 +29,6 @@ const instaCommentUpsert = `
 }
 `
 
-const instaCommentsMapping = `
-{
-    "mappings" : {
-      "properties" : {
-        "comment" : {
-          "type" : "text"
-        },
-        "post_id" : {
-          "type" : "keyword"
-        }
-      }
-    }
-  }
-`
-
-const esIndex = "insta_comments"
-
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
@@ -53,7 +36,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaCommentsMapping, kafkaAddress, changesTopic, groupID, indexComment)
+	elasticInserter := es_indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -79,7 +62,7 @@ func indexComment(client *elasticsearch.Client, m *changestream.ChangeMessage) e
 
 func upsertComment(comment *comment, client *elasticsearch.Client) error {
 	instaComment := fmt.Sprintf(instaCommentUpsert, comment.Comment, comment.PostID, comment.Comment)
-	response, err := client.Update(esIndex, strconv.Itoa(comment.ID), strings.NewReader(instaComment))
+	response, err := client.Update(elastic.CommentsIndex, strconv.Itoa(comment.ID), strings.NewReader(instaComment))
 
 	if err != nil {
 		return err
