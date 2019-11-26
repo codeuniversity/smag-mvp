@@ -218,7 +218,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh neo4j-inserter/insta_posts-inserter/Dockerfile codesmag/neo4j_insta_posts-inserter
+            ./build_and_upload_image.sh kafka-connect/neo4j-inserter/insta_posts-inserter/Dockerfile codesmag/neo4j_insta_posts-inserter
   neo4j_insta_user-inserter:
     executor: job-runner
     steps:
@@ -227,7 +227,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh neo4j-inserter/insta_user-inserter/Dockerfile codesmag/neo4j_insta_user-inserter
+            ./build_and_upload_image.sh kafka-connect/neo4j-inserter/insta_user-inserter/Dockerfile codesmag/neo4j_insta_user-inserter
   neo4j_insta_tagged_users-inserter:
     executor: job-runner
     steps:
@@ -236,7 +236,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh neo4j-inserter/tagged_users-inserter/Dockerfile codesmag/neo4j_insta_tagged_users-inserter
+            ./build_and_upload_image.sh kafka-connect/neo4j-inserter/tagged_users-inserter/Dockerfile codesmag/neo4j_insta_tagged_users-inserter
 
 
   face_recognition:

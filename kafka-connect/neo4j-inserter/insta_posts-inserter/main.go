@@ -2,21 +2,20 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/codeuniversity/smag-mvp/kafka-connect/neo4j-inserter"
 
 	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	inserter "github.com/codeuniversity/smag-mvp/neo4j-inserter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
 )
 
 func main() {
-
 	readerConfig := kafka.GetInserterConfig()
 	neo4jConfig := utils.GetNeo4jConfig()
 
-	i := inserter.New(neo4jConfig, kafka.NewReader(readerConfig), addTaggedUsersRelationship)
+	i := neo4jinserter.New(neo4jConfig, kafka.NewReader(readerConfig), insertPostsAndAddRelationship)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
@@ -24,25 +23,25 @@ func main() {
 	waitUntilClosed()
 }
 
-type taggedUser struct {
+type Post struct {
 	UserID int `json:"user_id"`
-	PostID int `json:"post_	id"`
+	PostID int `json:"id"`
 }
 
-func addTaggedUsersRelationship(m *changestream.ChangeMessage, conn bolt.Conn) error {
-	const addTaggedRelationship = `
+func insertPostsAndAddRelationship(m *changestream.ChangeMessage, conn bolt.Conn) error {
+	const insertPostsAndAddRelationship = `
 	MERGE(u:USER{id: {userID}})
 	MERGE(p:POST{id: {postID}})
-	MERGE(u)-[:TAGGED_ON]->(p)
+	MERGE(u)-[:POSTED]->(p)
 	`
-	t := &taggedUser{}
-	err := json.Unmarshal(m.Payload.After, t)
+	p := &Post{}
+	err := json.Unmarshal(m.Payload.After, p)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = conn.ExecNeo(addTaggedRelationship, map[string]interface{}{"userID": t.UserID, "postID": t.PostID})
+	_, err = conn.ExecNeo(insertPostsAndAddRelationship, map[string]interface{}{"userID": p.UserID, "postID": p.PostID})
 
 	if err != nil {
 		return err
