@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/codeuniversity/smag-mvp/elastic"
 	"strconv"
 	"strings"
 
@@ -30,23 +31,6 @@ const instaPostUpsert = `
 }
 `
 
-const instaPostMapping = `
-	{
-    "mappings" : {
-      "properties" : {
-        "caption" : {
-          "type" : "text"
-        },
-        "user_id" : {
-          "type" : "keyword"
-        }
-      }
-    }
-}
-`
-
-const esIndex = "insta_posts"
-
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
@@ -54,7 +38,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaPostMapping, kafkaAddress, changesTopic, groupID, indexPost)
+	elasticInserter := elasticsearch_inserter.New(esHosts, elastic.PostsIndex, elastic.PostsIndexMapping, kafkaAddress, changesTopic, groupID, indexPost)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -97,7 +81,7 @@ type post struct {
 
 func upsertPost(post *post, client *elasticsearch.Client) error {
 	instaComment := fmt.Sprintf(instaPostUpsert, post.Caption, post.UserID, post.Caption)
-	response, err := client.Update(esIndex, strconv.Itoa(post.ID), strings.NewReader(instaComment))
+	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), strings.NewReader(instaComment))
 
 	if err != nil {
 		return err
