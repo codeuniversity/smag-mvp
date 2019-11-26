@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"log"
 
+	"github.com/codeuniversity/smag-mvp/es"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
@@ -16,9 +17,6 @@ import (
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 	"github.com/segmentio/kafka-go"
 )
-
-// FaceIndexName is the name of the index of the faces in elasticsearch
-var FaceIndexName string = "faces"
 
 // Indexer indexes faces in elasticsearch with their encoding
 // creates the index and mapping if the it doesn't on startup
@@ -80,7 +78,7 @@ var indexCreateBody string = `
 
 func (i *Indexer) createIndex() error {
 	response, err := i.esClient.Indices.Exists(
-		[]string{FaceIndexName},
+		[]string{es.FaceIndexName},
 		i.esClient.Indices.Exists.WithHuman(),
 		i.esClient.Indices.Exists.WithPretty(),
 	)
@@ -96,7 +94,7 @@ func (i *Indexer) createIndex() error {
 	if response.StatusCode == 404 {
 		bodyReader := bytes.NewReader([]byte(indexCreateBody))
 		response, err := i.esClient.Indices.Create(
-			FaceIndexName,
+			es.FaceIndexName,
 			i.esClient.Indices.Create.WithHuman(),
 			i.esClient.Indices.Create.WithPretty(),
 			i.esClient.Indices.Create.WithBody(bodyReader),
@@ -115,7 +113,6 @@ func (i *Indexer) createIndex() error {
 }
 
 func (i *Indexer) step() error {
-
 	m, err := i.changeQReader.FetchMessage(context.Background())
 	if err != nil {
 		return err
@@ -141,7 +138,7 @@ func (i *Indexer) step() error {
 	}
 
 	docReader := esutil.NewJSONReader(doc)
-	response, err := i.esClient.Index(FaceIndexName,
+	response, err := i.esClient.Index(es.FaceIndexName,
 		docReader,
 		i.esClient.Index.WithHuman(),
 		i.esClient.Index.WithPretty(),
