@@ -3,8 +3,8 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/kafka-connect/elastic-indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/kafka/changestream/elastic-inserter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/elastic/go-elasticsearch/v7"
