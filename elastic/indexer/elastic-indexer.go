@@ -25,23 +25,23 @@ type Indexer struct {
 	esClient *elasticsearch.Client
 	kReader  *kafka.Reader
 
-	insertFunc InserterFunc
+	indexFunc IndexFunc
 }
 
-// InserterFunc is the type for the functions which will insert data into elasticsearch
-type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
+// IndexFunc is the type for the functions which will insert data into elasticsearch
+type IndexFunc func(*elasticsearch.Client, *changestream.ChangeMessage) error
 
-// New returns a set up esInserter
-func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Indexer {
+// New returns an initialised Indexer
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc) *Indexer {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	i := &Indexer{}
 	i.kReader = kf.NewReader(readerConfig)
-	i.insertFunc = inserterFunc
+	i.indexFunc = indexFunc
 
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
 
-	i.Worker = worker.Builder{}.WithName("elasticsearch-inserter").
+	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10 * time.Second).
 		MustBuild()
@@ -58,20 +58,15 @@ func (i *Indexer) runStep() error {
 	}
 
 	changeMessage := &changestream.ChangeMessage{}
-
 	err = json.Unmarshal(m.Value, changeMessage)
-
 	if err != nil {
 		return err
 	}
 
-	err = i.insertFunc(changeMessage, i.esClient)
-
+	err = i.indexFunc(i.esClient, changeMessage)
 	if err != nil {
 		return err
 	}
-
-	log.Println("Inserted")
 	return i.kReader.CommitMessages(context.Background(), m)
 }
 
@@ -102,7 +97,7 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 		if err != nil {
 			return err
 		}
-		log.Println(response)
+		log.Println(response.String())
 	} else if response.StatusCode == 200 {
 		return nil
 	} else {
