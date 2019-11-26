@@ -8,7 +8,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
+	elasticsearch_indexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	indexer "github.com/codeuniversity/smag-mvp/elastic/indexer/insta_faces"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/models"
@@ -51,7 +51,7 @@ func main() {
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.face_data")
 
-	i := elasticsearch_inserter.New(esHosts, esIndex, indexCreateBody, kafkaAddress, changesTopic, groupID, indexFace)
+	i := elasticsearch_indexer.New(esHosts, esIndex, indexCreateBody, kafkaAddress, changesTopic, groupID, indexFace)
 
 	service.CloseOnSignal(i)
 	waitUntilDone := i.Start()
