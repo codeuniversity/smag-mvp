@@ -9,7 +9,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v7"
 
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	esInserter "github.com/codeuniversity/smag-mvp/kafka/changestream/elastic-inserter"
+	esInserter "github.com/codeuniversity/smag-mvp/elastic/inserter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
