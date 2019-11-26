@@ -6,6 +6,7 @@
 
 ## Usage
 - Make sure to `npm install google-protobuf grpc-web`
+- To be able to connect to the API you also need ot forward the envoy-pod port with  `kubectl port-forward envoy-proxy-deployment-6b89675d5b-d86c4 4000:8080`
 - Then import the auto-generated proto files
     ```javascript
     import {User, UserName, UserSearchResponse} from "./proto/client/usersearch_pb.js";
