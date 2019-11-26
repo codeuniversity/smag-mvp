@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/kafka-connect/elastic-indexer"
+	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
@@ -52,7 +52,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaPostMapping, kafkaAddress, changesTopic, groupID, handlePost)
+	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaPostMapping, kafkaAddress, changesTopic, groupID, indexPost)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -60,7 +60,7 @@ func main() {
 	waitUntilClosed()
 }
 
-func handlePost(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
+func indexPost(client *elasticsearch.Client, m *changestream.ChangeMessage) error {
 	currentPost := &post{}
 	err := json.Unmarshal(m.Payload.After, currentPost)
 
@@ -89,20 +89,20 @@ func handlePost(m *changestream.ChangeMessage, client *elasticsearch.Client) err
 
 type post struct {
 	ID      int    `json:"id"`
-	UserId  string `json:"user_id"`
+	UserID  string `json:"user_id"`
 	Caption string `json:"caption"`
 }
 
 func upsertPost(post *post, client *elasticsearch.Client) error {
-	instaComment := fmt.Sprintf(instaPostUpsert, post.Caption, post.UserId, post.Caption)
-	response, err := client.Update("insta_comments", strconv.Itoa(post.ID), strings.NewReader(instaComment))
+	instaComment := fmt.Sprintf(instaPostUpsert, post.Caption, post.UserID, post.Caption)
+	response, err := client.Update(esIndex, strconv.Itoa(post.ID), strings.NewReader(instaComment))
 
 	if err != nil {
 		return err
 	}
 
 	if response.StatusCode != 200 {
-		return fmt.Errorf("FindPostId Update Document Failed StatusCode: %d", response.StatusCode)
+		return fmt.Errorf("upsertPost Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
 	}
 	return nil
 }

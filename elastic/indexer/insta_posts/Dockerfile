@@ -4,7 +4,7 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o es-posts-indexer kafka-connect/elastic-indexer/insta_posts_indexer/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o es-posts-indexer elastic/indexer/insta_posts/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
