@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/codeuniversity/smag-mvp/elastic"
 	"strconv"
 	"strings"
 
@@ -14,8 +15,6 @@ import (
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
-const esIndex = "insta_user"
-
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.GetStringFromEnvWithDefault("KAFKA_GROUPID", "insta_usersearch-inserter")
@@ -24,7 +23,7 @@ func main() {
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"http://localhost:9201"})
 
 	// create and run esInserter
-	i := esIndexer.New(esHosts, esIndex, instaUserMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
+	i := esIndexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
@@ -56,7 +55,7 @@ func upsertDocument(u *user, esClient *elasticsearch.Client) error {
 
 	searchUser := fmt.Sprintf(instaUserUpsert, jsonUser, jsonUser)
 	response, err := esClient.Update(
-		esIndex,
+		elastic.UsersIndex,
 		strconv.Itoa(u.ID),
 		strings.NewReader(searchUser))
 	if err != nil {

@@ -1,6 +1,5 @@
 package main
 
-// TODO: Update to user
 type user struct {
 	ID       int    `json:"id"`
 	Username string `json:"user_name"`
@@ -19,27 +18,5 @@ const instaUserUpsert = `
         "params" : %s
     },
     "upsert" : %s
-}
-`
-
-// TODO: Update to instaUsersearchMapping
-const instaUserMapping = `
-{
-    "mappings" : {
-		"properties" : {
-			"id": {
-				"type": "integer"
-			}
-			"user_name": {
-				"type": "text"
-			}
-			"real_name": {
-				"type": "text"
-			}
-			"bio": {
-				"type": "text"
-			}
-		}
-	}
 }
 `
