@@ -41,13 +41,13 @@ func handleChangemessage(esClient *elasticsearch.Client, m *changestream.ChangeM
 
 	switch m.Payload.Op {
 	case "c", "r", "u":
-		return upsertComment(user, esClient)
+		return upsertDocument(user, esClient)
 	}
 
 	return nil
 }
 
-func upsertComment(u *user, esClient *elasticsearch.Client) error {
+func upsertDocument(u *user, esClient *elasticsearch.Client) error {
 	// not using esapi.NewJSONReader, because we will wrap the user into the upsert request
 	jsonUser, err := json.Marshal(*u)
 	if err != nil {
