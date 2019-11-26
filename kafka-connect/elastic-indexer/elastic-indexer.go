@@ -18,8 +18,8 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Inserter is the type definition of the esInserter
-type Inserter struct {
+// Indexer is the type definition of the esInserter
+type Indexer struct {
 	*worker.Worker
 
 	esClient *elasticsearch.Client
@@ -32,10 +32,10 @@ type Inserter struct {
 type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
 
 // New returns a set up esInserter
-func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Indexer {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
-	i := &Inserter{}
+	i := &Indexer{}
 	i.kReader = kf.NewReader(readerConfig)
 	i.insertFunc = inserterFunc
 
@@ -50,7 +50,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	return i
 }
 
-func (i *Inserter) runStep() error {
+func (i *Indexer) runStep() error {
 	m, err := i.kReader.FetchMessage(context.Background())
 
 	if err != nil {
@@ -75,7 +75,7 @@ func (i *Inserter) runStep() error {
 	return i.kReader.CommitMessages(context.Background(), m)
 }
 
-func (i *Inserter) createIndex(esIndex, esMapping string) error {
+func (i *Indexer) createIndex(esIndex, esMapping string) error {
 	response, err := i.esClient.Indices.Exists(
 		[]string{esIndex},
 		i.esClient.Indices.Exists.WithHuman(),
