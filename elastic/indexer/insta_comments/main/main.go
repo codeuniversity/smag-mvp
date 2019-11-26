@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/kafka-connect/elastic-indexer"
+	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
@@ -52,7 +52,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaCommentsMapping, kafkaAddress, changesTopic, groupID, handleComment)
+	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaCommentsMapping, kafkaAddress, changesTopic, groupID, indexComment)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -60,7 +60,7 @@ func main() {
 	waitUntilClosed()
 }
 
-func handleComment(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
+func indexComment(client *elasticsearch.Client, m *changestream.ChangeMessage) error {
 	comment := &comment{}
 	err := json.Unmarshal(m.Payload.After, comment)
 
@@ -77,7 +77,7 @@ func handleComment(m *changestream.ChangeMessage, client *elasticsearch.Client) 
 }
 
 func upsertComment(comment *comment, client *elasticsearch.Client) error {
-	instaComment := fmt.Sprintf(instaCommentUpsert, comment.Comment, comment.PostId, comment.Comment)
+	instaComment := fmt.Sprintf(instaCommentUpsert, comment.Comment, comment.PostID, comment.Comment)
 	response, err := client.Update(esIndex, strconv.Itoa(comment.ID), strings.NewReader(instaComment))
 
 	if err != nil {
@@ -85,13 +85,13 @@ func upsertComment(comment *comment, client *elasticsearch.Client) error {
 	}
 
 	if response.StatusCode != 200 {
-		return fmt.Errorf("FindPostId Update Document Failed StatusCode: %d", response.StatusCode)
+		return fmt.Errorf("upsertDocument Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
 	}
 	return nil
 }
 
 type comment struct {
 	ID      int    `json:"id"`
-	PostId  string `json:"post_id"`
+	PostID  string `json:"post_id"`
 	Comment string `json:"comment_text"`
 }
