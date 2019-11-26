@@ -437,7 +437,7 @@ workflows:
           filters:
             branches:
               only: master
-      - elastic_indexer_face:
+      - elastic_indexer_faces:
           requires:
             - tests
           filters:
