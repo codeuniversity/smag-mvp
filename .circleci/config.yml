@@ -260,7 +260,7 @@ jobs:
           command: |
             ./build_and_upload_image.sh elasticsearch-build/Dockerfile codesmag/elasticsearch elasticsearch-build
 
-  elastic_indexer_face:
+  elastic_indexer_faces:
     executor: job-runner
     steps:
       - checkout
@@ -268,7 +268,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh elastic/indexer/insta_face/Dockerfile codesmag/elastic_indexer_face
+            ./build_and_upload_image.sh elastic/indexer/insta_faces/Dockerfile codesmag/elastic_indexer_faces
 
   elastic_indexer_posts:
     executor: job-runner
