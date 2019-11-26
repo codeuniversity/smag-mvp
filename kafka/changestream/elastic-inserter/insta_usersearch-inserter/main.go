@@ -33,7 +33,7 @@ func main() {
 }
 
 // handleChangemessage filters relevant events and upserts them
-func handleChangemessage(m *changestream.ChangeMessage, esClient *elasticsearch.Client) error {
+func handleChangemessage(esClient *elasticsearch.Client, m *changestream.ChangeMessage) error {
 	user := &user{}
 	if err := json.Unmarshal(m.Payload.After, user); err != nil {
 		return err
