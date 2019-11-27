@@ -1,6 +1,12 @@
 # Contributing
 
-We are always happy about support of our project. If you dicide to help us spreading awareness for privacy, just start with the following steps: Fork the project, create a new branch, commit your changes and finally open a pull request to `master` (More in ["Branching & Naming"](#branching--naming))
+We are always happy about support for our project. If you dicide to help us spreading awareness for privacy, just start with the following steps: 
+* fork the project,
+* create a new branch, 
+* commit your changes 
+* and open a pull request to `master` 
+  
+(More in ["Branching & Naming"](#branching--naming))
 
 For your Git Commit Messages, please orientate on the guidance in the following [article](https://chris.beams.io/posts/git-commit/):
 
