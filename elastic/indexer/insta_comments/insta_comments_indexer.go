@@ -1,4 +1,4 @@
-package insta_comments
+package main
 
 import (
 	"encoding/json"

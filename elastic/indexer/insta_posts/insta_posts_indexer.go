@@ -1,4 +1,4 @@
-package insta_posts
+package main
 
 import (
 	"encoding/json"
