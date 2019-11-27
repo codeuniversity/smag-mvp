@@ -1,14 +1,16 @@
-package main
+package insta_posts
 
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
-	"strconv"
 
 	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
+	"github.com/codeuniversity/smag-mvp/elastic/models"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
@@ -30,7 +32,7 @@ func main() {
 }
 
 func indexPost(client *elasticsearch.Client, m *changestream.ChangeMessage) error {
-	currentPost := &post{}
+	currentPost := &models.InstaPost{}
 	err := json.Unmarshal(m.Payload.After, currentPost)
 
 	if err != nil {
@@ -41,7 +43,7 @@ func indexPost(client *elasticsearch.Client, m *changestream.ChangeMessage) erro
 	case "r", "c":
 		return upsertPost(currentPost, client)
 	case "u":
-		previousPost := &post{}
+		previousPost := &models.InstaPost{}
 		err := json.Unmarshal(m.Payload.Before, previousPost)
 
 		if err != nil {
@@ -56,13 +58,7 @@ func indexPost(client *elasticsearch.Client, m *changestream.ChangeMessage) erro
 	return nil
 }
 
-type post struct {
-	ID      int    `json:"id"`
-	UserID  string `json:"user_id"`
-	Caption string `json:"caption"`
-}
-
-func upsertPost(post *post, client *elasticsearch.Client) error {
+func upsertPost(post *models.InstaPost, client *elasticsearch.Client) error {
 
 	upsertBody := createUpsertBody(post)
 	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), esutil.NewJSONReader(upsertBody))
@@ -77,7 +73,7 @@ func upsertPost(post *post, client *elasticsearch.Client) error {
 	return nil
 }
 
-func createUpsertBody(post *post) map[string]interface{} {
+func createUpsertBody(post *models.InstaPost) map[string]interface{} {
 	var commentUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.caption = params.caption",

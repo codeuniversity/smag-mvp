@@ -1,16 +1,19 @@
-package main
+package insta_comments
 
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
+
 	"github.com/codeuniversity/smag-mvp/elastic"
-	es_indexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
+	"github.com/codeuniversity/smag-mvp/elastic/indexer"
+	"github.com/codeuniversity/smag-mvp/elastic/models"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esutil"
-	"strconv"
 )
 
 func main() {
@@ -20,7 +23,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := es_indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment)
+	elasticInserter := indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -29,7 +32,7 @@ func main() {
 }
 
 func indexComment(client *elasticsearch.Client, m *changestream.ChangeMessage) error {
-	comment := &comment{}
+	comment := &models.InstaComment{}
 	err := json.Unmarshal(m.Payload.After, comment)
 
 	if err != nil {
@@ -44,7 +47,7 @@ func indexComment(client *elasticsearch.Client, m *changestream.ChangeMessage) e
 	return nil
 }
 
-func upsertComment(comment *comment, client *elasticsearch.Client) error {
+func upsertComment(comment *models.InstaComment, client *elasticsearch.Client) error {
 
 	upsertBody := createUpsertBody(comment)
 	response, err := client.Update(elastic.CommentsIndex, strconv.Itoa(comment.ID), esutil.NewJSONReader(upsertBody))
@@ -59,7 +62,7 @@ func upsertComment(comment *comment, client *elasticsearch.Client) error {
 	return nil
 }
 
-func createUpsertBody(comment *comment) map[string]interface{} {
+func createUpsertBody(comment *models.InstaComment) map[string]interface{} {
 	var commentUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.comment = params.comment",
@@ -75,10 +78,4 @@ func createUpsertBody(comment *comment) map[string]interface{} {
 	}
 
 	return commentUpsert
-}
-
-type comment struct {
-	ID      int    `json:"id"`
-	PostID  string `json:"post_id"`
-	Comment string `json:"comment_text"`
 }
