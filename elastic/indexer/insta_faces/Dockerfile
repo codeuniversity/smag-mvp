@@ -11,6 +11,5 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
 FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
-COPY useragents.json .
 COPY --from=builder /app/exe .
 CMD ["./exe"]
