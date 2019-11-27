@@ -6,17 +6,3 @@ type user struct {
 	Realname string `json:"real_name"`
 	Bio      string `json:"bio"`
 }
-
-// instaUsersearchUpsert is wrapped around the user (in json) to achieve upserting
-// script - if user already exists
-// upsert - if user doesn't exist yet
-const instaUserUpsert = `
-{
-	"script" : {
-        "source": "ctx._source.id = params.id; ctx._source.user_name = params.user_name; ctx._source.real_name = params.real_name",
-        "lang": "painless",
-        "params" : %s
-    },
-    "upsert" : %s
-}
-`
