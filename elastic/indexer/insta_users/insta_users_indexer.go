@@ -21,9 +21,8 @@ func main() {
 	groupID := utils.GetStringFromEnvWithDefault("KAFKA_GROUPID", "insta_usersearch-inserter")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.users")
 
-	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"http://localhost:9201"})
+	esHosts := utils.GetMultipliesStringsFromEnvDefault("ES_HOSTS", []string{"http://localhost:9201"})
 
-	// create and run esInserter
 	i := indexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
 
 	service.CloseOnSignal(i)

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
 
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
+	"github.com/codeuniversity/smag-mvp/elastic"
+	"github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/elastic/models"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
@@ -21,9 +21,9 @@ func main() {
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.posts")
 
-	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
+	esHosts := utils.GetMultipliesStringsFromEnvDefault("ES_HOSTS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, elastic.PostsIndex, elastic.PostsIndexMapping, kafkaAddress, changesTopic, groupID, indexPost)
+	elasticInserter := indexer.New(esHosts, elastic.PostsIndex, elastic.PostsIndexMapping, kafkaAddress, changesTopic, groupID, indexPost)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
