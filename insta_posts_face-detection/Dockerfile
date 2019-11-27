@@ -1,13 +1,13 @@
 FROM ubuntu:16.04 AS opencv
 
 # install cmake 3.11
-RUN apt-get update && apt-get install -y --no-install-recommends wget
-RUN wget --no-check-certificate https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.tar.gz
-RUN tar -xvf cmake-3.11.0-Linux-x86_64.tar.gz
-RUN cd cmake-3.11.0-Linux-x86_64 && cp -r bin /usr/ &&  \
+RUN apt-get update && apt-get install -y --no-install-recommends wget && \
+      wget --no-check-certificate https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.tar.gz && \
+      tar -xvf cmake-3.11.0-Linux-x86_64.tar.gz && \
+      cd cmake-3.11.0-Linux-x86_64 && cp -r bin /usr/ &&  \
       cp -r share /usr/ && \
-      cp -r doc /usr/share/ && cp -r man /usr/share/
-RUN cd .. && \
+      cp -r doc /usr/share/ && cp -r man /usr/share/ && \
+      cd .. && \
       rm -r cmake-3.11.0-Linux-x86_64 && \
       rm cmake-3.11.0-Linux-x86_64.tar.gz
 
