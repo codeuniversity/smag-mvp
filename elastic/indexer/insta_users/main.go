@@ -62,7 +62,7 @@ func upsertDocument(u *user, esClient *elasticsearch.Client) error {
 	return nil
 }
 
-func createUpsertBody(user *user) *map[string]interface{} {
+func createUpsertBody(user *user) map[string]interface{} {
 	var commentUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.user_name = params.user_name; ctx._source.real_name = params.real_name; ctx._source.bio = params.bio",

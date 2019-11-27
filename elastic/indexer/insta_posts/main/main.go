@@ -102,7 +102,7 @@ func upsertPost(post *post, client *elasticsearch.Client) error {
 	return nil
 }
 
-func createUpsertBody(post *post) *map[string]interface{} {
+func createUpsertBody(post *post) map[string]interface{} {
 	var commentUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.caption = params.caption",
