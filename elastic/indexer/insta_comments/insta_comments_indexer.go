@@ -21,7 +21,7 @@ func main() {
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.posts")
 
-	esHosts := utils.GetMultipliesStringsFromEnvDefault("ES_HOSTS", []string{"localhost:9201"})
+	esHosts := utils.GetMultipleStringsFromEncDefault("ES_HOSTS", []string{"localhost:9201"})
 
 	i := indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment)
 
