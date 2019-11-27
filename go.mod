@@ -21,6 +21,8 @@ require (
 	github.com/lib/pq v1.2.0
 	github.com/minio/minio-go v6.0.14+incompatible
 	github.com/minio/minio-go/v6 v6.0.39
+	github.com/neo4j-drivers/gobolt v1.7.4 // indirect
+	github.com/neo4j/neo4j-go-driver v1.7.4
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/segmentio/kafka-go v0.3.4
 	github.com/stretchr/testify v1.4.0

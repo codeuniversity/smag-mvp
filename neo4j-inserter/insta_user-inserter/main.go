@@ -8,7 +8,7 @@ import (
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
-	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
+	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
 
 func main() {
@@ -28,10 +28,10 @@ type Follow struct {
 	ToID   int `json:"to_id"`
 }
 
-func insertUsersAndFollowings(m *changestream.ChangeMessage, conn bolt.Conn) error {
+func insertUsersAndFollowings(m *changestream.ChangeMessage, session neo4j.Session) error {
 	const createUsersAndRelationships = `
-	MERGE(u1:USER{id: {fromID}})
-	MERGE(u2:USER{id: {toID}})
+	MERGE(u1:USER{id: $fromID)
+	MERGE(u2:USER{id: $toID})
 	MERGE(u1)-[:FOLLOWS]->(u2)
 	`
 	f := &Follow{}
@@ -41,7 +41,7 @@ func insertUsersAndFollowings(m *changestream.ChangeMessage, conn bolt.Conn) err
 		return err
 	}
 
-	_, err = conn.ExecNeo(createUsersAndRelationships, map[string]interface{}{"fromID": f.FromID, "toID": f.ToID})
+	_, err = session.Run(createUsersAndRelationships, map[string]interface{}{"fromID": f.FromID, "toID": f.ToID})
 
 	if err != nil {
 		return err

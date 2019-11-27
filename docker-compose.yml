@@ -321,6 +321,8 @@ services:
     ports:
       - "7474:7474"
       - "7687:7687"
+    environment:
+      NEO4J_AUTH: none
 
   neo4j-followings-inserter:
     build:
@@ -333,7 +335,31 @@ services:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "neo4j-followings-inserter"
       KAFKA_INFO_TOPIC: "postgres.public.followings"
-      NEO4j_PASSWORD: "12345678"
+      NEO4J_HOST: "neo4j"
+  
+  neo4j-posts-inserter:
+    build:
+      context: "."
+      dockerfile: "neo4j-inserter/posts-inserter/Dockerfile"
+    depends_on:
+      - "neo4j"
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "neo4j-posts-inserter"
+      KAFKA_INFO_TOPIC: "postgres.public.posts"
+    
+  neo4j-tagged-users-inserter:
+    build:
+      context: "."
+      dockerfile: "neo4j-inserter/insta_tagged_users-inserter/Dockerfile"
+    depends_on:
+      - "neo4j"
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "neo4j-tagged-users-inserter"
+      KAFKA_INFO_TOPIC: "postgres.public.tagged_users"
 
   neo4j-posts-inserter:
     build:
