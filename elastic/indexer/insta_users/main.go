@@ -68,27 +68,17 @@ func createUpsertBody(user *user) map[string]interface{} {
 			"source": "ctx._source.user_name = params.user_name; ctx._source.real_name = params.real_name; ctx._source.bio = params.bio",
 			"lang":   "painless",
 			"params": map[string]interface{}{
-				"user_name": "",
-				"real_name": "",
-				"bio":       "",
+				"user_name": user.Username,
+				"real_name": user.Realname,
+				"bio":       user.Bio,
 			},
 		},
 		"upsert": map[string]interface{}{
-			"user_name": "",
-			"real_name": "",
-			"bio":       "",
+			"user_name": user.Username,
+			"real_name": user.Realname,
+			"bio":       user.Bio,
 		},
 	}
-
-	params := commentUpsert["params"].(map[string]interface{})
-	upsert := commentUpsert["upsert"].(map[string]interface{})
-
-	params["real_name"] = user.Realname
-	params["bio"] = user.Bio
-	params["user_name"] = user.Username
-	upsert["real_name"] = user.Realname
-	upsert["bio"] = user.Bio
-	upsert["user_name"] = user.Username
 
 	return commentUpsert
 }

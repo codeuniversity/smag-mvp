@@ -65,20 +65,14 @@ func createUpsertBody(comment *comment) map[string]interface{} {
 			"source": "ctx._source.comment = params.comment",
 			"lang":   "painless",
 			"params": map[string]interface{}{
-				"comment": "",
+				"comment": comment.Comment,
 			},
 		},
 		"upsert": map[string]interface{}{
-			"post_id": "",
-			"comment": "",
+			"post_id": comment.PostID,
+			"comment": comment.Comment,
 		},
 	}
-
-	params := commentUpsert["params"].(map[string]interface{})
-	upsert := commentUpsert["upsert"].(map[string]interface{})
-	params["comment"] = comment.Comment
-	upsert["post_id"] = comment.PostID
-	upsert["comment"] = comment.Comment
 
 	return commentUpsert
 }
