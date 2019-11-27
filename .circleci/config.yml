@@ -210,6 +210,7 @@ jobs:
             ./build_and_upload_image.sh insta_likes-scraper/Dockerfile codesmag/insta_likes-scraper
             ./build_and_upload_image.sh kafka/changestream/insta_post_face-recon-filter/Dockerfile codesmag/face-recon-filter
             ./build_and_upload_image.sh insta_posts_face-detection/Dockerfile.worker codesmag/face-detection-prefilter
+
   neo4j_insta_posts-inserter:
     executor: job-runner
     steps:
@@ -238,7 +239,6 @@ jobs:
           command: |
             ./build_and_upload_image.sh neo4j-inserter/tagged_users-inserter/Dockerfile codesmag/neo4j_insta_tagged_users-inserter
 
-
   face_recognition:
     executor: job-runner
     steps:
@@ -260,7 +260,7 @@ jobs:
           command: |
             ./build_and_upload_image.sh elasticsearch-build/Dockerfile codesmag/elasticsearch elasticsearch-build
 
-  es_face_indexer:
+  elastic_indexer_faces:
     executor: job-runner
     steps:
       - checkout
@@ -268,7 +268,37 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh es_face-indexer/Dockerfile codesmag/es_face_indexer
+            ./build_and_upload_image.sh elastic/indexer/insta_faces/Dockerfile codesmag/elastic_indexer_faces
+
+  elastic_indexer_posts:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh elastic/indexer/insta_posts/Dockerfile codesmag/elastic_indexer_posts
+
+  elastic_indexer_users:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh elastic/indexer/insta_users/Dockerfile codesmag/elastic_indexer_users
+
+  elastic_indexer_comments:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh elastic/indexer/insta_comments/Dockerfile codesmag/elastic_indexer_comments
 
 workflows:
   version: 2
@@ -407,7 +437,25 @@ workflows:
           filters:
             branches:
               only: master
-      - es_face_indexer:
+      - elastic_indexer_faces:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - elastic_indexer_users:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - elastic_indexer_posts:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - elastic_indexer_comments:
           requires:
             - tests
           filters:

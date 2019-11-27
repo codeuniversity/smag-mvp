@@ -1,4 +1,4 @@
-package indexer
+package models
 
 import (
 	"encoding/base64"
