@@ -1,18 +1,19 @@
-package main
+package insta_faces
 
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/codeuniversity/smag-mvp/elastic"
 	elasticsearch_indexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
-	indexer "github.com/codeuniversity/smag-mvp/elastic/indexer/insta_faces"
+	indexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
-	"log"
 )
 
 func main() {
