@@ -54,7 +54,7 @@ func MustGetStringFromEnv(enVarName string) string {
 	return envValue
 }
 
-func GetMultipleStringsFromEncDefault(envVarName string, defaultValue []string) []string {
+func GetMultipleStringsFromEnvWithDefault(envVarName string, defaultValue []string) []string {
 	envValue := os.Getenv(envVarName)
 	if envValue == "" {
 		return defaultValue
