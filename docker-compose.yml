@@ -336,7 +336,6 @@ services:
       KAFKA_GROUPID: "neo4j-followings-inserter"
       KAFKA_INFO_TOPIC: "postgres.public.followings"
       NEO4J_HOST: "neo4j"
-      # NEO4J_PASSWORD: "123456"
   
   neo4j-posts-inserter:
     build:
