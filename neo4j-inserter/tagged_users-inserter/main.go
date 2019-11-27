@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"github.com/codeuniversity/smag-mvp/neo4j-inserter"
 
 	"github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	inserter "github.com/codeuniversity/smag-mvp/neo4j-inserter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/neo4j/neo4j-go-driver/neo4j"
@@ -16,7 +16,7 @@ func main() {
 	readerConfig := kafka.GetInserterConfig()
 	neo4jConfig := utils.GetNeo4jConfig()
 
-	i := inserter.New(neo4jConfig, kafka.NewReader(readerConfig), addTaggedUsersRelationship)
+	i := neo4jinserter.New(neo4jConfig, kafka.NewReader(readerConfig), addTaggedUsersRelationship)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
