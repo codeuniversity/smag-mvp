@@ -5,10 +5,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/elastic"
 	"io/ioutil"
 	"log"
 	"time"
+
+	"github.com/codeuniversity/smag-mvp/elastic"
 
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
@@ -18,30 +19,30 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Inserter is the type definition of the esInserter
-type Inserter struct {
+// Indexer is the type definition of the esInserter
+type Indexer struct {
 	*worker.Worker
 
 	esClient *elasticsearch.Client
 	kReader  *kafka.Reader
 
-	insertFunc InserterFunc
+	indexFunc IndexFunc
 }
 
-// InserterFunc is the type for the functions which will insert data into elasticsearch
-type InserterFunc func(*changestream.ChangeMessage, *elasticsearch.Client) error
+// IndexFunc is the type for the functions which will insert data into elasticsearch
+type IndexFunc func(*elasticsearch.Client, *changestream.ChangeMessage) error
 
-// New returns a set up esInserter
-func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, inserterFunc InserterFunc) *Inserter {
+// New returns an initialised Indexer
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc) *Indexer {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
-	i := &Inserter{}
+	i := &Indexer{}
 	i.kReader = kf.NewReader(readerConfig)
-	i.insertFunc = inserterFunc
+	i.indexFunc = indexFunc
 
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
 
-	i.Worker = worker.Builder{}.WithName("elasticsearch-inserter").
+	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10 * time.Second).
 		MustBuild()
@@ -50,32 +51,24 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	return i
 }
 
-func (i *Inserter) runStep() error {
+func (i *Indexer) runStep() error {
 	m, err := i.kReader.FetchMessage(context.Background())
-
 	if err != nil {
 		return err
 	}
 
 	changeMessage := &changestream.ChangeMessage{}
-
-	err = json.Unmarshal(m.Value, changeMessage)
-
-	if err != nil {
+	if err := json.Unmarshal(m.Value, changeMessage); err != nil {
 		return err
 	}
 
-	err = i.insertFunc(changeMessage, i.esClient)
-
-	if err != nil {
+	if err := i.indexFunc(i.esClient, changeMessage); err != nil {
 		return err
 	}
-
-	log.Println("Inserted")
 	return i.kReader.CommitMessages(context.Background(), m)
 }
 
-func (i *Inserter) createIndex(esIndex, esMapping string) error {
+func (i *Indexer) createIndex(esIndex, esMapping string) error {
 	response, err := i.esClient.Indices.Exists(
 		[]string{esIndex},
 		i.esClient.Indices.Exists.WithHuman(),
@@ -102,7 +95,7 @@ func (i *Inserter) createIndex(esIndex, esMapping string) error {
 		if err != nil {
 			return err
 		}
-		log.Println(response)
+		log.Println(response.String())
 	} else if response.StatusCode == 200 {
 		return nil
 	} else {

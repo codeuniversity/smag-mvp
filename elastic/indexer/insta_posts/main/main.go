@@ -3,47 +3,16 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/codeuniversity/smag-mvp/elastic"
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
+	"strconv"
+
+	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/kafka/changestream/elastic-inserter"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
-	"github.com/elastic/go-elasticsearch/v7"
-	"strconv"
-	"strings"
 )
-
-const instaPostUpsert = `
-	{
-    "script" : {
-        "source": "ctx._source.caption = params.caption",
-        "lang": "painless",
-        "params" : {
-            "caption" : %s
-        }
-    },
-    "upsert" : {
-		"user_id": "%s"
-		"caption": "%s"
-    }
-}
-`
-
-const instaPostMapping = `
-	{
-    "mappings" : {
-      "properties" : {
-        "caption" : {
-          "type" : "text"
-        },
-        "user_id" : {
-          "type" : "keyword"
-        }
-      }
-    }
-}
-`
-
-const esIndex = "insta_posts"
 
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
@@ -52,7 +21,7 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"localhost:9201"})
 
-	elasticInserter := elasticsearch_inserter.New(esHosts, esIndex, instaPostMapping, kafkaAddress, changesTopic, groupID, handlePost)
+	elasticInserter := elasticsearch_inserter.New(esHosts, elastic.PostsIndex, elastic.PostsIndexMapping, kafkaAddress, changesTopic, groupID, indexPost)
 
 	service.CloseOnSignal(elasticInserter)
 	waitUntilClosed := elasticInserter.Start()
@@ -60,7 +29,7 @@ func main() {
 	waitUntilClosed()
 }
 
-func handlePost(m *changestream.ChangeMessage, client *elasticsearch.Client) error {
+func indexPost(client *elasticsearch.Client, m *changestream.ChangeMessage) error {
 	currentPost := &post{}
 	err := json.Unmarshal(m.Payload.After, currentPost)
 
@@ -89,20 +58,39 @@ func handlePost(m *changestream.ChangeMessage, client *elasticsearch.Client) err
 
 type post struct {
 	ID      int    `json:"id"`
-	UserId  string `json:"user_id"`
+	UserID  string `json:"user_id"`
 	Caption string `json:"caption"`
 }
 
 func upsertPost(post *post, client *elasticsearch.Client) error {
-	instaComment := fmt.Sprintf(instaPostUpsert, post.Caption, post.UserId, post.Caption)
-	response, err := client.Update("insta_comments", strconv.Itoa(post.ID), strings.NewReader(instaComment))
+
+	upsertBody := createUpsertBody(post)
+	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), esutil.NewJSONReader(upsertBody))
 
 	if err != nil {
 		return err
 	}
 
 	if response.StatusCode != 200 {
-		return fmt.Errorf("FindPostId Update Document Failed StatusCode: %d", response.StatusCode)
+		return fmt.Errorf("upsertPost Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
 	}
 	return nil
+}
+
+func createUpsertBody(post *post) map[string]interface{} {
+	var commentUpsert = map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.caption = params.caption",
+			"lang":   "painless",
+			"params": map[string]interface{}{
+				"caption": post.Caption,
+			},
+		},
+		"upsert": map[string]interface{}{
+			"user_id": post.UserID,
+			"caption": post.Caption,
+		},
+	}
+
+	return commentUpsert
 }

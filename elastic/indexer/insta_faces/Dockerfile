@@ -1,10 +1,9 @@
 FROM golang:1.13 as builder
 WORKDIR /app
-COPY go.mod .
-COPY go.sum .
+COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o indexer es_face-indexer/main/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o indexer elastic/indexer/insta_faces/main/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
