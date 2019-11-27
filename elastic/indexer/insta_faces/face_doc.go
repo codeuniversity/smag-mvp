@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"math"
 
-	"github.com/codeuniversity/elastic/indexer/models"
+	esModels "github.com/codeuniversity/smag-mvp/elastic/models"
+	"github.com/codeuniversity/smag-mvp/models"
 )
 
 // FaceDocFromFaceData returns a FaceDoc with an encoded `EncodingVector` given a faceData model
-func FaceDocFromFaceData(faceData *models.FaceData) (*models.FaceDoc, error) {
+func FaceDocFromFaceData(faceData *models.FaceData) (*esModels.FaceDoc, error) {
 	var encodingString string
 	err := json.Unmarshal(faceData.Encoding.RawMessage, &encodingString)
 	if err != nil {
@@ -21,7 +22,7 @@ func FaceDocFromFaceData(faceData *models.FaceData) (*models.FaceDoc, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &models.FaceDoc{
+	return &esModels.FaceDoc{
 		PostID:         faceData.PostID,
 		X:              faceData.X,
 		Y:              faceData.Y,
