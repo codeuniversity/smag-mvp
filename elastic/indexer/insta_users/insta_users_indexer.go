@@ -3,12 +3,14 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/codeuniversity/smag-mvp/elastic"
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esutil"
 	"strconv"
 
-	esIndexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
+	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
+
+	"github.com/codeuniversity/smag-mvp/elastic"
+	"github.com/codeuniversity/smag-mvp/elastic/indexer"
+	"github.com/codeuniversity/smag-mvp/elastic/models"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
@@ -19,10 +21,9 @@ func main() {
 	groupID := utils.GetStringFromEnvWithDefault("KAFKA_GROUPID", "insta_usersearch-inserter")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.users")
 
-	esHosts := utils.GetMultipliesStringsFromEnvDefault("ELASTIC_SEARCH_ADDRESS", []string{"http://localhost:9201"})
+	esHosts := utils.GetMultipliesStringsFromEnvDefault("ES_HOSTS", []string{"http://localhost:9201"})
 
-	// create and run esInserter
-	i := esIndexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
+	i := indexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
@@ -32,7 +33,7 @@ func main() {
 
 // handleChangemessage filters relevant events and upserts them
 func handleChangemessage(esClient *elasticsearch.Client, m *changestream.ChangeMessage) error {
-	user := &user{}
+	user := &models.InstaUser{}
 	if err := json.Unmarshal(m.Payload.After, user); err != nil {
 		return err
 	}
@@ -45,7 +46,7 @@ func handleChangemessage(esClient *elasticsearch.Client, m *changestream.ChangeM
 	return nil
 }
 
-func upsertDocument(u *user, esClient *elasticsearch.Client) error {
+func upsertDocument(u *models.InstaUser, esClient *elasticsearch.Client) error {
 	upsertBody := createUpsertBody(u)
 	response, err := esClient.Update(
 		elastic.UsersIndex,
@@ -62,7 +63,7 @@ func upsertDocument(u *user, esClient *elasticsearch.Client) error {
 	return nil
 }
 
-func createUpsertBody(user *user) map[string]interface{} {
+func createUpsertBody(user *models.InstaUser) map[string]interface{} {
 	var commentUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.user_name = params.user_name; ctx._source.real_name = params.real_name; ctx._source.bio = params.bio",

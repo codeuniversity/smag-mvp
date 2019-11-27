@@ -1,4 +1,4 @@
-package elasticsearch_inserter
+package indexer
 
 import (
 	"bytes"

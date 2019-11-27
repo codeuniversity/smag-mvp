@@ -3,12 +3,13 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o indexer elastic/indexer/insta_faces/main/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -installsuffix cgo \
+    -o insta_faces_indexer \
+    elastic/indexer/insta_faces/insta_faces_indexer.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
-RUN mkdir /app
-COPY useragents.json /app
-COPY --from=builder /app/indexer /app
 WORKDIR /app
-CMD ["./indexer"]
+COPY --from=builder /app/insta_faces_indexer .
+CMD ["./insta_faces_indexer"]

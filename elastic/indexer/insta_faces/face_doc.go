@@ -1,4 +1,4 @@
-package indexer
+package main
 
 import (
 	"encoding/base64"
@@ -6,21 +6,12 @@ import (
 	"encoding/json"
 	"math"
 
+	esModels "github.com/codeuniversity/smag-mvp/elastic/models"
 	"github.com/codeuniversity/smag-mvp/models"
 )
 
-// FaceDoc is the type that is used to store a face in elasticsearch
-type FaceDoc struct {
-	PostID         int    `json:"post_id"`
-	X              int    `json:"x"`
-	Y              int    `json:"y"`
-	Width          int    `json:"width"`
-	Height         int    `json:"height"`
-	EncodingVector string `json:"encoding_vector"`
-}
-
 // FaceDocFromFaceData returns a FaceDoc with an encoded `EncodingVector` given a faceData model
-func FaceDocFromFaceData(faceData *models.FaceData) (*FaceDoc, error) {
+func FaceDocFromFaceData(faceData *models.FaceData) (*esModels.FaceDoc, error) {
 	var encodingString string
 	err := json.Unmarshal(faceData.Encoding.RawMessage, &encodingString)
 	if err != nil {
@@ -31,7 +22,7 @@ func FaceDocFromFaceData(faceData *models.FaceData) (*FaceDoc, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &FaceDoc{
+	return &esModels.FaceDoc{
 		PostID:         faceData.PostID,
 		X:              faceData.X,
 		Y:              faceData.Y,
