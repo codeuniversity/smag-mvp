@@ -1,8 +1,15 @@
 # gRPC API
 
+- [Requirements](#Requirements)
 - [Usage](#usage)
 - [Functions](#functions)
 - [Testing](#testing)
+
+## Requirements
+- In order to successfully use our api make sure to have:
+    - [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) installed
+    - [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv1.html) installed
+    - a AWS Account setup in our Organisation
 
 ## Usage
 - Make sure to `npm install google-protobuf grpc-web`
@@ -25,6 +32,13 @@
 
 
 ## Functions
+|method|function name                                                |Description|
+|------|-------------------------------------------------------------|-----------|
+|GET   |getUserWithUsername(UserNameRequest) User                    |
+|GET   |getAllUsersWithUsername(UserNameRequest) UserSearchResponse  |
+|GET   |getInstaPostssWithUserid(UserIdRequest) InstaPostsResponse   |
+|GET   |getTaggedPostsWithUserId(UserIdRequest) InstaPostsResponse   |
+
 - `getUserWithUsername(UserNameRequest) User`
     > Queries the Database for one specific User
 - `getAllUsersWithUsername(UserNameRequest) UserSearchResponse`
