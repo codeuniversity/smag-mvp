@@ -50,7 +50,7 @@ func upsertDocument(u *user, esClient *elasticsearch.Client) error {
 	response, err := esClient.Update(
 		elastic.UsersIndex,
 		strconv.Itoa(u.ID),
-		esutil.NewJSONReader(upertBody))
+		esutil.NewJSONReader(upsertBody))
 	if err != nil {
 		return err
 	}
