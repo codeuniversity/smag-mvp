@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/codeuniversity/smag-mvp/elastic"
-	"strconv"
-	"strings"
-
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
+	"strconv"
 
 	esIndexer "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
@@ -47,17 +46,11 @@ func handleChangemessage(esClient *elasticsearch.Client, m *changestream.ChangeM
 }
 
 func upsertDocument(u *user, esClient *elasticsearch.Client) error {
-	// not using esapi.NewJSONReader, because we will wrap the user into the upsert request
-	jsonUser, err := json.Marshal(*u)
-	if err != nil {
-		return err
-	}
-
-	searchUser := fmt.Sprintf(instaUserUpsert, jsonUser, jsonUser)
+	upertBody := createUpsertBody(u)
 	response, err := esClient.Update(
 		elastic.UsersIndex,
 		strconv.Itoa(u.ID),
-		strings.NewReader(searchUser))
+		esutil.NewJSONReader(upertBody))
 	if err != nil {
 		return err
 	}
@@ -67,4 +60,35 @@ func upsertDocument(u *user, esClient *elasticsearch.Client) error {
 	}
 
 	return nil
+}
+
+func createUpsertBody(user *user) *map[string]interface{} {
+	var commentUpsert = map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.user_name = params.user_name; ctx._source.real_name = params.real_name; ctx._source.bio = params.bio",
+			"lang":   "painless",
+			"params": map[string]interface{}{
+				"user_name": "",
+				"real_name": "",
+				"bio":       "",
+			},
+		},
+		"upsert": map[string]interface{}{
+			"user_name": "",
+			"real_name": "",
+			"bio":       "",
+		},
+	}
+
+	params := commentUpsert["params"].(map[string]interface{})
+	upsert := commentUpsert["upsert"].(map[string]interface{})
+
+	params["real_name"] = user.Realname
+	params["bio"] = user.Bio
+	params["user_name"] = user.Username
+	upsert["real_name"] = user.Realname
+	upsert["bio"] = user.Bio
+	upsert["user_name"] = user.Username
+
+	return commentUpsert
 }

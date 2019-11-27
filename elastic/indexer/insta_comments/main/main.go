@@ -9,25 +9,9 @@ import (
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
 	"strconv"
-	"strings"
 )
-
-const instaCommentUpsert = `
-	{
-    "script" : {
-        "source": "ctx._source.comment = params.comment",
-        "lang": "painless",
-        "params" : {
-            "comment" : %s
-        }
-    },
-    "upsert" : {
-        "post_id" : "%s",
-		"comment": "%s"
-    }
-}
-`
 
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
@@ -61,8 +45,9 @@ func indexComment(client *elasticsearch.Client, m *changestream.ChangeMessage) e
 }
 
 func upsertComment(comment *comment, client *elasticsearch.Client) error {
-	instaComment := fmt.Sprintf(instaCommentUpsert, comment.Comment, comment.PostID, comment.Comment)
-	response, err := client.Update(elastic.CommentsIndex, strconv.Itoa(comment.ID), strings.NewReader(instaComment))
+
+	upsertBody := createUpsertBody(comment)
+	response, err := client.Update(elastic.CommentsIndex, strconv.Itoa(comment.ID), esutil.NewJSONReader(upsertBody))
 
 	if err != nil {
 		return err
@@ -72,6 +57,30 @@ func upsertComment(comment *comment, client *elasticsearch.Client) error {
 		return fmt.Errorf("upsertDocument Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
 	}
 	return nil
+}
+
+func createUpsertBody(comment *comment) map[string]interface{} {
+	var commentUpsert = map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.comment = params.comment",
+			"lang":   "painless",
+			"params": map[string]interface{}{
+				"comment": "",
+			},
+		},
+		"upsert": map[string]interface{}{
+			"post_id": "",
+			"comment": "",
+		},
+	}
+
+	params := commentUpsert["params"].(map[string]interface{})
+	upsert := commentUpsert["upsert"].(map[string]interface{})
+	params["comment"] = comment.Comment
+	upsert["post_id"] = comment.PostID
+	upsert["comment"] = comment.Comment
+
+	return commentUpsert
 }
 
 type comment struct {

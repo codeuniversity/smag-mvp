@@ -4,10 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/codeuniversity/smag-mvp/elastic"
-	"strconv"
-	"strings"
-
 	"github.com/elastic/go-elasticsearch/v7"
+	"github.com/elastic/go-elasticsearch/v7/esutil"
+	"strconv"
 
 	elasticsearch_inserter "github.com/codeuniversity/smag-mvp/elastic/indexer"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
@@ -30,6 +29,15 @@ const instaPostUpsert = `
     }
 }
 `
+
+//type Upsert struct {
+//	Script struct {
+//		Source: ''
+//		Lang   string `json:"lang"`
+//		Params string `json:"params"`
+//	} `json:"script"`
+//	Upsert string `json:"upsert"`
+//}
 
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
@@ -80,8 +88,9 @@ type post struct {
 }
 
 func upsertPost(post *post, client *elasticsearch.Client) error {
-	instaComment := fmt.Sprintf(instaPostUpsert, post.Caption, post.UserID, post.Caption)
-	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), strings.NewReader(instaComment))
+
+	upsertBody := createUpsertBody(post)
+	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), esutil.NewJSONReader(upsertBody))
 
 	if err != nil {
 		return err
@@ -91,4 +100,28 @@ func upsertPost(post *post, client *elasticsearch.Client) error {
 		return fmt.Errorf("upsertPost Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
 	}
 	return nil
+}
+
+func createUpsertBody(post *post) *map[string]interface{} {
+	var commentUpsert = map[string]interface{}{
+		"script": map[string]interface{}{
+			"source": "ctx._source.caption = params.caption",
+			"lang":   "painless",
+			"params": map[string]interface{}{
+				"caption": "",
+			},
+		},
+		"upsert": map[string]interface{}{
+			"user_id": "",
+			"caption": "",
+		},
+	}
+
+	params := commentUpsert["params"].(map[string]interface{})
+	upsert := commentUpsert["upsert"].(map[string]interface{})
+	params["caption"] = post.Caption
+	upsert["user_id"] = post.UserID
+	upsert["caption"] = post.Caption
+
+	return commentUpsert
 }
