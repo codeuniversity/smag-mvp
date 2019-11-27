@@ -14,31 +14,6 @@ import (
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
-const instaPostUpsert = `
-	{
-    "script" : {
-        "source": "ctx._source.caption = params.caption",
-        "lang": "painless",
-        "params" : {
-            "caption" : %s
-        }
-    },
-    "upsert" : {
-		"user_id": "%s"
-		"caption": "%s"
-    }
-}
-`
-
-//type Upsert struct {
-//	Script struct {
-//		Source: ''
-//		Lang   string `json:"lang"`
-//		Params string `json:"params"`
-//	} `json:"script"`
-//	Upsert string `json:"upsert"`
-//}
-
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
