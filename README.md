@@ -1,73 +1,65 @@
-# SMAG - mvp
-> social media graph abusal
+# Social Record
+> Distributed scraping and analysis pipeline for a range of social media platforms
 
+**Table of content**
 - [About](#about)
 - [Architectural overview](#architectural-overview)
-  - [Api](#api)
-  - [Postgres DB](#postgres-db)
-- [Requirements](#requirements)
+- [Further reading](#further-reading)
+  - [Detailed documentation](#detailed-documentation)
+  - [Wanna contribute?](#wanna-contribute)
 - [Getting started](#getting-started)
-  - [scraper in docker](#scraper-in-docker)
-  - [scraper locally](#scraper-locally)
-- [Postgres change stream](#postgres-change-stream)
+  - [Requirements](#requirements)
+  - [Scraper in docker](#scraper-in-docker)
+  - [Scraper locally](#scraper-locally)
 
 ## About
-The goal of this project is to raise awareness about data privacy. The mean to do so is a tool to scrape, combine and analyze public social media data.
+The goal of this project is to raise awareness about data privacy. The mean to do so is a tool to scrape, combine and analyze public data from multiple social media sources. <br>
 The results will be available via an API, used for some kind of art exhibition.
 
 ## Architectural overview
-You can find a overview about our architecture on this [miro board](https://miro.com/app/board/o9J_kw7a-qM=/)
 
-### Api
-see details [here](api/README.md)
+![](docs/architecture.png)
 
-### Postgres DB
-see details [here](db/README.md)
+You can find an more detailed overview [here](https://miro.com/app/board/o9J_kw7a-qM=/)
 
-## Requirements
+## Further reading
 
-- go 1.13 _(or go 1.11+ with the env var `GO111MODULEs=on`)_
-- `docker` and `docker-compose` are available and up-to-date
+### Detailed documentation
+
+| part        | docs                                       | contact                                          |
+| :---------- | :----------------------------------------- | :----------------------------------------------- |
+| Api         | [`api/README.md`](api/README.md)           | [@jo-fr](https://github.com/jo-fr)               |
+| Frontend    | [`frontend/README.md`](frontend/README.md) | [@lukas-menzel](https://github.com/lukas-menzel) |
+| Postgres DB | [`db/README.md`](db/README.md)             | [@alexmorten](https://github.com/alexmorten)     |
+
+### Wanna contribute?
+
+If you want to join us raising awareness for data privacy have a look into [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ## Getting started
+
+### Requirements
+
+| depency                                                      | version                                                            |
+| :----------------------------------------------------------- | :----------------------------------------------------------------- |
+| [`go`](https://golang.org/doc/install)                       | `v1.13` _([go modules](https://blog.golang.org/using-go-modules))_ |
+| [`docker`](https://docs.docker.com/install/)                 | `v19.x`                                                            |
+| [`docker-compose`](https://docs.docker.com/compose/install/) | `v1.24.x`                                                          |
 
 If this is your first time running this:
 
 1. Add `127.0.0.1 my-kafka` and `127.0.0.1 minio` to your `/etc/hosts` file
-2. Choose a user_name as a starting point and run `go run cli/main/main.go <instagram|twitter> <user_name>`
+2. Choose a `<user_name>` for your platform of choice `<instagram|twitter>` as a starting point and run 
+   ```bash
+   $ go run cli/main/main.go <instagram|twitter> <user_name>
+   ```
 
-As alternative, you can also add the cli to the docker-compose:
-
-```yaml
- cli:
-   build:
-     context: "."
-     dockerfile: "cli/Dockerfile"
-   command: ["<instagram|twitter>", "<user_name>"]
-   depends_on:
-     - "my-kafka"
-   environment:
-     KAFKA_ADDRESS: "my-kafka:9092"
-```
-
-### scraper in docker
+### Scraper in docker
 
 ```bash
 $ make run
 ```
 
-### scraper locally
+### Scraper locally
 
 Have a look into [`docker-compose.yml`](docker-compose.yml), set the neccessary environment variables and run it with the command from the regarding dockerfile.
-
-## Postgres change stream
-
-The debezium connector generates a change stream from all the changes in postgres
-
-To read from this stream you can
-
-- get [kt](https://github.com/fgeller/kt)
-- inspect the topic list in kafka `kt topic`, all topic starting with `postgres` are streams from individual tables
-- consume a topic with, for example `kt consume --topic postgres.public.users`
-
-The messages are quite verbose, since they include their own schema description. The most interesting part is the `value.payload` -> `kt consume --topic postgres.public.users | jq '.value | fromjson | .payload'`
