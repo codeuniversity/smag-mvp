@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends wget && \
       rm -r cmake-3.11.0-Linux-x86_64 && \
       rm cmake-3.11.0-Linux-x86_64.tar.gz
 
-RUN cmake --version
 RUN apt-get install -y --no-install-recommends \
             git build-essential pkg-config g++ unzip libgtk2.0-dev \
             curl ca-certificates libcurl4-openssl-dev libssl-dev \
@@ -47,7 +46,7 @@ RUN curl -Lo opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSIO
             cd / && rm -rf opencv*
 
 # clone seabolt-1.7.0 source code
-RUN git clone -b v1.7.2 https://github.com/neo4j-drivers/seabolt.git /seabolt
+RUN git clone -b v1.7.4 https://github.com/neo4j-drivers/seabolt.git /seabolt
 # invoke cmake build and install artifacts - default location is /usr/local
 WORKDIR /seabolt/build
 # CMAKE_INSTALL_LIBDIR=lib is a hack where we override default lib64 to lib to workaround a defect
