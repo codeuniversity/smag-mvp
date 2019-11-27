@@ -47,7 +47,7 @@ class App extends Component {
     return (
       <div className="container-center">
         <div className="column-center">
-          <Title />
+          <Title h1="Find out your public digital identity!" />
           <Form onSubmit={this.handleSubmit} />
         </div>
       </div>
