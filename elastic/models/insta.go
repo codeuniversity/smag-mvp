@@ -9,12 +9,12 @@ type InstaUser struct {
 
 type InstaPost struct {
 	ID      int    `json:"id"`
-	UserID  string `json:"user_id"`
+	UserID  int    `json:"user_id"`
 	Caption string `json:"caption"`
 }
 
 type InstaComment struct {
 	ID      int    `json:"id"`
-	PostID  string `json:"post_id"`
+	PostID  int    `json:"post_id"`
 	Comment string `json:"comment_text"`
 }
