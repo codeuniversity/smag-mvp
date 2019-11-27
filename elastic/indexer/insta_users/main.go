@@ -46,7 +46,7 @@ func handleChangemessage(esClient *elasticsearch.Client, m *changestream.ChangeM
 }
 
 func upsertDocument(u *user, esClient *elasticsearch.Client) error {
-	upertBody := createUpsertBody(u)
+	upsertBody := createUpsertBody(u)
 	response, err := esClient.Update(
 		elastic.UsersIndex,
 		strconv.Itoa(u.ID),
