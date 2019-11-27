@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
+	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/search/faces"
 	"github.com/codeuniversity/smag-mvp/faces/proto"
-	elasticsearch "github.com/elastic/go-elasticsearch/v7"
 	"google.golang.org/grpc"
 )
 
@@ -22,11 +21,7 @@ func main() {
 		panic(err)
 	}
 	faceReconClient := proto.NewFaceRecognizerClient(con)
-	cfg := elasticsearch.Config{Addresses: []string{"http://localhost:9200"}}
-	esClient, err := elasticsearch.NewClient(cfg)
-	if err != nil {
-		log.Fatalf("Error creating elasticsearch client: %s", err)
-	}
+	esClient := elastic.InitializeElasticSearch([]string{"http://localhost:9200"})
 
 	client := &faces.Client{
 		FaceRecognitionClient: faceReconClient,
