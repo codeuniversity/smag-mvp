@@ -33,7 +33,7 @@ func main() {
 		ESClient:              esClient,
 	}
 
-	faces, err := client.FindSimilarFacesInImage(os.Args[1])
+	faces, err := client.FindSimilarFacesInImage(os.Args[1], 10)
 
 	fmt.Printf("\n (")
 	for _, face := range faces {
