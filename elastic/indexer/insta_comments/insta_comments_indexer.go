@@ -23,10 +23,10 @@ func main() {
 
 	esHosts := utils.GetMultipliesStringsFromEnvDefault("ES_HOSTS", []string{"localhost:9201"})
 
-	elasticInserter := indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment)
+	i := indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment)
 
-	service.CloseOnSignal(elasticInserter)
-	waitUntilClosed := elasticInserter.Start()
+	service.CloseOnSignal(i)
+	waitUntilClosed := i.Start()
 
 	waitUntilClosed()
 }
