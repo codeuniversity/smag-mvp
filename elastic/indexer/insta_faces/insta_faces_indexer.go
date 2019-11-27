@@ -45,7 +45,7 @@ func indexFace(client *elasticsearch.Client, m *changestream.ChangeMessage) erro
 		return err
 	}
 
-	doc, err := indexer.FaceDocFromFaceData(face)
+	doc, err := FaceDocFromFaceData(face)
 	if err != nil {
 		return err
 	}
