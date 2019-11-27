@@ -20,7 +20,7 @@ type Client struct {
 }
 
 // FindSimilarFacesInImage finds faces in the given image and searches for faces similar to the ones in the given image
-// the url should be downloadable be the face recognizer, i.e. a signed url for s3 or for the imgproxy
+// the url should be downloadable by the face recognizer, i.e. a signed url for s3 or for the imgproxy
 func (c *Client) FindSimilarFacesInImage(imgURL string, maxHitsPerFace int) ([]FoundFace, error) {
 	response, err := c.FaceRecognitionClient.RecognizeFaces(context.Background(), &proto.RecognizeRequest{Url: imgURL})
 	if err != nil {
