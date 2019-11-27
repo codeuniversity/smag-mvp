@@ -1,7 +1,19 @@
 FROM ubuntu:16.04 AS opencv
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-            git build-essential cmake pkg-config g++ unzip libgtk2.0-dev \
+# install cmake 3.11
+RUN apt-get update && apt-get install -y --no-install-recommends wget
+RUN wget --no-check-certificate https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.tar.gz
+RUN tar -xvf cmake-3.11.0-Linux-x86_64.tar.gz
+RUN cd cmake-3.11.0-Linux-x86_64 && cp -r bin /usr/ &&  \
+      cp -r share /usr/ && \
+      cp -r doc /usr/share/ && cp -r man /usr/share/
+RUN cd .. && \
+      rm -r cmake-3.11.0-Linux-x86_64 && \
+      rm cmake-3.11.0-Linux-x86_64.tar.gz
+
+RUN cmake --version
+RUN apt-get install -y --no-install-recommends \
+            git build-essential pkg-config g++ unzip libgtk2.0-dev \
             curl ca-certificates libcurl4-openssl-dev libssl-dev \
             libavcodec-dev libavformat-dev libswscale-dev libtbb2 libtbb-dev \
             libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev && \
