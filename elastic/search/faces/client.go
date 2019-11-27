@@ -34,10 +34,10 @@ func (c *Client) FindSimilarFacesInImage(imgURL string, maxHitsPerFace int) ([]F
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println("max score:", r.Hits.MaxScore)
+		log.Println("max score:", r.Hits.MaxScore)
 		for _, hit := range r.Hits.Hits {
 			doc := hit.Source
-			fmt.Println("score:", hit.Score)
+			log.Println("score:", hit.Score)
 			foundFaces = append(foundFaces, FoundFace{FaceDoc: doc, Score: hit.Score, MaxScoreShare: hit.Score / r.Hits.MaxScore})
 		}
 	}
