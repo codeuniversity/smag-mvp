@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/codeuniversity/smag-mvp/es"
+	"github.com/codeuniversity/smag-mvp/elastic/search/faces"
 	"github.com/codeuniversity/smag-mvp/faces/proto"
 	elasticsearch "github.com/elastic/go-elasticsearch/v7"
 	"google.golang.org/grpc"
@@ -28,7 +28,7 @@ func main() {
 		log.Fatalf("Error creating elasticsearch client: %s", err)
 	}
 
-	client := &es.FaceSearchClient{
+	client := &faces.FaceSearchClient{
 		FaceRecognitionClient: faceReconClient,
 		ESClient:              esClient,
 	}

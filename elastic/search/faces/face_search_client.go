@@ -1,9 +1,11 @@
-package es
+package faces
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/codeuniversity/smag-mvp/elastic"
 	proto "github.com/codeuniversity/smag-mvp/faces/proto"
 	elasticsearch "github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
@@ -46,7 +48,7 @@ func (c *FaceSearchClient) FindSimilarFacesInImage(imgURL string) ([]FoundFace, 
 func (c *FaceSearchClient) searchForSimilarFaces(face *proto.Face) (*searchResponse, error) {
 	searchBodyReader := esutil.NewJSONReader(newSearch(10, face.Encoding))
 	esResponse, err := c.ESClient.Search(
-		c.ESClient.Search.WithIndex(FaceIndexName),
+		c.ESClient.Search.WithIndex(elastic.FacesIndex),
 		c.ESClient.Search.WithBody(searchBodyReader),
 	)
 	if err != nil {
