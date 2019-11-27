@@ -13,15 +13,15 @@ import (
 	"log"
 )
 
-// FaceSearchClient searches elasticsearch for similar faces to the faces given in an image
-type FaceSearchClient struct {
+// Client searches elasticsearch for similar faces to the faces given in an image
+type Client struct {
 	FaceRecognitionClient proto.FaceRecognizerClient
 	ESClient              *elasticsearch.Client
 }
 
 // FindSimilarFacesInImage finds faces in the given image and searches for faces similar to the ones in the given image
 // the url should be downloadable be the face recognizer, i.e. a signed url for s3 or for the imgproxy
-func (c *FaceSearchClient) FindSimilarFacesInImage(imgURL string, maxHitsPerFace int) ([]FoundFace, error) {
+func (c *Client) FindSimilarFacesInImage(imgURL string, maxHitsPerFace int) ([]FoundFace, error) {
 	response, err := c.FaceRecognitionClient.RecognizeFaces(context.Background(), &proto.RecognizeRequest{Url: imgURL})
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func (c *FaceSearchClient) FindSimilarFacesInImage(imgURL string, maxHitsPerFace
 	return foundFaces, nil
 }
 
-func (c *FaceSearchClient) searchForSimilarFaces(face *proto.Face, maxHits int) (*searchResponse, error) {
+func (c *Client) searchForSimilarFaces(face *proto.Face, maxHits int) (*searchResponse, error) {
 	searchBodyReader := esutil.NewJSONReader(newSearch(maxHits, face.Encoding))
 	esResponse, err := c.ESClient.Search(
 		c.ESClient.Search.WithIndex(elastic.FacesIndex),

@@ -28,7 +28,7 @@ func main() {
 		log.Fatalf("Error creating elasticsearch client: %s", err)
 	}
 
-	client := &faces.FaceSearchClient{
+	client := &faces.Client{
 		FaceRecognitionClient: faceReconClient,
 		ESClient:              esClient,
 	}
