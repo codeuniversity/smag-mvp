@@ -1,7 +1,7 @@
 FROM golang:1.13-alpine as builder
 RUN apk add --no-cache ca-certificates cmake make g++ openssl-dev git curl pkgconfig
 # clone seabolt-1.7.0 source code
-RUN git clone -b v1.7.2 https://github.com/neo4j-drivers/seabolt.git /seabolt
+RUN git clone -b v1.7.4 https://github.com/neo4j-drivers/seabolt.git /seabolt
 # invoke cmake build and install artifacts - default location is /usr/local
 WORKDIR /seabolt/build
 # CMAKE_INSTALL_LIBDIR=lib is a hack where we override default lib64 to lib to workaround a defect
