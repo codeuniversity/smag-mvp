@@ -1,4 +1,4 @@
-package insta_users
+package main
 
 import (
 	"encoding/json"

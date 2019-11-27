@@ -1,4 +1,4 @@
-package insta_faces
+package main
 
 import (
 	"encoding/base64"
