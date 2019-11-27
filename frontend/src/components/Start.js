@@ -20,7 +20,7 @@ function Start() {
         <div className="column-center">
           <Title />
           <p>Take a pictures!</p>
-          <CameraFeed sendFile={uploadImage} />
+          <CameraFeed onFileSubmit={uploadImage} />
         </div>
       </div>
     </div>

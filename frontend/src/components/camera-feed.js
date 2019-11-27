@@ -45,10 +45,10 @@ export class CameraFeed extends Component {
    * @instance
    */
   takePhoto = () => {
-    const { sendFile } = this.props;
+    const { onFileSubmit } = this.props;
     const context = this.canvas.getContext("2d");
     context.drawImage(this.videoPlayer, 0, 0, 800, 600);
-    this.canvas.toBlob(sendFile);
+    this.canvas.toBlob(onFileSubmit);
   };
 
   render() {
