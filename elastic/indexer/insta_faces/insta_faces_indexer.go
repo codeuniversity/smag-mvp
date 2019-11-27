@@ -10,6 +10,7 @@ import (
 
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/indexer"
+	esModels "github.com/codeuniversity/smag-mvp/elastic/models"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
@@ -45,7 +46,7 @@ func indexFace(client *elasticsearch.Client, m *changestream.ChangeMessage) erro
 		return err
 	}
 
-	doc, err := FaceDocFromFaceData(face)
+	doc, err := esModels.FaceDocFromFaceData(face)
 	if err != nil {
 		return err
 	}
