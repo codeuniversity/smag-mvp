@@ -130,7 +130,32 @@ services:
       KAFKA_INSTA_POSTS_TOPIC: "insta_posts"
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
-
+  insta_comments-inserter:
+    build:
+      context: "."
+      dockerfile: "insta_comments-inserter/Dockerfile"
+    depends_on:
+      - "my-kafka"
+      - "postgres"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_comments_inserter"
+      KAFKA_INSTA_POSTS_TOPIC: "insta_comments"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+  insta_likes-inserter:
+    build:
+      context: "."
+      dockerfile: "insta_likes-inserter/Dockerfile"
+    depends_on:
+      - "my-kafka"
+      - "postgres"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "insta_likes_inserter"
+      KAFKA_INSTA_POSTS_TOPIC: "insta_likes"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
   # DOWNLOADER
   insta_pics-downloader:
     build:
