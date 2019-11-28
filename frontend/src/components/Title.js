@@ -1,13 +1,13 @@
-
-import React, {Component} from 'react';
+import React, { Component } from "react";
 
 class Title extends Component {
-    render() {
-      return <div className="headline">
-          <h1>Find out your public digital identity!</h1>
-          </div>
-    }
-  }  
+  render() {
+    return (
+      <div className="headline">
+        <h1>{this.props.h1}</h1>
+      </div>
+    );
+  }
+}
 
 export default Title;
-

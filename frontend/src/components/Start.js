@@ -2,7 +2,7 @@ import React, { Fragment } from "react";
 import ReactDOM from "react-dom";
 // import axios from "axios";
 import { withRouter } from "react-router";
-import { CameraFeed } from "./camera-feed";
+import { CameraFeed } from "./Camera-feed";
 import Title from "./Title";
 
 // Upload to local seaweedFS instance
@@ -20,7 +20,7 @@ function Start() {
         <div className="column-center">
           <Title />
           <p>Take a pictures!</p>
-          <CameraFeed sendFile={uploadImage} />
+          <CameraFeed onFileSubmit={uploadImage} />
         </div>
       </div>
     </div>

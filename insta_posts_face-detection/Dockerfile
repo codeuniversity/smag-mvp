@@ -1,7 +1,18 @@
 FROM ubuntu:16.04 AS opencv
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-            git build-essential cmake pkg-config unzip libgtk2.0-dev \
+# install cmake 3.11
+RUN apt-get update && apt-get install -y --no-install-recommends wget && \
+      wget --no-check-certificate https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.tar.gz && \
+      tar -xvf cmake-3.11.0-Linux-x86_64.tar.gz && \
+      cd cmake-3.11.0-Linux-x86_64 && cp -r bin /usr/ &&  \
+      cp -r share /usr/ && \
+      cp -r doc /usr/share/ && cp -r man /usr/share/ && \
+      cd .. && \
+      rm -r cmake-3.11.0-Linux-x86_64 && \
+      rm cmake-3.11.0-Linux-x86_64.tar.gz
+
+RUN apt-get install -y --no-install-recommends \
+            git build-essential pkg-config g++ unzip libgtk2.0-dev \
             curl ca-certificates libcurl4-openssl-dev libssl-dev \
             libavcodec-dev libavformat-dev libswscale-dev libtbb2 libtbb-dev \
             libjpeg-dev libpng-dev libtiff-dev libdc1394-22-dev && \
@@ -33,6 +44,15 @@ RUN curl -Lo opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSIO
             make -j $(nproc --all) && \
             make preinstall && make install && ldconfig && \
             cd / && rm -rf opencv*
+
+# clone seabolt-1.7.0 source code
+RUN git clone -b v1.7.4 https://github.com/neo4j-drivers/seabolt.git /seabolt
+# invoke cmake build and install artifacts - default location is /usr/local
+WORKDIR /seabolt/build
+# CMAKE_INSTALL_LIBDIR=lib is a hack where we override default lib64 to lib to workaround a defect
+# in our generated pkg-config file
+RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_LIBDIR=lib .. && cmake --build . --target install
+RUN curl -sSL "https://github.com/gotestyourself/gotestsum/releases/download/v0.3.1/gotestsum_0.3.1_linux_amd64.tar.gz" | tar -xz -C /usr/local/bin gotestsum
 
 #################
 #  Go + OpenCV  #
