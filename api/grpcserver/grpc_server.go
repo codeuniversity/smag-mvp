@@ -8,18 +8,19 @@ import (
 	"log"
 	"net"
 	"net/url"
+	"strconv"
+	"strings"
 	"time"
-
 	// required for postgres
+	"encoding/base64"
 	_ "github.com/lib/pq"
 
-	"encoding/base64"
 	"github.com/codeuniversity/smag-mvp/api/proto"
+	"github.com/minio/minio-go/v6"
+	"google.golang.org/grpc"
 
 	"github.com/codeuniversity/smag-mvp/config"
 	"github.com/codeuniversity/smag-mvp/utils"
-	"github.com/minio/minio-go/v6"
-	"google.golang.org/grpc"
 
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/search/faces"
@@ -317,13 +318,14 @@ func (s *GrpcServer) SearchSimilarFaces(ctx context.Context, request *proto.Face
 		return &proto.FaceSearchResponse{Faces: nil}, nil
 	}
 
-	postIDs := []int{}
+	postIDs := []string{}
 
 	for _, face := range faces {
-		postIDs = append(postIDs, face.PostID)
+		postIDs = append(postIDs, strconv.FormatInt(int64(face.PostID), 10))
 	}
-
-	rows, err := s.db.Query(`SELECT id, COALESCE(internal_picture_url, '') as internal_picture_url FROM posts WHERE id in $1`, postIDs)
+	sql := `SELECT id, COALESCE(internal_picture_url, '') as internal_picture_url FROM posts WHERE id in (` + strings.Join(postIDs, ",") + ")"
+	log.Println(sql)
+	rows, err := s.db.Query(sql)
 	if err != nil {
 		return nil, fmt.Errorf("failed to query postgres for posts: %w", err)
 	}
