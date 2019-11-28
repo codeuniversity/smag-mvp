@@ -7,6 +7,7 @@
 - [Further reading](#further-reading)
   - [Detailed documentation](#detailed-documentation)
   - [Wanna contribute?](#wanna-contribute)
+  - [List of contributors](#list-of-contributors)
 - [Getting started](#getting-started)
   - [Requirements](#requirements)
   - [Scraper in docker](#scraper-in-docker)
@@ -20,6 +21,7 @@ The results will be available via an API, used for some kind of art exhibition.
 
 ![](docs/architecture.png)
 
+<!-- TODO: change link -->
 You can find an more detailed overview [here](https://miro.com/app/board/o9J_kw7a-qM=/)
 
 ## Further reading
@@ -35,6 +37,9 @@ You can find an more detailed overview [here](https://miro.com/app/board/o9J_kw7
 ### Wanna contribute?
 
 If you want to join us raising awareness for data privacy have a look into [`CONTRIBUTING.md`](CONTRIBUTING.md)
+
+### List of contributors
+<!-- TODO: Add list -->
 
 ## Getting started
 

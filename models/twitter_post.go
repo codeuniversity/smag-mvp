@@ -60,7 +60,7 @@ type TwitterPost struct {
 	GormModelWithoutID
 
 	// meta
-	PostIdentifier uint64 `gorm:"primary_key"`
+	PostIdentifier uint64 `gorm:"primary_key:true"`
 	ConversationID string
 	Link           string
 	Type           string
@@ -75,10 +75,10 @@ type TwitterPost struct {
 	// content
 	Cashtags    pq.StringArray `gorm:"type:varchar(64)[]"`
 	Hashtags    pq.StringArray `gorm:"type:varchar(64)[]"`
-	Mentions    []*TwitterUser `gorm:"many2many:post_mentions"`
+	Mentions    []*TwitterUser `gorm:"many2many:post_mentions;association_foreignkey:username;foreignkey:postIdentifier"`
 	Photos      pq.StringArray `gorm:"type:varchar(64)[]"`
 	QuoteURL    string
-	ReplyTo     []*TwitterUser `gorm:"many2many:post_replies"`
+	ReplyTo     []*TwitterUser `gorm:"many2many:post_replies;association_foreignkey:username;foreignkey:postIdentifier"`
 	Retweet     bool
 	RetweetDate string
 	RetweetID   string
