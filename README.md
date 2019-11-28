@@ -25,7 +25,8 @@ The results will be available via an API, used for some kind of art exhibition.
 
 ![](docs/architecture.png)
 
-You can find an more detailed overview [here](https://drive.google.com/a/code.berlin/file/d/1uE8oTku322-_eN3QGuiM4ayWZiRXfn9F/view?usp=sharing)
+You can find an more detailed overview [here](https://drive.google.com/a/code.berlin/file/d/1uE8oTku322-_eN3QGuiM4ayWZiRXfn9F/view?usp=sharing). <br>
+Open it in draw.io and have a look at the different tabs "High level overview", "Distributed Scraper" and "Face Search".
 
 ## Further reading
 
