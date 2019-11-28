@@ -29,11 +29,3 @@ to check the attributes of the proto messages take a look at the protofile *user
 | GET        | getAllUsersWithUsername     | UserNameRequest     | UserSearchResponse |
 | GET        | getTaggedPostsWithUserId    | UserIdRequest       | InstaPostsResponse |
 | GET        | getInstaPostssWithUserid    | UserIdRequest       | UserSearchResponse |
-
-## local testing
-In the case of local changes to the API, it is possible to run the setup locally
-1. Optional: re-generate the protofiles with `make gen-client`
-2. `docker-compose up envoy-proxy`
-3. initialize the Database with `make init-db`
-4. follow the instructions for the frontend
-5. Then connect with the envoy-proxy via `localhost:4000`
