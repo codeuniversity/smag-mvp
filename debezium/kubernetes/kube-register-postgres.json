@@ -9,6 +9,7 @@
     "database.user": "postgres",
     "database.password": "12345678",
     "database.dbname": "instascraper",
-    "database.server.name": "postgres"
+    "database.server.name": "postgres",
+    "snapshot.mode": "never"
   }
 }

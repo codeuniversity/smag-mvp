@@ -10,7 +10,7 @@ import (
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
-	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
+	"github.com/neo4j/neo4j-go-driver/neo4j"
 
 	kf "github.com/segmentio/kafka-go"
 )
@@ -20,7 +20,8 @@ type Inserter struct {
 	*worker.Worker
 
 	qReader *kf.Reader
-	conn    bolt.Conn
+	driver  neo4j.Driver
+	session neo4j.Session
 
 	inserterFunc InserterFunc
 }
@@ -28,7 +29,7 @@ type Inserter struct {
 // InserterFunc is responsible to unmashal to the
 // needed Data from the change Message and inserts
 // it into neo4j
-type InserterFunc func(*changestream.ChangeMessage, bolt.Conn) error
+type InserterFunc func(*changestream.ChangeMessage, neo4j.Session) error
 
 // New returns an initilized scraper
 func New(neo4jConfig *utils.Neo4jConfig, userQReader *kf.Reader, inserterFunc InserterFunc) *Inserter {
@@ -37,19 +38,21 @@ func New(neo4jConfig *utils.Neo4jConfig, userQReader *kf.Reader, inserterFunc In
 	i.qReader = userQReader
 	i.inserterFunc = inserterFunc
 
-	conn, err := initializeNeo4j(neo4jConfig)
-
+	session, driver, err := initializeNeo4j(neo4jConfig)
 	if err != nil {
 		panic(err)
 	}
+	i.session = session
+	i.driver = driver
+
 	log.Println("✅ Neo4j Connection established")
-	i.conn = conn
 
 	i.Worker = worker.Builder{}.WithName("neo4j-inserter").
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("userQReader", userQReader.Close).
-		AddShutdownHook("Neo4j", conn.Close).
+		AddShutdownHook("Neo4j Driver", driver.Close).
+		AddShutdownHook("Neo4j Session", session.Close).
 		MustBuild()
 
 	return i
@@ -71,7 +74,7 @@ func (i *Inserter) runStep() error {
 		return err
 	}
 
-	err = i.inserterFunc(changeMessage, i.conn)
+	err = i.inserterFunc(changeMessage, i.session)
 
 	if err != nil {
 		return err
@@ -82,20 +85,22 @@ func (i *Inserter) runStep() error {
 }
 
 //initializeNeo4j sets connection and constraints for neo4j
-func initializeNeo4j(config *utils.Neo4jConfig) (bolt.Conn, error) {
-	driver := bolt.NewDriver()
-	address := fmt.Sprintf("bolt://%s:%s@%s:7687", config.Username, config.Password, config.Host)
-	con, err := driver.OpenNeo(address)
-
+func initializeNeo4j(config *utils.Neo4jConfig) (neo4j.Session, neo4j.Driver, error) {
+	address := fmt.Sprintf("bolt://%s:7687", config.Host)
+	driver, err := neo4j.NewDriver(address, neo4j.BasicAuth(config.Username, config.Password, ""))
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	_, err = con.ExecNeo("CREATE CONSTRAINT ON (U:USER) ASSERT U.id IS UNIQUE", nil)
-
+	session, err := driver.Session(neo4j.AccessModeWrite)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return con, nil
+	_, err = session.Run("CREATE CONSTRAINT ON (U:USER) ASSERT U.id IS UNIQUE", nil)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return session, driver, nil
 }
