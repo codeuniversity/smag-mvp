@@ -55,6 +55,7 @@ func upsertDocument(u *models.InstaUser, esClient *elasticsearch.Client) error {
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != 200 && response.StatusCode != 201 {
 		return fmt.Errorf("upsertDocument Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
