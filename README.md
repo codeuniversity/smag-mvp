@@ -1,19 +1,23 @@
 # Social Record
+
 > Distributed scraping and analysis pipeline for a range of social media platforms
 
 **Table of content**
-- [About](#about)
-- [Architectural overview](#architectural-overview)
-- [Further reading](#further-reading)
-  - [Detailed documentation](#detailed-documentation)
-  - [Wanna contribute?](#wanna-contribute)
-  - [List of contributors](#list-of-contributors)
-- [Getting started](#getting-started)
-  - [Requirements](#requirements)
-  - [Scraper in docker](#scraper-in-docker)
-  - [Scraper locally](#scraper-locally)
+
+- [Social Record](#social-record)
+  - [About](#about)
+  - [Architectural overview](#architectural-overview)
+  - [Further reading](#further-reading)
+    - [Detailed documentation](#detailed-documentation)
+    - [Wanna contribute?](#wanna-contribute)
+    - [List of contributors](#list-of-contributors)
+  - [Getting started](#getting-started)
+    - [Requirements](#requirements)
+    - [Scraper in docker](#scraper-in-docker)
+    - [Scraper locally](#scraper-locally)
 
 ## About
+
 The goal of this project is to raise awareness about data privacy. The mean to do so is a tool to scrape, combine and analyze public data from multiple social media sources. <br>
 The results will be available via an API, used for some kind of art exhibition.
 
@@ -22,6 +26,7 @@ The results will be available via an API, used for some kind of art exhibition.
 ![](docs/architecture.png)
 
 <!-- TODO: change link -->
+
 You can find an more detailed overview [here](https://miro.com/app/board/o9J_kw7a-qM=/)
 
 ## Further reading
@@ -39,6 +44,7 @@ You can find an more detailed overview [here](https://miro.com/app/board/o9J_kw7
 If you want to join us raising awareness for data privacy have a look into [`CONTRIBUTING.md`](CONTRIBUTING.md)
 
 ### List of contributors
+
 <!-- TODO: Add list -->
 
 ## Getting started
@@ -51,19 +57,19 @@ If you want to join us raising awareness for data privacy have a look into [`CON
 | [`docker`](https://docs.docker.com/install/)                 | `v19.x`                                                            |
 | [`docker-compose`](https://docs.docker.com/compose/install/) | `v1.24.x`                                                          |
 
-If this is your first time running this:
-
-1. Add `127.0.0.1 my-kafka` and `127.0.0.1 minio` to your `/etc/hosts` file
-2. Choose a `<user_name>` for your platform of choice `<instagram|twitter>` as a starting point and run 
-   ```bash
-   $ go run cli/main/main.go <instagram|twitter> <user_name>
-   ```
-
 ### Scraper in docker
 
 ```bash
 $ make run
 ```
+
+If this is your first time running this:
+
+1. Add `127.0.0.1 my-kafka` and `127.0.0.1 minio` to your `/etc/hosts` file
+2. Choose a `<user_name>` for your platform of choice `<instagram|twitter>` as a starting point and run
+   ```bash
+   $ go run cli/main/main.go <instagram|twitter> <user_name>
+   ```
 
 ### Scraper locally
 
