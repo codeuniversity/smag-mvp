@@ -51,7 +51,7 @@ type TwitterUser struct {
 
 	// User info
 	Name            string
-	Username        string `gorm:"primary_key"`
+	Username        string `gorm:"primary_key:true"`
 	Bio             string
 	Avatar          string
 	BackgroundImage string

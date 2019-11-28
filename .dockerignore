@@ -4,7 +4,7 @@
 
 # git stuff
 .gitignore
-README.md
+*.md
 
 # DOCKER stuff
 docker-compose.yml
