@@ -3,12 +3,12 @@ The Social Record front-end displays the analyzed data from instagram of the vis
 
 ### Prerequisities
 
-|                |                                                                      |     |     |     |
-| -------------- | -------------------------------------------------------------------- | --- | --- | --- |
-| Node.js        | `v10.16.0                                                            |     |     |     |
-| Go             | `go 1.13` _([go modules](https://blog.golang.org/using-go-modules))_ |     |     |     |
-| Docker         | `v19.x`                                                              |     |     |     |
-| Docker Compose | `v1.25.0`                                                            |     |     |     |
+|                |                                                                    |     |     |     |
+| -------------- | ------------------------------------------------------------------ | --- | --- | --- |
+| Node.js        | `v10.16.0                                                          |     |     |     |
+| Go             | `go 1.13` ([go modules](https://blog.golang.org/using-go-modules)) |     |     |     |
+| Docker         | `v19.x`                                                            |     |     |     |
+| Docker Compose | `v1.25.x`                                                          |     |     |     |
 
 ### Getting started
 
@@ -22,9 +22,9 @@ The Social Record front-end displays the analyzed data from instagram of the vis
 
 **5. To deploy to production you can create a minified bundle** `npm run build`
 
-**6.Run all services in docker to locally test the application.**     
+**6. Run all services in docker to locally test the application.**     
 
-1. Add `127.0.0.1 my-kafka`and `127.0.0.1. minio` to your `/etc/hosts`file
+1. Add `127.0.0.1 my-kafka` and `127.0.0.1. minio` to your `/etc/hosts` file
 2. Choose a user_name as a starting point and run `go run cli/main/main.go instagram <user_name>`
 3. Start all services `make run`
 
