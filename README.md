@@ -4,17 +4,17 @@
 
 **Table of content**
 
-- [Social Record](#social-record)
-  - [About](#about)
-  - [Architectural overview](#architectural-overview)
-  - [Further reading](#further-reading)
-    - [Detailed documentation](#detailed-documentation)
-    - [Wanna contribute?](#wanna-contribute)
-    - [List of contributors](#list-of-contributors)
-  - [Getting started](#getting-started)
-    - [Requirements](#requirements)
-    - [Scraper in docker](#scraper-in-docker)
-    - [Scraper locally](#scraper-locally)
+- [About](#about)
+- [Architectural overview](#architectural-overview)
+- [Further reading](#further-reading)
+  - [Detailed documentation](#detailed-documentation)
+  - [Wanna contribute?](#wanna-contribute)
+  - [List of contributors](#list-of-contributors)
+  - [Deployment](#deployment)
+- [Getting started](#getting-started)
+  - [Requirements](#requirements)
+  - [Preparation](#preparation)
+  - [Scraper](#scraper)
 
 ## About
 
@@ -24,8 +24,6 @@ The results will be available via an API, used for some kind of art exhibition.
 ## Architectural overview
 
 ![](docs/architecture.png)
-
-<!-- TODO: change link -->
 
 You can find an more detailed overview [here](https://drive.google.com/a/code.berlin/file/d/1uE8oTku322-_eN3QGuiM4ayWZiRXfn9F/view?usp=sharing)
 
@@ -53,6 +51,10 @@ If you want to join us raising awareness for data privacy have a look into [`CON
 - @lukas-menzel Lukas Menzel
 - @SpringHawk Martin Zaubitzer
 
+### Deployment
+
+The deployment of this project to kubernetes happens in [codeuniversity/smag-deploy](https://github.com/codeuniversity/smag-deploy) _(this is a private repo!)_
+
 ## Getting started
 
 ### Requirements
@@ -63,11 +65,7 @@ If you want to join us raising awareness for data privacy have a look into [`CON
 | [`docker`](https://docs.docker.com/install/)                 | `v19.x`                                                            |
 | [`docker-compose`](https://docs.docker.com/compose/install/) | `v1.24.x`                                                          |
 
-### Scraper in docker
-
-```bash
-$ make run
-```
+### Preparation
 
 If this is your first time running this:
 
@@ -77,6 +75,9 @@ If this is your first time running this:
    $ go run cli/main/main.go <instagram|twitter> <user_name>
    ```
 
-### Scraper locally
+### Scraper 
 
-Have a look into [`docker-compose.yml`](docker-compose.yml), set the neccessary environment variables and run it with the command from the regarding dockerfile.
+Run the instagram- or twitter-scraper in docker:
+```bash
+$ make run-<platform_name>
+```
