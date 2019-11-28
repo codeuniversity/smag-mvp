@@ -1,5 +1,5 @@
 ## Social Record front-end  
-The Social Record front-end displays the analyzed data from instagram of the visitor for the exhibition. Using the front-end the visitors can experience what public data social media providers expose about them.
+The Social Record front-end displays the analyzed data from instagram of the visitor of the exhibition. Using the front-end the visitors can experience what public data social media providers expose about them.
 
 ### Prerequisities
 
@@ -24,9 +24,10 @@ The Social Record front-end displays the analyzed data from instagram of the vis
 
 **6. Run all services in docker to locally test the application.**     
 
-1. Add `127.0.0.1 my-kafka` and `127.0.0.1. minio` to your `/etc/hosts` file
-2. Choose a user_name as a starting point and run `go run cli/main/main.go instagram <user_name>`
-3. Start all services `make run`
+1. Start all services `make run`
+2. Add `127.0.0.1 my-kafka` and `127.0.0.1. minio` to your `/etc/hosts` file
+3. Choose a user_name as a starting point and run `go run cli/main/main.go instagram <user_name>`
+
 
 ### React Component Design
 
