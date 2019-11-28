@@ -16,7 +16,6 @@ services:
     environment:
       KAFKA_CREATE_TOPICS: >
         user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1,
-        twitter-user_names:4:1,twitter-users_scraped:4:1,twitter-posts_scraped:4:1,
         reached_limit:4:1,renewed_elastic_ip:4:1,renewing_elastic_ip_errors:4:1,
         user_post:4:1,user_instagram-scrape_errors:4:1,insta_comments_info:4:1,post_comment_insta_scraper_errors:4:1
       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
@@ -212,74 +211,6 @@ services:
       S3_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
       S3_USE_SSL: "false"
 
-  # TWITTER SCRAPER
-  twitter_scraper_users:
-    build: "twitter_scraper/"
-    image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.users_scraper"]
-    depends_on:
-      - "my-kafka"
-    environment:
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_FETCH_TOPIC: "twitter-user_names"
-      KAFKA_INSERT_TOPIC: "twitter-users_scraped"
-  twitter_scraper_followers:
-    build: "twitter_scraper/"
-    image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.followers_scraper"]
-    depends_on:
-      - "my-kafka"
-    environment:
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_FETCH_TOPIC: "twitter-user_names"
-      KAFKA_INSERT_TOPIC: "twitter-users_scraped"
-  twitter_scraper_following:
-    build: "twitter_scraper/"
-    image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.following_scraper"]
-    depends_on:
-      - "my-kafka"
-    environment:
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_FETCH_TOPIC: "twitter-user_names"
-      KAFKA_INSERT_TOPIC: "twitter-users_scraped"
-  twitter_scraper_posts:
-    build: "twitter_scraper/"
-    image: "smag-twitter_scraper"
-    command: ["-m", "twitterscraper.posts_scraper"]
-    depends_on:
-      - "my-kafka"
-    environment:
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_FETCH_TOPIC: "twitter-user_names"
-      KAFKA_INSERT_TOPIC: "twitter-posts_scraped"
-
-  # TWITTER INSERTER
-  twitter_inserter_users:
-    build:
-      context: "."
-      dockerfile: "./twitter_inserter_users/Dockerfile"
-    image: "smag-twitter_inserter_users"
-    environment:
-      POSTGRES_HOST: "postgres"
-      POSTGRES_PASSWORD: "12345678"
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_GROUPID: "twitter_inserter_users"
-      KAFKA_INFO_TOPIC: "twitter-users_scraped"
-      KAFKA_NAME_TOPIC: "twitter-user_names"
-  twitter_inserter_posts:
-    build:
-      context: "."
-      dockerfile: "twitter_inserter_posts/Dockerfile"
-    image: "smag-twitter_inserter_posts"
-    environment:
-      POSTGRES_HOST: "postgres"
-      POSTGRES_PASSWORD: "12345678"
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_GROUPID: "twitter_inserter_posts"
-      KAFKA_INFO_TOPIC: "twitter-posts_scraped"
-      KAFKA_NAME_TOPIC: "twitter-user_names"
-
   # POSTGRES
   postgres:
     image: "debezium/postgres:11"
@@ -408,13 +339,3 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_post_pictures-filter"
-  twitter-user-filter:
-    build:
-      context: "."
-      dockerfile: "kafka/changestream/twitter_user_names-filter/Dockerfile"
-    depends_on:
-      - "postgres"
-      - "connect"
-    environment:
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_GROUPID: "twitter_user_names-filter"
