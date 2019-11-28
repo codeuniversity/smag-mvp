@@ -13,7 +13,8 @@ gen-faces:
 # INSTAGRAM
 
 run-instagram:
-	docker-compose up -d zookeeper my-kafka postgres connect minio
+	docker-compose up -d zookeeper my-kafka postgres connect minio neo4j
+	docker-compose up -d --build es-with-plugin
 	sleep 5
 	docker-compose up --build migrate-postgres
 	docker-compose up -d --build
