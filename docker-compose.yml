@@ -140,7 +140,7 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_comments_inserter"
-      KAFKA_INSTA_POSTS_TOPIC: "insta_comments"
+      KAFKA_INFO_TOPIC: "insta_comments"
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
   insta_likes-inserter:
@@ -153,7 +153,7 @@ services:
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_likes_inserter"
-      KAFKA_INSTA_POSTS_TOPIC: "insta_likes"
+      KAFKA_INFO_TOPIC: "insta_likes"
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
   # DOWNLOADER
