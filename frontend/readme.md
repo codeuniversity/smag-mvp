@@ -3,11 +3,12 @@ The Social Record front-end displays the analyzed data from instagram of the vis
 
 ### Prerequisities
 
-|                |                                                            |     |     |     |
-| -------------- | ---------------------------------------------------------- | --- | --- | --- |
-| Node.js        | `v10.16.0                                                  |     |     |     |
-| Go             | `go 1.13` (or go 1.11+ with the env var `GO111MODULEs=on`) |     |     |     |
-| Docker Compose | `v1.25.0`                                                  |     |     |     |
+|                |                                                                      |     |     |     |
+| -------------- | -------------------------------------------------------------------- | --- | --- | --- |
+| Node.js        | `v10.16.0                                                            |     |     |     |
+| Go             | `go 1.13` _([go modules](https://blog.golang.org/using-go-modules))_ |     |     |     |
+| Docker         | `v19.x`                                                              |     |     |     |
+| Docker Compose | `v1.25.0`                                                            |     |     |     |
 
 ### Getting started
 
