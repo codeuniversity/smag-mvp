@@ -53,7 +53,7 @@ func New(jobQReader *kafka.Reader, resultQWriter *kafka.Writer, faceRecognizerAd
 }
 
 func (w *Worker) step() error {
-	messages, err := w.readMessageBlock(1*time.Second, 32)
+	messages, err := w.readMessageBlock(1*time.Second, 8)
 	if err != nil {
 		return err
 	}
