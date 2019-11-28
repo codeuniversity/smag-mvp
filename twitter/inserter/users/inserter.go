@@ -28,12 +28,12 @@ type Inserter struct {
 	db *gorm.DB
 }
 
-// New returns an initilized scraper
-func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter {
+// New returns an initilized inserter
+func New(postgresHost, postgresPassword, dbName string, qReader *kafka.Reader) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
 
-	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
+	connectionString := fmt.Sprintf("host=%s user=postgres dbname=%s sslmode=disable", postgresHost, dbName)
 	if postgresPassword != "" {
 		connectionString += " " + "password=" + postgresPassword
 	}

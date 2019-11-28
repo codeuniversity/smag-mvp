@@ -12,12 +12,14 @@ func main() {
 
 	postgresHost := utils.GetStringFromEnvWithDefault("POSTGRES_HOST", "127.0.0.1")
 	postgresPassword := utils.GetStringFromEnvWithDefault("POSTGRES_PASSWORD", "")
+	postgresDBNAme := utils.GetStringFromEnvWithDefault("POSTGRES_DB_NAME", "twitter_scraper")
 
 	qReaderConfig := kafka.GetInserterConfig()
 
 	i = inserter.New(
 		postgresHost,
 		postgresPassword,
+		postgresDBNAme,
 		kafka.NewReader(qReaderConfig),
 	)
 
