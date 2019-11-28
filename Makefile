@@ -13,8 +13,9 @@ gen-faces:
 # INSTAGRAM
 
 run-instagram:
-	docker-compose up -d my-kafka postgres connect
+	docker-compose up -d zookeeper my-kafka postgres connect minio
 	sleep 5
+	docker-compose up --build migrate-postgres
 	docker-compose up -d --build
 	docker-compose logs -f
 
