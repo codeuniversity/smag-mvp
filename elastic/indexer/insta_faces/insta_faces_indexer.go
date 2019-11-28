@@ -60,6 +60,7 @@ func indexFace(client *elasticsearch.Client, m *changestream.ChangeMessage) erro
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 	log.Println(response.StatusCode, response.String())
 
 	if response.StatusCode != 201 {

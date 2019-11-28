@@ -66,6 +66,7 @@ func upsertPost(post *models.InstaPost, client *elasticsearch.Client) error {
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 
 	if response.StatusCode != 200 && response.StatusCode != 201 {
 		return fmt.Errorf("upsertPost Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
