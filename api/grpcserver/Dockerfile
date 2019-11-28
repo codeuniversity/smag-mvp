@@ -2,9 +2,7 @@ FROM golang:1.13 as builder
 WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
-COPY api/  ./api
-COPY utils/ ./utils
-COPY config ./config
+COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o grpc_server api/grpcserver/main/main.go
 
 FROM alpine
