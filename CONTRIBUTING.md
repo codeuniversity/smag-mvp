@@ -27,4 +27,6 @@ For the naming of components, please orientate on the existing components and fo
 
 ## Task Management
 
-For our task management, we are using the [ZenHub GitHub Extension](https://www.zenhub.com/extension) which integrates a project board into GitHub. After installing the extension and reloading your browser, you will be able to see an addional `ZenHub` Tab in our repo. In there, you can see our current tasks `"In Progress"` and upcomming tasks `"ToDo"` of the current release we are working on. All tasks are represented as GitHub issues as well, so you might want to create an own issue for the beginning. In case you want to get more involved into the project, feel free to approach the team via: [smag-project[at]code.berlin](smag-project@code.berlin).
+For our task management, we are using the [ZenHub GitHub Extension](https://www.zenhub.com/extension) which integrates a project board into GitHub. After installing the extension and reloading your browser, you will be able to see an additional `ZenHub` Tab in our repo. In there, you can see our current tasks `"In Progress"` and upcoming tasks `"ToDo"` of the current release we are working on. All tasks are represented as GitHub issues as well, so you might want to create an own issue for the beginning.
+
+If you have any questions or want to get more involved in the project, feel free to approach the team via: [smag-project[at]code.berlin](smag-project@code.berlin).
