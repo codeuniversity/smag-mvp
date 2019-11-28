@@ -27,7 +27,7 @@ The results will be available via an API, used for some kind of art exhibition.
 
 <!-- TODO: change link -->
 
-You can find an more detailed overview [here](https://miro.com/app/board/o9J_kw7a-qM=/)
+You can find an more detailed overview [here](https://drive.google.com/a/code.berlin/file/d/1uE8oTku322-_eN3QGuiM4ayWZiRXfn9F/view?usp=sharing)
 
 ## Further reading
 
@@ -45,7 +45,13 @@ If you want to join us raising awareness for data privacy have a look into [`CON
 
 ### List of contributors
 
-<!-- TODO: Add list -->
+- @1Jo1 Josef Grieb
+- @Urhengulas Johann Hemmann
+- @alexmorten Alexander Martin
+- @jo-fr Jonathan Freiberger
+- @m-lukas Lukas Müller
+- @lukas-menzel Lukas Menzel
+- @SpringHawk Martin Zaubitzer
 
 ## Getting started
 
