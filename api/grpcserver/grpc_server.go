@@ -282,7 +282,7 @@ func (s *GrpcServer) getURLForPost(object string) (string, error) {
 
 //SearchSimilarFaces to the given base64 encoded image
 func (s *GrpcServer) SearchSimilarFaces(ctx context.Context, request *proto.FaceSearchRequest) (*proto.FaceSearchResponse, error) {
-	imageContent, err := base64.RawStdEncoding.DecodeString(request.Base64EncodedPicture)
+	imageContent, err := base64.StdEncoding.DecodeString(request.Base64EncodedPicture)
 	if err != nil {
 		log.Println(err)
 		return nil, fmt.Errorf("couldn't base64 decode image: %w", err)
