@@ -26,7 +26,7 @@ func main() {
 
 type taggedUser struct {
 	UserID int `json:"user_id"`
-	PostID int `json:"post_	id"`
+	PostID int `json:"post_id"`
 }
 
 func addTaggedUsersRelationship(m *changestream.ChangeMessage, session neo4j.Session) error {
