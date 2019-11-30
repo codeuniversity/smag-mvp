@@ -30,7 +30,7 @@ type Follow struct {
 
 func insertUsersAndFollowings(m *changestream.ChangeMessage, session neo4j.Session) error {
 	const createUsersAndRelationships = `
-	MERGE(u1:USER{id: $fromID)
+	MERGE(u1:USER{id: $fromID})
 	MERGE(u2:USER{id: $toID})
 	MERGE(u1)-[:FOLLOWS]->(u2)
 	`
