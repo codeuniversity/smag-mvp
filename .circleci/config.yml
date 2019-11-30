@@ -300,6 +300,16 @@ jobs:
           command: |
             ./build_and_upload_image.sh elastic/indexer/insta_comments/Dockerfile codesmag/elastic_indexer_comments
 
+  insta_posts_faces_inserter:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh insta_posts_face-inserter/Dockerfile codesmag/insta_posts_face-inserter
+
 workflows:
   version: 2
   workflow:
@@ -456,6 +466,12 @@ workflows:
             branches:
               only: master
       - elastic_indexer_comments:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - insta_posts_faces_inserter:
           requires:
             - tests
           filters:
