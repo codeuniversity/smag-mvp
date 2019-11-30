@@ -4,7 +4,7 @@ import Title from "./Title";
 import { FaceSearchRequest } from "../protofiles/usersearch_pb";
 import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
 import IGPost from "./IGPost";
-
+import "../creativeCode.css"
 function Start(props) {
   const [similarFaces, setSimilarFaces] = useState([]);
 
@@ -37,6 +37,7 @@ function Start(props) {
 
   return (
     <div className="body">
+      <div className="white-background"></div>
       <div className="container">
         <div className="column-center">
           <Title />
