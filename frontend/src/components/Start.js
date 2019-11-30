@@ -5,10 +5,9 @@ import { FaceSearchRequest } from "../protofiles/usersearch_pb";
 import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
 import IGPost from "./IGPost";
 import "../creativeCode.css";
-function Start(props) {
-  const [similarFaces, setSimilarFaces] = useState([]);
 
-  const uploadImage = async file => {
+function findFacesInImage(onFindFaces) {
+  return async file => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const dataUrl = reader.result;
@@ -30,11 +29,17 @@ function Start(props) {
         fullImageSrc: protoFace.getFullImageSrc()
       }));
 
-      setSimilarFaces(faces);
+      onFindFaces(faces);
     };
     reader.readAsDataURL(file);
   };
+}
 
+function Start(props) {
+  const [similarFaces, setSimilarFaces] = useState([]);
+
+  const onFileSubmit = findFacesInImage(setSimilarFaces);
+  console.log(onFileSubmit);
   return (
     <div className="body">
       <div className="white-background"></div>
@@ -42,7 +47,7 @@ function Start(props) {
         <div className="column-center">
           <Title />
           <p>Take a pictures!</p>
-          <CameraFeed sendFile={uploadImage} />
+          <CameraFeed onFileSubmit={onFileSubmit} />
 
           {similarFaces.map(face => (
             <IGPost post={{ img: face.fullImageSrc, shortcode: "" }} />
