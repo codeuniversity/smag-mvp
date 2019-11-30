@@ -2,8 +2,8 @@ import React, { Component } from "react";
 import { Slide } from "react-slideshow-image";
 
 const properties = {
-  duration: 5000,
-  transitionDuration: 500,
+  duration: 3000,
+  transitionDuration: 400,
   infinite: true,
   indicators: false,
   arrows: false
