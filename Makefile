@@ -4,8 +4,8 @@ gen-server:
 
 gen-client:
 	protoc -I=api/proto/ usersearch.proto \
---js_out=import_style=commonjs:api/proto/client \
---grpc-web_out=import_style=commonjs,mode=grpcwebtext:api/proto/client
+--js_out=import_style=commonjs:frontend/src/protofiles/ \
+--grpc-web_out=import_style=commonjs,mode=grpcwebtext:frontend/src/protofiles/
 
 gen-faces:
 	protoc --go_out=plugins=grpc:.  faces/proto/recognizer.proto

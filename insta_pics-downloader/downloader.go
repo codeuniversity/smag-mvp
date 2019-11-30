@@ -16,7 +16,6 @@ import (
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
-	"github.com/google/uuid"
 	"github.com/minio/minio-go/v6"
 	"github.com/segmentio/kafka-go"
 )
@@ -114,7 +113,7 @@ func (d *Downloader) downloadImgToS3(job models.PostDownloadJob) (path string, e
 		return "", fmt.Errorf("couldn't download: %d %s", response.StatusCode, response.Status)
 	}
 
-	path = randSeq()
+	path = utils.RandUUIDSeq()
 	n, err := d.minioClient.PutObject(d.bucketName, path, response.Body, response.ContentLength, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		return "", err
@@ -145,11 +144,4 @@ func (d *Downloader) ensureBucketExists() error {
 	}
 	log.Printf("successfully created bucket %s\n", d.bucketName)
 	return nil
-}
-
-func randSeq() string {
-	id, err := uuid.NewRandom()
-	utils.MustBeNil(err)
-
-	return id.String()
 }

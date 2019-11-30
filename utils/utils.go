@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 //WithRetries calls f up to the given `times` and returns the last error if times is reached
@@ -104,4 +106,12 @@ func ConvertIntToBool(value int) bool {
 // ConvertDateStrToTime converts a dateStr to a time.Time obj
 func ConvertDateStrToTime(dateStr string) (time.Time, error) {
 	return time.Parse("02 Jan 2006", dateStr)
+}
+
+// RandUUIDSeq returns a random uuid string
+func RandUUIDSeq() string {
+	id, err := uuid.NewRandom()
+	MustBeNil(err)
+
+	return id.String()
 }

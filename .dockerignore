@@ -17,3 +17,4 @@ __pycache__/
 *.pyc
 *faces/env/*
 *faces/images/*
+frontend

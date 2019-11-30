@@ -76,9 +76,10 @@ If this is your first time running this:
    $ go run cli/main/main.go <instagram|twitter> <user_name>
    ```
 
-### Scraper 
+### Scraper
 
 Run the instagram- or twitter-scraper in docker:
+
 ```bash
 $ make run-<platform_name>
 ```

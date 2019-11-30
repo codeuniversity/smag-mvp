@@ -182,6 +182,14 @@ button {
 video {
   padding: 20px;
 }
+
+#defaultCanvas0 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+}
+
 /*--------responsive-----------*/
 @media (max-width: 992px) {
   .container {
