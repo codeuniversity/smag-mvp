@@ -28,6 +28,10 @@ import (
 	recognition "github.com/codeuniversity/smag-mvp/faces/proto"
 )
 
+const (
+	signedURLExpirationTime = time.Minute * 60
+)
+
 //GrpcServer represents the gRPC Server containing the db connection and port
 type GrpcServer struct {
 	grpcPort string
@@ -284,7 +288,7 @@ func (s *GrpcServer) getURLForPost(object string) (string, error) {
 	reqParams.Set("response-content-disposition", fmt.Sprintf("attachment; filename=\"%s.jpg\"", object))
 
 	// Generates a presigned url which expires in a day.
-	presignedURL, err := s.minioClient.PresignedGetObject(s.downloadBucketName, object, time.Second*60*60, reqParams)
+	presignedURL, err := s.minioClient.PresignedGetObject(s.downloadBucketName, object, signedURLExpirationTime, reqParams)
 	if err != nil {
 		log.Println(err)
 		return "", err
@@ -315,7 +319,7 @@ func (s *GrpcServer) SearchSimilarFaces(ctx context.Context, request *proto.Face
 		return nil, fmt.Errorf("failed to upload image to S3: %w", err)
 	}
 
-	presignedURL, err := s.minioClient.PresignedGetObject(s.imageUploadBucket, imagePath, time.Second*60*60, url.Values{})
+	presignedURL, err := s.minioClient.PresignedGetObject(s.imageUploadBucket, imagePath, signedURLExpirationTime, url.Values{})
 	if err != nil {
 		log.Println(err)
 		return nil, fmt.Errorf("coudln't generate presgined URL: %w", err)
