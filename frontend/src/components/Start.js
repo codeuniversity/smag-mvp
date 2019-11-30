@@ -1,7 +1,4 @@
-import React, { Fragment } from "react";
-import ReactDOM from "react-dom";
-// import axios from "axios";
-import { withRouter } from "react-router";
+import React, { useState } from "react";
 import { CameraFeed } from "./camera-feed";
 import Title from "./Title";
 import { FaceSearchRequest } from "../protofiles/usersearch_pb";
