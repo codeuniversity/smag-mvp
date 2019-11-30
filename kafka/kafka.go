@@ -54,6 +54,7 @@ func NewReader(c *ReaderConfig) *kafka.Reader {
 		CommitInterval:        time.Second,
 		ReadBackoffMax:        time.Second * 5,
 		WatchPartitionChanges: true,
+		RetentionTime:         time.Hour * 24 * 30,
 	})
 }
 
