@@ -8,7 +8,7 @@ const CommentsIndexMapping = `
           "type" : "text"
         },
         "post_id" : {
-          "type" : "keyword"
+          "type" : "integer"
         }
       }
     }
@@ -51,7 +51,7 @@ const PostsIndexMapping = `
           "type" : "text"
         },
         "user_id" : {
-          "type" : "keyword"
+          "type" : "integer"
         }
       }
     }

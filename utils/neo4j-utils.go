@@ -12,6 +12,6 @@ func GetNeo4jConfig() *Neo4jConfig {
 	return &Neo4jConfig{
 		Host:     GetStringFromEnvWithDefault("NEO4J_HOST", "localhost"),
 		Username: GetStringFromEnvWithDefault("NEO4J_USERNAME", "neo4j"),
-		Password: MustGetStringFromEnv("NEO4J_PASSWORD"),
+		Password: GetStringFromEnvWithDefault("NEO4J_PASSWORD", ""),
 	}
 }

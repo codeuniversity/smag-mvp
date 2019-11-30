@@ -19,7 +19,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// Inserter represents the inserter containing all clients it uses
+// Inserter represents the scraper containing all clients it uses
 type Inserter struct {
 	*worker.Worker
 
@@ -29,11 +29,11 @@ type Inserter struct {
 }
 
 // New returns an initilized inserter
-func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter {
+func New(postgresHost, postgresPassword, dbName string, qReader *kafka.Reader) *Inserter {
 	i := &Inserter{}
 	i.qReader = qReader
 
-	connectionString := fmt.Sprintf("host=%s user=postgres dbname=instascraper sslmode=disable", postgresHost)
+	connectionString := fmt.Sprintf("host=%s user=postgres dbname=%s sslmode=disable", postgresHost, dbName)
 	if postgresPassword != "" {
 		connectionString += " " + "password=" + postgresPassword
 	}
@@ -42,9 +42,9 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter
 	utils.PanicIfNotNil(err)
 	i.db = db
 
-	db.AutoMigrate(&models.TwitterPost{})
+	db.AutoMigrate(&models.TwitterUser{})
 
-	b := worker.Builder{}.WithName("twitter_inserter_posts").
+	b := worker.Builder{}.WithName("twitter_inserter_users").
 		WithWorkStep(i.runStep).
 		WithStopTimeout(10*time.Second).
 		AddShutdownHook("qReader", qReader.Close).
@@ -55,35 +55,37 @@ func New(postgresHost, postgresPassword string, qReader *kafka.Reader) *Inserter
 	return i
 }
 
-// Run the inserter
 func (i *Inserter) runStep() error {
 	m, err := i.qReader.FetchMessage(context.Background())
 	if err != nil {
 		return err
 	}
 
-	rawPost := &models.TwitterPostRaw{}
+	rawUser := &models.TwitterUserRaw{}
 
-	err = json.Unmarshal(m.Value, rawPost)
+	err = json.Unmarshal(m.Value, rawUser)
 	if err != nil {
 		return err
 	}
 
-	post := models.ConvertTwitterPost(rawPost)
-	log.Println("inserting post:", post.Link)
+	user := models.ConvertTwitterUser(rawUser)
+	log.Println("inserting user: ", user.Username)
 
-	err = i.insertPost(post)
+	err = i.insertUser(user)
 	if err != nil {
 		return err
 	}
+
 	return i.qReader.CommitMessages(context.Background(), m)
 }
 
-func (i *Inserter) insertPost(post *models.TwitterPost) error {
-	fromPost := &models.TwitterPost{}
-	filter := &models.TwitterPost{PostIdentifier: post.PostIdentifier}
+func (i *Inserter) insertUser(user *models.TwitterUser) error {
+	var err error
 
-	err := dbUtils.CreateOrUpdate(i.db, fromPost, filter, post)
+	baseUser := &models.TwitterUser{}
+	filter := &models.TwitterUser{Username: user.Username}
+
+	err = dbUtils.CreateOrUpdate(i.db, baseUser, filter, user)
 	if err != nil {
 		return err
 	}

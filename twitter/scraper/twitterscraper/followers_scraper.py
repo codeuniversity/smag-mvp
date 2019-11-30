@@ -10,7 +10,7 @@ def scrape(user_name: str) -> twint.user.user:
     user = ShallowTwitterUser(user_name)
 
     conf = get_conf(user_name)
-    user.follower_list = scrape_follows_list(twint.run.Followers, conf)
+    user.followers_list = scrape_follows_list(twint.run.Followers, conf)
 
     return user
 

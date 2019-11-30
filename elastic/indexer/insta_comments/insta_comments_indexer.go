@@ -55,8 +55,9 @@ func upsertComment(comment *models.InstaComment, client *elasticsearch.Client) e
 	if err != nil {
 		return err
 	}
+	defer response.Body.Close()
 
-	if response.StatusCode != 200 {
+	if response.StatusCode != 200 && response.StatusCode != 201 {
 		return fmt.Errorf("upsertDocument Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
 	}
 	return nil

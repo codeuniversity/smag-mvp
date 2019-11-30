@@ -4,7 +4,7 @@ import Title from "./Title";
 import { FaceSearchRequest } from "../protofiles/usersearch_pb";
 import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
 import IGPost from "./IGPost";
-import "../creativeCode.css"
+import "../creativeCode.css";
 function Start(props) {
   const [similarFaces, setSimilarFaces] = useState([]);
 
@@ -41,7 +41,7 @@ function Start(props) {
       <div className="container">
         <div className="column-center">
           <Title />
-          <p> Take a pictures! </p>
+          <p>Take a pictures!</p>
           <CameraFeed sendFile={uploadImage} />
 
           {similarFaces.map(face => (

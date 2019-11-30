@@ -1,0 +1,128 @@
+version: "3.2"
+
+services:
+  # KAFKA
+  zookeeper:
+    image: "wurstmeister/zookeeper"
+    ports:
+      - "2181:2181"
+  my-kafka:
+    image: "wurstmeister/kafka:0.10.2.0"
+    ports:
+      - "9092:9092"
+    depends_on:
+      - "zookeeper"
+    environment:
+      KAFKA_CREATE_TOPICS: >
+        twitter.scraped.user_names:4:1,twitter.scraped.users:4:1,twitter.scraped.posts:4:1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_LISTENERS: "PLAINTEXT://:9092"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://my-kafka:9092"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+
+  # POSTGRES
+  postgres:
+    image: "debezium/postgres:11"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      POSTGRES_DB: "smag-twitter"
+  connect:
+    image: "debezium/connect:0.10"
+    ports:
+      - "8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: "my-kafka:9092"
+      GROUP_ID: "1"
+      CONFIG_STORAGE_TOPIC: "my_connect_configs"
+      OFFSET_STORAGE_TOPIC: "my_connect_offsets"
+      STATUS_STORAGE_TOPIC: "my_connect_statuses"
+  setup-connect:
+    build: "twitter/debezium"
+
+  # TWITTER SCRAPER
+  twitter_scraper_users:
+    build: "twitter/scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.users_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter.scraped.user_names"
+      KAFKA_INSERT_TOPIC: "twitter.scraped.users"
+  twitter_scraper_followers:
+    build: "twitter/scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.followers_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter.scraped.user_names"
+      KAFKA_INSERT_TOPIC: "twitter.scraped.users"
+  twitter_scraper_following:
+    build: "twitter/scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.following_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter.scraped.user_names"
+      KAFKA_INSERT_TOPIC: "twitter.scraped.users"
+  twitter_scraper_posts:
+    build: "twitter/scraper/"
+    image: "smag-twitter_scraper"
+    command: ["-m", "twitterscraper.posts_scraper"]
+    depends_on:
+      - "my-kafka"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_FETCH_TOPIC: "twitter.scraped.user_names"
+      KAFKA_INSERT_TOPIC: "twitter.scraped.posts"
+
+  # TWITTER INSERTER
+  twitter_inserter_users:
+    build:
+      context: "."
+      dockerfile: "twitter/inserter/users/Dockerfile"
+    image: "smag-twitter_inserter_users"
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      POSTGRES_DB_NAME: "smag-twitter"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter.inserter.users"
+      KAFKA_INFO_TOPIC: "twitter.scraped.users"
+      KAFKA_NAME_TOPIC: "twitter.scraped.user_names"
+  twitter_inserter_posts:
+    build:
+      context: "."
+      dockerfile: "twitter/inserter/posts/Dockerfile"
+    image: "smag-twitter_inserter_posts"
+    environment:
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PASSWORD: "12345678"
+      POSTGRES_DB_NAME: "smag-twitter"
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter_inserter_posts"
+      KAFKA_INFO_TOPIC: "twitter.scraped.posts"
+      KAFKA_NAME_TOPIC: "twitter.scraped.user_names"
+
+  # TWITTER FILTER
+  twitter_filter_user_names:
+    build:
+      context: "."
+      dockerfile: "twitter/filter/user_names/Dockerfile"
+    depends_on:
+      - "postgres"
+      - "connect"
+    environment:
+      KAFKA_ADDRESS: "my-kafka:9092"
+      KAFKA_GROUPID: "twitter.filter.user_names"
+      KAFKA_CHANGE_TOPIC: "postgres.public.twitter_users"
+      KAFKA_NAME_TOPIC: "twitter.scraped.user_names"

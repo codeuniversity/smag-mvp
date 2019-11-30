@@ -8,7 +8,7 @@ import (
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
-	bolt "github.com/johnnadratowski/golang-neo4j-bolt-driver"
+	"github.com/neo4j/neo4j-go-driver/neo4j"
 )
 
 func main() {
@@ -26,13 +26,13 @@ func main() {
 
 type taggedUser struct {
 	UserID int `json:"user_id"`
-	PostID int `json:"post_	id"`
+	PostID int `json:"post_id"`
 }
 
-func addTaggedUsersRelationship(m *changestream.ChangeMessage, conn bolt.Conn) error {
+func addTaggedUsersRelationship(m *changestream.ChangeMessage, session neo4j.Session) error {
 	const addTaggedRelationship = `
-	MERGE(u:USER{id: {userID}})
-	MERGE(p:POST{id: {postID}})
+	MERGE(u:USER{id: $userID})
+	MERGE(p:POST{id: $postID})
 	MERGE(u)-[:TAGGED_ON]->(p)
 	`
 	t := &taggedUser{}
@@ -42,7 +42,7 @@ func addTaggedUsersRelationship(m *changestream.ChangeMessage, conn bolt.Conn) e
 		return err
 	}
 
-	_, err = conn.ExecNeo(addTaggedRelationship, map[string]interface{}{"userID": t.UserID, "postID": t.PostID})
+	_, err = session.Run(addTaggedRelationship, map[string]interface{}{"userID": t.UserID, "postID": t.PostID})
 
 	if err != nil {
 		return err
