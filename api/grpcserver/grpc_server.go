@@ -14,6 +14,7 @@ import (
 	// required for postgres
 	"encoding/base64"
 	_ "github.com/lib/pq"
+	"github.com/segmentio/kafka-go"
 
 	"github.com/codeuniversity/smag-mvp/api/proto"
 	"github.com/minio/minio-go/v6"
@@ -37,14 +38,18 @@ type GrpcServer struct {
 	region             string
 	imageUploadBucket  string
 
+	userNamesWriter *kafka.Writer
+
 	facesClient *faces.Client
 }
 
 type scanFunc func(row *sql.Rows) (proto.User, error)
 
 // NewGrpcServer returns initilized gRPC Server
-func NewGrpcServer(grpcPort string, s3Config *config.S3Config, imageUploadBucket string, postgresConfig *config.PostgresConfig, esHosts []string, recognitionServiceAddress string) *GrpcServer {
+func NewGrpcServer(grpcPort string, userNamesWriter *kafka.Writer, s3Config *config.S3Config, imageUploadBucket string, postgresConfig *config.PostgresConfig, esHosts []string, recognitionServiceAddress string) *GrpcServer {
 	s := &GrpcServer{}
+
+	s.userNamesWriter = userNamesWriter
 
 	s.downloadBucketName = s3Config.S3BucketName
 	s.region = s3Config.S3Region
@@ -131,6 +136,15 @@ func (s *GrpcServer) GetAllUsersLikeUsername(_ context.Context, username *proto.
 
 //GetUserWithUsername returns one User that equals the given username
 func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.UserNameRequest) (*proto.User, error) {
+	log.Println("writer is", s.userNamesWriter)
+	if s.userNamesWriter != nil {
+		log.Println("writing user", username.UserName, "to user topic")
+		err := s.userNamesWriter.WriteMessages(context.Background(), kafka.Message{Value: []byte(username.UserName)})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	u := &proto.User{}
 	log.Println(username)
 
