@@ -1,10 +1,10 @@
 # Contributing
 
 We are always happy about support for our project. If you dicide to help us spreading awareness for privacy, just start with the following steps: 
-1) fork the project,
-2) create a new branch, 
-3) commit your changes 
-4) open a pull request to `master` 
+1) Fork the project
+2) Create a new branch
+3) Commit your changes
+4) Open a pull request to `master` 
   
 (More about this in ["Branching & Naming"](#branching--naming))
 
