@@ -2,22 +2,18 @@ import React, { useState } from "react";
 import { CameraFeed } from "./camera-feed";
 import Title from "./Title";
 import { FaceSearchRequest } from "../protofiles/usersearch_pb";
-import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
 import IGPost from "./IGPost";
-import "../creativeCode.css";
 
-function findFacesInImage(onFindFaces) {
+function findFacesInImage(apiClient, onFindFaces) {
   return async file => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const dataUrl = reader.result;
       const base64Data = dataUrl.split(",")[1];
-      const client = new UserSearchServicePromiseClient(
-        "http://localhost:4000"
-      );
+
       const request = new FaceSearchRequest();
       request.setBase64encodedpicture(base64Data);
-      const response = await client.searchSimilarFaces(request);
+      const response = await apiClient.searchSimilarFaces(request);
       const faces = response.getFacesList().map(protoFace => ({
         postId: protoFace.getPostId(),
         x: protoFace.getX(),
@@ -33,42 +29,26 @@ function findFacesInImage(onFindFaces) {
   };
 }
 
-function mergeFacesIntoHits(faces, hits) {
-  const newHits = { ...hits };
-  faces.forEach(face => {
-    newHits[face.postId] = [...(newHits[face.postId] || []), face];
-  });
+function Start({ apiClient, faceHits, addFaceHits, nextPage }) {
+  const onFileSubmit = findFacesInImage(apiClient, addFaceHits);
 
-  return newHits;
-}
-
-function Start(props) {
-  const [similarFaces, setSimilarFaces] = useState({});
-
-  const onFileSubmit = findFacesInImage(faces =>
-    setSimilarFaces(prevHits => mergeFacesIntoHits(faces, prevHits))
-  );
   return (
     <div className="body">
-      <div className="white-background"></div>
-      <div className="container">
-        <div className="column-center">
-          <Title />
-          <p>Take a pictures!</p>
-          <CameraFeed onFileSubmit={onFileSubmit} />
+      <div className="column-center">
+        <Title />
+        <p>Take a pictures!</p>
+        <CameraFeed onFileSubmit={onFileSubmit} />
 
-          {Object.entries(similarFaces)
-            .sort((a, b) => b[1].length - a[1].length)
-            .map(([postId, faces]) => {
-              console.log(faces.length);
-              return (
-                <IGPost
-                  key={postId}
-                  post={{ img: faces[0].fullImageSrc, shortcode: "" }}
-                />
-              );
-            })}
-        </div>
+        {Object.entries(faceHits)
+          .sort((a, b) => b[1].length - a[1].length)
+          .map(([postId, faces]) => {
+            return (
+              <IGPost
+                key={postId}
+                post={{ img: faces[0].fullImageSrc, shortcode: "" }}
+              />
+            );
+          })}
       </div>
     </div>
   );
