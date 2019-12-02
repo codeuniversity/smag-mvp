@@ -55,7 +55,8 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 }
 
 func (i *Indexer) runStep() error {
-	messages, err := i.readMessageBlock(1*time.Second, i.bulkSize)
+	messages, err := i.readMessageBlock(5*time.Second, i.bulkSize)
+	log.Println("Messages Bulk: ", len(messages))
 	if err != nil {
 		return err
 	}
@@ -83,10 +84,10 @@ func (i *Indexer) runStep() error {
 	}
 
 	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
-
 	if err != nil {
 		return err
 	}
+	log.Println("Result Messages Bulk: ", bulkResponse.Status())
 
 	body, err := ioutil.ReadAll(bulkResponse.Body)
 
@@ -94,22 +95,42 @@ func (i *Indexer) runStep() error {
 		return err
 	}
 
-	var bulkResult bulkResult
-	err = json.Unmarshal(body, &bulkResult)
+	var result bulkResult
+	err = json.Unmarshal(body, &result)
 
 	if err != nil {
 		return err
 	}
 
-	for _, bulkResultOperation := range bulkResult.Items {
+	log.Println("BulkResultItem: ", len(result.Items))
+	log.Println("BulkResult: ", string(body))
+	for _, bulkResultOperation := range result.Items {
 
-		if bulkResultOperation.Index.Status == 200 || bulkResultOperation.Index.Status == 201 {
-			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
-
+		if bulkResultOperation.Index.ID != "" {
+			err := i.commitKafkaMessages(bulkResultOperation.Index.Status, bulkResultOperation.Index.ID, bulkDocumentIdKafkaMessages)
+			if err != nil {
+				return err
+			}
+		} else if bulkResultOperation.Update.ID != "" {
+			err := i.commitKafkaMessages(bulkResultOperation.Update.Status, bulkResultOperation.Update.ID, bulkDocumentIdKafkaMessages)
 			if err != nil {
 				return err
 			}
 		}
+	}
+	return nil
+}
+
+func (i *Indexer) commitKafkaMessages(httpStatus int, documentId string, bulkDocumentIdKafkaMessages map[string]kafka.Message) error {
+	if httpStatus == 200 || httpStatus == 201 {
+
+		err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[documentId])
+
+		if err != nil {
+			return err
+		}
+	} else {
+		log.Println("Not Commited ID: ", documentId)
 	}
 	return nil
 }
@@ -187,6 +208,21 @@ type bulkResult struct {
 			SeqNo       int `json:"_seq_no"`
 			PrimaryTerm int `json:"_primary_term"`
 			Status      int `json:"status"`
-		} `json:"index"`
+		} `json:"index,omitempty"`
+		Update struct {
+			Index   string `json:"_index"`
+			Type    string `json:"_type"`
+			ID      string `json:"_id"`
+			Version int    `json:"_version"`
+			Result  string `json:"result"`
+			Shards  struct {
+				Total      int `json:"total"`
+				Successful int `json:"successful"`
+				Failed     int `json:"failed"`
+			} `json:"_shards"`
+			SeqNo       int `json:"_seq_no"`
+			PrimaryTerm int `json:"_primary_term"`
+			Status      int `json:"status"`
+		} `json:"update,omitempty"`
 	} `json:"items"`
 }
