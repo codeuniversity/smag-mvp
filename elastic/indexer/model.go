@@ -1,6 +1,6 @@
 package indexer
 
-type ElasticIndexer struct {
+type BulkIndexDoc struct {
 	DocumentId    string
 	BulkOperation string
 }
