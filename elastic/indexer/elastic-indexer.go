@@ -132,13 +132,13 @@ func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
 		return fmt.Errorf("BulkResult is nil")
 	}
 	for _, bulkResultOperation := range result.Items {
-		if bulkResultOperation.Index.ID != "" {
+		if bulkResultOperation.Index != nil {
 
 			err := errorForHttpStatus(bulkResultOperation.Index.Status)
 			if err != nil {
 				return err
 			}
-		} else if bulkResultOperation.Update.ID != "" {
+		} else if bulkResultOperation.Update != nil {
 
 			err := errorForHttpStatus(bulkResultOperation.Index.Status)
 			if err != nil {
@@ -215,7 +215,7 @@ type bulkResult struct {
 	Took   int  `json:"took"`
 	Errors bool `json:"errors"`
 	Items  []struct {
-		Index struct {
+		Index *struct {
 			Index   string `json:"_index"`
 			Type    string `json:"_type"`
 			ID      string `json:"_id"`
@@ -230,7 +230,7 @@ type bulkResult struct {
 			PrimaryTerm int `json:"_primary_term"`
 			Status      int `json:"status"`
 		} `json:"index,omitempty"`
-		Update struct {
+		Update *struct {
 			Index   string `json:"_index"`
 			Type    string `json:"_type"`
 			ID      string `json:"_id"`
