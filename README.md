@@ -44,13 +44,15 @@ If you want to join us raising awareness for data privacy have a look into [`CON
 
 ### List of contributors
 
-- @1Jo1 Josef Grieb
-- @Urhengulas Johann Hemmann
-- @alexmorten Alexander Martin
-- @jo-fr Jonathan Freiberger
-- @m-lukas Lukas Müller
-- @lukas-menzel Lukas Menzel
-- @SpringHawk Martin Zaubitzer
+| Github handle                                    | Real name           | Instagram profile                                           | Twitter profile                                 |
+| :----------------------------------------------- | :------------------ | :---------------------------------------------------------- | :---------------------------------------------- |
+| [@1Jo1](https://github.com/1jo1)                 | Josef Grieb         | [josef_grieb](https://www.instagram.com/josef_grieb/)       | /                                               |
+| [@Urhengulas](https://github.com/urhengulas)     | Johann Hemmann      | [Urhengulas](https://www.instagram.com/urhengulas/)         | [Johann](https://twitter.com/Urhengula5)        |
+| [@alexmorten](https://github.com/alexmorten)     | Alexander Martin    | no profile :(                                               | no profile :(                                   |
+| [@jo-fr](https://github.com/jo-fr)               | Jonathan Freiberger | [jonifreiberger](https://www.instagram.com/jonifreiberger/) | [Jonathan](https://twitter.com/jofr_)           |
+| [@m-lukas](https://github.com/m-lukas)           | Lukas Müller        | [lmglukas](https://www.instagram.com/lmglukas/)             | [Lukas Müller](https://twitter.com/mtothelukas) |
+| [@lukas-menzel](https://github.com/lukas-menzel) | Lukas Menzel        | [lukasmenzel](https://www.instagram.com/lukasmenzel/)       | [Lukas Menzel](https://twitter.com/LukMenzel)   |
+| [@SpringHawk](https://github.com/springhawk)     | Martin Zaubitzer    | /                                                           | /                                               |
 
 ### Deployment
 

@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * @fileoverview gRPC-Web generated client stub for proto
  * @enhanceable
@@ -5,8 +6,6 @@
  */
 
 // GENERATED CODE -- DO NOT EDIT!
-
-/* eslint-disable */
 
 const grpc = {};
 grpc.web = require("grpc-web");
@@ -393,6 +392,89 @@ proto.proto.UserSearchServicePromiseClient.prototype.searchSimilarFaces = functi
     request,
     metadata || {},
     methodDescriptor_UserSearchService_SearchSimilarFaces
+  );
+};
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.proto.WeightedPosts,
+ *   !proto.proto.WeightedUsers>}
+ */
+const methodDescriptor_UserSearchService_SearchUsersWithWeightedPosts = new grpc.web.MethodDescriptor(
+  "/proto.UserSearchService/SearchUsersWithWeightedPosts",
+  grpc.web.MethodType.UNARY,
+  proto.proto.WeightedPosts,
+  proto.proto.WeightedUsers,
+  /**
+   * @param {!proto.proto.WeightedPosts} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.WeightedUsers.deserializeBinary
+);
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.proto.WeightedPosts,
+ *   !proto.proto.WeightedUsers>}
+ */
+const methodInfo_UserSearchService_SearchUsersWithWeightedPosts = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.proto.WeightedUsers,
+  /**
+   * @param {!proto.proto.WeightedPosts} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.WeightedUsers.deserializeBinary
+);
+
+/**
+ * @param {!proto.proto.WeightedPosts} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.proto.WeightedUsers)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.proto.WeightedUsers>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.proto.UserSearchServiceClient.prototype.searchUsersWithWeightedPosts = function(
+  request,
+  metadata,
+  callback
+) {
+  return this.client_.rpcCall(
+    this.hostname_ + "/proto.UserSearchService/SearchUsersWithWeightedPosts",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_SearchUsersWithWeightedPosts,
+    callback
+  );
+};
+
+/**
+ * @param {!proto.proto.WeightedPosts} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.proto.WeightedUsers>}
+ *     A native promise that resolves to the response
+ */
+proto.proto.UserSearchServicePromiseClient.prototype.searchUsersWithWeightedPosts = function(
+  request,
+  metadata
+) {
+  return this.client_.unaryCall(
+    this.hostname_ + "/proto.UserSearchService/SearchUsersWithWeightedPosts",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_SearchUsersWithWeightedPosts
   );
 };
 

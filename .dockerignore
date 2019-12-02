@@ -11,6 +11,7 @@ docker-compose.yml
 */Dockerfile
 Dockerfile
 *.Dockerfile
+.dockerignore
 
 # PYTHON stuff
 __pycache__/
@@ -18,3 +19,4 @@ __pycache__/
 *faces/env/*
 *faces/images/*
 frontend
+Makefile

@@ -56,9 +56,30 @@ message FaceSearchResponse {
     repeated Face faces = 1;
 }
 
+message WeightedPostWithFaces {
+    int32 post_id = 1;
+    int32 weight = 2;
+    repeated Face faces = 3;
+}
+
+message WeightedPosts{
+    repeated WeightedPostWithFaces posts = 1;
+}
+
+message UserWithFaces {
+    User user = 1;
+    repeated Face faces = 2;
+    int32 weight = 3;
+}
+
+message WeightedUsers {
+    repeated UserWithFaces users_with_faces = 1;
+}
+
 service UserSearchService {
     rpc GetAllUsersLikeUsername(UserNameRequest) returns (UserSearchResponse);
     rpc GetUserWithUsername(UserNameRequest) returns (User);
     rpc GetInstaPostsWithUserId(UserIdRequest) returns (InstaPostsResponse);
     rpc SearchSimilarFaces(FaceSearchRequest) returns(FaceSearchResponse);
+    rpc SearchUsersWithWeightedPosts(WeightedPosts) returns (WeightedUsers);
 }

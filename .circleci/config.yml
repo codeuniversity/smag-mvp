@@ -82,7 +82,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh debezium/kubernetes/Dockerfile codesmag/postgres-setup
-
+  # TWITTER
   twitter_inserter_users:
     executor: job-runner
     steps:
@@ -90,8 +90,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh twitter_inserter_users/Dockerfile codesmag/twitter_inserter_users
-
+          command: ./build_and_upload_image.sh twitter/inserter/users/Dockerfile codesmag/twitter_inserter_users
   twitter_inserter_posts:
     executor: job-runner
     steps:
@@ -99,16 +98,23 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh twitter_inserter_posts/Dockerfile codesmag/twitter_inserter_posts
-
-  twitter_user_names-filter:
+          command: ./build_and_upload_image.sh twitter/inserter/posts/Dockerfile codesmag/twitter_inserter_posts
+  twitter_filter_user_names:
     executor: job-runner
     steps:
       - checkout
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh kafka/changestream/twitter_user_names-filter/Dockerfile codesmag/twitter_user_names-filter
+          command: ./build_and_upload_image.sh twitter/filter/user_names/Dockerfile codesmag/twitter_filter_user_names
+  twitter_scraper:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: ./build_and_upload_image.sh twitter/scraper/Dockerfile codesmag/twitter_scraper twitter/scraper/
 
   insta_user_names-filter:
     executor: job-runner
@@ -178,19 +184,6 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: ./build_and_upload_image.sh tools/Dockerfile codesmag/tools tools
-  twitter_scraper:
-    executor: job-runner
-    environment:
-      TWITTER_SCRAPER_IMAGE: codesmag/twitter_scraper
-    steps:
-      - checkout
-      - setup_remote_docker
-      - run:
-          name: Build Docker Image
-          command: docker build -t codesmag/twitter_scraper twitter_scraper/
-      - run:
-          name: Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh twitter_scraper/Dockerfile codesmag/twitter_scraper twitter_scraper
   insta_likes-inserter:
     executor: job-runner
     steps:
@@ -351,9 +344,8 @@ workflows:
           filters:
             branches:
               only: master
+      # TWITTER
       - twitter_scraper:
-          requires:
-            - tests
           filters:
             branches:
               only: master
@@ -369,6 +361,13 @@ workflows:
           filters:
             branches:
               only: master
+      - twitter_filter_user_names:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+
       - postgres-setup:
           filters:
             branches:
