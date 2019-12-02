@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import { Slide } from "react-slideshow-image";
+import { Zoom } from "react-slideshow-image";
 
 const properties = {
-  duration: 3000,
-  transitionDuration: 400,
-  infinite: true,
+  duration: 5000,
+  transitionDuration: 300,
   indicators: false,
+  scale: 1.4,
   arrows: false
 };
 
@@ -13,13 +13,11 @@ class Slideshow extends Component {
   render() {
     return (
       <div className="slideshow">
-        <Slide className="slides" {...properties}>
-          {this.props.slides.map(imageUrl => (
-            <div className="each-slide">
-              <img src={imageUrl} alt="slide" />
-            </div>
+        <Zoom className="slides" {...properties}>
+          {this.props.slides.map((imageUrl, index) => (
+            <img key={index} src={imageUrl} alt="slide" />
           ))}
-        </Slide>
+        </Zoom>
       </div>
     );
   }

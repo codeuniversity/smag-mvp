@@ -1,20 +1,42 @@
 .dashboard {
   width: 100%;
   height: 100%;
-  padding: 20px;
+  min-height: 100%;
+  padding: 50px;
+  background-color: #071623;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.dashboardTitle {
+  color: #ffffff;
+  font-size: 38px;
+  font-weight: bold;
+  line-height: 43px;
+  height: 42px;
+  width: 663px;
+  align-self: flex-start;
+}
+
+.dashboardGrid {
+  width: 100%;
+  height: 100%;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: auto auto auto auto;
+  grid-template-rows: 405px 405px;
   grid-gap: 50px;
 }
 
 .dashboardCard {
-  width: 350px;
-  height: 350px;
+  height: 405px;
+  width: 405px;
   padding: 0px;
   margin: 0px;
-  box-shadow: 10px 10px 15px silver;
-  background-color: #f6f6f6;
+  /* box-shadow: 10px 10px 15px silver; */
+  border-radius: 4px;
 }
 
 .cardGrid {
@@ -22,16 +44,19 @@
   height: 100%;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 75% 25%;
+  grid-template-rows: 78% 22%;
 }
 
 .slideshow {
-  width: 350px;
+  width: 405px;
   height: auto;
+  background-color: #fafafa;
 }
 
 .slides,
 .react-slideshow-container,
+.react-slideshow-zoom-wrapper,
+.zoom-wrapper,
 .slide,
 .images-wrap {
   width: 100%;
@@ -49,16 +74,18 @@
 .interestFooter {
   width: 100%;
   height: 100%;
-  background-color: #f6f6f6;
+  background-color: #fafafa;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 1fr 1fr;
-  padding: 10px;
+  padding: 15px 30px 15px 30px;
   box-sizing: border-box;
+  line-height: 23px;
+  color: #424b5a;
 }
 
 .interestFooter h2 {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: bold;
   margin: 0;
 }
@@ -72,9 +99,39 @@
 }
 
 .dashboardCard img {
-  width: 100%;
+  width: 405px;
   height: 100%;
   object-fit: cover;
   max-width: 100%;
   max-height: 100%;
+}
+
+.statsCard {
+  box-sizing: border-box;
+  border: 3px solid #fecb1c;
+  background-color: rgba(254, 203, 28, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  color: #f4db00;
+  font-size: 28px;
+}
+
+.statsCard h1 {
+  font-size: 100px;
+  line-height: 115px;
+  padding: 0;
+  margin: 0;
+}
+
+.bioCard {
+  background-color: #ffffff;
+  border-radius: 4px;
+  padding: 32px 42px 32px 42px;
+  box-sizing: border-box;
+  display: grid;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }

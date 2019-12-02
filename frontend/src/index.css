@@ -22,6 +22,11 @@ code {
     monospace;
 }
 
+#root,
+#root div {
+  height: 100%;
+}
+
 .h1 h1 {
   font-family: SFPro;
   font-size: 28px;
