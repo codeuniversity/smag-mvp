@@ -16,12 +16,12 @@ import (
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	bulkSize := utils.GetNumberFromEnvWithDefault("BULK_SIZE", 10)
+	bulkChunkSize := utils.GetNumberFromEnvWithDefault("BULK_CHUNK_SIZE", 10)
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.face_data")
 
 	esHosts := utils.GetMultipleStringsFromEnvWithDefault("ES_HOSTS", []string{"http://localhost:9200"})
 
-	i := indexer.New(esHosts, elastic.FacesIndex, elastic.FacesIndexMapping, kafkaAddress, changesTopic, groupID, indexFace, bulkSize)
+	i := indexer.New(esHosts, elastic.FacesIndex, elastic.FacesIndexMapping, kafkaAddress, changesTopic, groupID, indexFace, bulkChunkSize)
 
 	service.CloseOnSignal(i)
 	waitUntilDone := i.Start()
