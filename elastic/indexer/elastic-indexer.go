@@ -133,15 +133,23 @@ func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
 	}
 	for _, bulkResultOperation := range result.Items {
 		if bulkResultOperation.Index.ID != "" {
-			return checkHttpStatus(bulkResultOperation.Index.Status)
+
+			err := errorForHttpStatus(bulkResultOperation.Index.Status)
+			if err != nil {
+				return err
+			}
 		} else if bulkResultOperation.Update.ID != "" {
-			return checkHttpStatus(bulkResultOperation.Update.Status)
+
+			err := errorForHttpStatus(bulkResultOperation.Index.Status)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
-func checkHttpStatus(httpStatus int) error {
+func errorForHttpStatus(httpStatus int) error {
 	if httpStatus != 200 && httpStatus != 201 {
 		return fmt.Errorf("creating/updateing index failed Httpstatus: %d \n", httpStatus)
 	}
