@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"net"
@@ -12,7 +13,6 @@ import (
 	"strings"
 	"time"
 	// required for postgres
-	"encoding/base64"
 	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
 
@@ -194,6 +194,13 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc 
 
 		u = append(u, &user)
 
+		if s.userNamesWriter != nil {
+			log.Println("writing user", user.UserName, "to user topic")
+			err := s.userNamesWriter.WriteMessages(context.Background(), kafka.Message{Value: []byte(user.UserName)})
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return u, nil
@@ -293,7 +300,6 @@ func (s *GrpcServer) getURLForPost(object string) (string, error) {
 		log.Println(err)
 		return "", err
 	}
-	fmt.Println("Successfully generated presigned URL", presignedURL)
 	return presignedURL.String(), nil
 
 }
@@ -378,4 +384,50 @@ func (s *GrpcServer) SearchSimilarFaces(ctx context.Context, request *proto.Face
 	}
 
 	return &proto.FaceSearchResponse{Faces: responseFaces}, nil
+}
+
+// SearchUsersWithWeightedPosts searches for users by their occurence in posts, taking the weights into account
+func (s *GrpcServer) SearchUsersWithWeightedPosts(ctx context.Context, weightedPosts *proto.WeightedPosts) (*proto.WeightedUsers, error) {
+	userIDToFaces := map[string]*proto.UserWithFaces{}
+	for _, post := range weightedPosts.Posts {
+		rows, err := s.db.Query(`SELECT u.id,  COALESCE(user_name, '') as user_name,
+		COALESCE(u.real_name, '') as real_name,
+		COALESCE(u.bio, '') as bio,
+		COALESCE(u.avatar_url, '') as avatar_url
+		FROM users u
+		INNER JOIN posts p on p.user_id = u.id
+		WHERE p.id = $1`, post.PostId)
+
+		if err != nil {
+			return nil, err
+		}
+
+		defer rows.Close()
+
+		for rows.Next() {
+			user := &proto.User{}
+
+			err := rows.Scan(&user.Id, &user.UserName, &user.RealName, &user.Bio, &user.AvatarUrl)
+			if err != nil {
+				return nil, err
+			}
+
+			if userIDToFaces[user.Id] == nil {
+				userIDToFaces[user.Id] = &proto.UserWithFaces{User: user}
+			}
+
+			wrappedUser := userIDToFaces[user.Id]
+
+			wrappedUser.Faces = append(wrappedUser.Faces, post.Faces...)
+			wrappedUser.Weight += post.Weight
+		}
+	}
+
+	weightedUsers := &proto.WeightedUsers{}
+
+	for _, user := range userIDToFaces {
+		weightedUsers.UsersWithFaces = append(weightedUsers.UsersWithFaces, user)
+	}
+
+	return weightedUsers, nil
 }
