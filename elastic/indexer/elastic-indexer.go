@@ -24,18 +24,18 @@ import (
 type Indexer struct {
 	*worker.Worker
 
-	esClient  *elasticsearch.Client
-	kReader   *kafka.Reader
-	esIndex   string
-	bulkSize  int
-	indexFunc IndexFunc
+	esClient      *elasticsearch.Client
+	kReader       *kafka.Reader
+	esIndex       string
+	bulkChunkSize int
+	indexFunc     IndexFunc
 }
 
 // IndexFunc is the type for the functions which will insert data into elasticsearch
 type IndexFunc func(*changestream.ChangeMessage) (*ElasticIndexer, error)
 
 // New returns an initialised Indexer
-func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc, bulkSize int) *Indexer {
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc, bulkChunkSize int) *Indexer {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	i := &Indexer{}
@@ -43,7 +43,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	i.indexFunc = indexFunc
 	i.esIndex = esIndex
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
-	i.bulkSize = bulkSize
+	i.bulkChunkSize = bulkChunkSize
 
 	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
 		WithWorkStep(i.runStep).
