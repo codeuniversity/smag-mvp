@@ -114,7 +114,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh twitter/scraper/Dockerfile codesmag/twitter_scraper
+          command: ./build_and_upload_image.sh twitter/scraper/Dockerfile codesmag/twitter_scraper twitter/scraper/
 
   insta_user_names-filter:
     executor: job-runner
