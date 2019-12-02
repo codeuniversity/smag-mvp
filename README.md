@@ -44,13 +44,15 @@ If you want to join us raising awareness for data privacy have a look into [`CON
 
 ### List of contributors
 
-- @1Jo1 Josef Grieb
-- @Urhengulas Johann Hemmann
-- @alexmorten Alexander Martin
-- @jo-fr Jonathan Freiberger
-- @m-lukas Lukas Müller
-- @lukas-menzel Lukas Menzel
-- @SpringHawk Martin Zaubitzer
+| github handle                                    | real name           | instagram profile | twitter profile |
+| :----------------------------------------------- | :------------------ | :---------------- | :-------------- |
+| [@1Jo1](https://github.com/1jo1)                 | Josef Grieb         |                   |                 |
+| [@Urhengulas](https://github.com/urhengulas)     | Johann Hemmann      |                   |                 |
+| [@alexmorten](https://github.com/alexmorten)     | Alexander Martin    |                   |                 |
+| [@jo-fr](https://github.com/jo-fr)               | Jonathan Freiberger |                   |                 |
+| [@m-lukas](https://github.com/m-lukas)           | Lukas Müller        |                   |                 |
+| [@lukas-menzel](https://github.com/lukas-menzel) | Lukas Menzel        |                   |                 |
+| [@SpringHawk](https://github.com/springhawk)     | Martin Zaubitzer    |                   |                 |
 
 ### Deployment
 
