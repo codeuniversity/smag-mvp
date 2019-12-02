@@ -55,22 +55,6 @@ func indexPost(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
 	return &indexer.ElasticIndexer{}, nil
 }
 
-//func upsertPost(post *models.InstaPost, client *elasticsearch.Client) error {
-//
-//	upsertBody := createBulkUpsertOperation(post)
-//	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), esutil.NewJSONReader(upsertBody))
-//
-//	if err != nil {
-//		return err
-//	}
-//	defer response.Body.Close()
-//
-//	if response.StatusCode != 200 && response.StatusCode != 201 {
-//		return fmt.Errorf("upsertPost Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
-//	}
-//	return nil
-//}
-
 func createBulkUpsertOperation(post *models.InstaPost) (*indexer.ElasticIndexer, error) {
 	var bulkOperation = map[string]interface{}{
 		"update": map[string]interface{}{
