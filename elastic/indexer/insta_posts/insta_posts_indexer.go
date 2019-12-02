@@ -2,11 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
-
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esutil"
 
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/indexer"
@@ -31,50 +27,65 @@ func main() {
 	waitUntilClosed()
 }
 
-func indexPost(client *elasticsearch.Client, m *changestream.ChangeMessage) error {
+func indexPost(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
 	currentPost := &models.InstaPost{}
 	err := json.Unmarshal(m.Payload.After, currentPost)
 
 	if err != nil {
-		return err
+		return &indexer.ElasticIndexer{}, err
 	}
 
 	switch m.Payload.Op {
 	case "r", "c":
-		return upsertPost(currentPost, client)
+		return createBulkUpsertOperation(currentPost)
 	case "u":
 		previousPost := &models.InstaPost{}
 		err := json.Unmarshal(m.Payload.Before, previousPost)
 
 		if err != nil {
-			return err
+			return &indexer.ElasticIndexer{}, err
 		}
 
 		if previousPost.Caption != currentPost.Caption {
-			return upsertPost(currentPost, client)
+			return createBulkUpsertOperation(currentPost)
 		}
 	}
 
-	return nil
+	return &indexer.ElasticIndexer{}, nil
 }
 
-func upsertPost(post *models.InstaPost, client *elasticsearch.Client) error {
+//func upsertPost(post *models.InstaPost, client *elasticsearch.Client) error {
+//
+//	upsertBody := createBulkUpsertOperation(post)
+//	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), esutil.NewJSONReader(upsertBody))
+//
+//	if err != nil {
+//		return err
+//	}
+//	defer response.Body.Close()
+//
+//	if response.StatusCode != 200 && response.StatusCode != 201 {
+//		return fmt.Errorf("upsertPost Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
+//	}
+//	return nil
+//}
 
-	upsertBody := createUpsertBody(post)
-	response, err := client.Update(elastic.PostsIndex, strconv.Itoa(post.ID), esutil.NewJSONReader(upsertBody))
+func createBulkUpsertOperation(post *models.InstaPost) (*indexer.ElasticIndexer, error) {
+	var bulkOperation = map[string]interface{}{
+		"update": map[string]interface{}{
+			"_id":    post.ID,
+			"_index": elastic.PostsIndex,
+		},
+	}
+
+	bulkOperationJson, err := json.Marshal(bulkOperation)
 
 	if err != nil {
-		return err
+		return &indexer.ElasticIndexer{}, err
 	}
-	defer response.Body.Close()
 
-	if response.StatusCode != 200 && response.StatusCode != 201 {
-		return fmt.Errorf("upsertPost Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
-	}
-	return nil
-}
+	bulkOperationJson = append(bulkOperationJson, "\n"...)
 
-func createUpsertBody(post *models.InstaPost) map[string]interface{} {
 	var commentUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.caption = params.caption",
@@ -89,5 +100,15 @@ func createUpsertBody(post *models.InstaPost) map[string]interface{} {
 		},
 	}
 
-	return commentUpsert
+	commentUpsertJson, err := json.Marshal(commentUpsert)
+
+	if err != nil {
+		return &indexer.ElasticIndexer{}, err
+	}
+
+	commentUpsertJson = append(commentUpsertJson, "\n"...)
+
+	bulkUpsertBody := string(bulkOperationJson) + string(commentUpsertJson)
+
+	return &indexer.ElasticIndexer{DocumentId: strconv.Itoa(post.ID), BulkOperation: bulkUpsertBody}, err
 }
