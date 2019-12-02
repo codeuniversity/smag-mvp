@@ -2,25 +2,18 @@ import React, { useState } from "react";
 import { CameraFeed } from "./camera-feed";
 import Title from "./Title";
 import { FaceSearchRequest } from "../protofiles/usersearch_pb";
-import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
 import IGPost from "./IGPost";
-import "../creativeCode.css";
-function Start(props) {
-  const [similarFaces, setSimilarFaces] = useState([]);
 
-  const uploadImage = async file => {
+function findFacesInImage(apiClient, onFindFaces) {
+  return async file => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const dataUrl = reader.result;
       const base64Data = dataUrl.split(",")[1];
-      console.log(base64Data);
-      const client = new UserSearchServicePromiseClient(
-        "http://localhost:4000"
-      );
+
       const request = new FaceSearchRequest();
       request.setBase64encodedpicture(base64Data);
-      const response = await client.searchSimilarFaces(request);
-      console.log(response);
+      const response = await apiClient.searchSimilarFaces(request);
       const faces = response.getFacesList().map(protoFace => ({
         postId: protoFace.getPostId(),
         x: protoFace.getX(),
@@ -30,24 +23,32 @@ function Start(props) {
         fullImageSrc: protoFace.getFullImageSrc()
       }));
 
-      setSimilarFaces(faces);
+      onFindFaces(faces);
     };
     reader.readAsDataURL(file);
   };
+}
+
+function Start({ apiClient, faceHits, addFaceHits, nextPage }) {
+  const onFileSubmit = findFacesInImage(apiClient, addFaceHits);
 
   return (
     <div className="body">
-      <div className="white-background"></div>
-      <div className="container">
-        <div className="column-center">
-          <Title />
-          <p>Take a pictures!</p>
-          <CameraFeed sendFile={uploadImage} />
+      <div className="column-center">
+        <Title />
+        <p>Take a pictures!</p>
+        <CameraFeed onFileSubmit={onFileSubmit} />
 
-          {similarFaces.map(face => (
-            <IGPost post={{ img: face.fullImageSrc, shortcode: "" }} />
-          ))}
-        </div>
+        {Object.entries(faceHits)
+          .sort((a, b) => b[1].length - a[1].length)
+          .map(([postId, faces]) => {
+            return (
+              <IGPost
+                key={postId}
+                post={{ img: faces[0].fullImageSrc, shortcode: "" }}
+              />
+            );
+          })}
       </div>
     </div>
   );

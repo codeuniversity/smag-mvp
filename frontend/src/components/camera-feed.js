@@ -8,7 +8,6 @@ export class CameraFeed extends Component {
    */
   processDevices(devices) {
     devices.forEach(device => {
-      console.log(device.label);
       this.setDevice(device);
     });
   }
@@ -37,6 +36,14 @@ export class CameraFeed extends Component {
   async componentDidMount() {
     const cameras = await navigator.mediaDevices.enumerateDevices();
     this.processDevices(cameras);
+
+    this.intervalId = setInterval(() => {
+      this.takePhoto();
+    }, 2000);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.intervalId);
   }
 
   /**
@@ -51,11 +58,14 @@ export class CameraFeed extends Component {
     this.canvas.toBlob(onFileSubmit);
   };
 
+  stopTakingPictures = () => {
+    clearInterval(this.intervalId);
+  };
+
   render() {
     return (
       <div className="Button-center">
         <video ref={ref => (this.videoPlayer = ref)} width="800" heigh="600" />
-        <button onClick={this.takePhoto}>Take a photo!</button>
         <div className="c-camera-feed__stage">
           <canvas width="800" height="600" ref={ref => (this.canvas = ref)} />
         </div>
