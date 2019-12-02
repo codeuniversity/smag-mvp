@@ -135,6 +135,7 @@ func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
 			return checkHttpStatus(bulkResultOperation.Update.Status)
 		}
 	}
+	return nil
 }
 
 func checkHttpStatus(httpStatus int) error {
