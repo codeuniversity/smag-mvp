@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/elastic"
@@ -23,14 +24,16 @@ import (
 type Indexer struct {
 	*worker.Worker
 
-	esClient *elasticsearch.Client
-	kReader  *kafka.Reader
-
+	esClient  *elasticsearch.Client
+	kReader   *kafka.Reader
+	esIndex   string
 	indexFunc IndexFunc
 }
 
+const bulkLimit = 200
+
 // IndexFunc is the type for the functions which will insert data into elasticsearch
-type IndexFunc func(*elasticsearch.Client, *changestream.ChangeMessage) error
+type IndexFunc func(*changestream.ChangeMessage) (*ElasticIndexer, error)
 
 // New returns an initialised Indexer
 func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc) *Indexer {
@@ -39,7 +42,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	i := &Indexer{}
 	i.kReader = kf.NewReader(readerConfig)
 	i.indexFunc = indexFunc
-
+	i.esIndex = esIndex
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
 
 	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
@@ -52,20 +55,63 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 }
 
 func (i *Indexer) runStep() error {
-	m, err := i.kReader.FetchMessage(context.Background())
+	messages, err := i.readMessageBlock(1*time.Second, bulkLimit)
 	if err != nil {
 		return err
 	}
 
-	changeMessage := &changestream.ChangeMessage{}
-	if err := json.Unmarshal(m.Value, changeMessage); err != nil {
+	if len(messages) == 0 {
+		return nil
+	}
+
+	var bulkBody string
+	bulkDocumentIdMessages := make(map[string]kafka.Message)
+	for _, message := range messages {
+
+		changeMessage := &changestream.ChangeMessage{}
+		if err := json.Unmarshal(message.Value, changeMessage); err != nil {
+			return err
+		}
+		bulkOperation, err := i.indexFunc(changeMessage)
+
+		if err != nil {
+			return err
+		}
+
+		bulkDocumentIdMessages[bulkOperation.DocumentId] = message
+		bulkBody += bulkOperation.BulkOperation
+	}
+
+	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
+
+	if err != nil {
 		return err
 	}
 
-	if err := i.indexFunc(i.esClient, changeMessage); err != nil {
+	body, err := ioutil.ReadAll(bulkResponse.Body)
+
+	if err != nil {
 		return err
 	}
-	return i.kReader.CommitMessages(context.Background(), m)
+
+	var bulkResult bulkResult
+	err = json.Unmarshal(body, &bulkResult)
+
+	if err != nil {
+		return err
+	}
+
+	for _, bulkResultOperation := range bulkResult.Items {
+
+		if bulkResultOperation.Index.Status == 200 || bulkResultOperation.Index.Status == 201 {
+			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdMessages[bulkResultOperation.Index.ID])
+
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (i *Indexer) createIndex(esIndex, esMapping string) error {
@@ -102,4 +148,45 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 		return fmt.Errorf("error finding index: %d %s", response.StatusCode, string(body))
 	}
 	return nil
+}
+
+func (i *Indexer) readMessageBlock(timeout time.Duration, maxChunkSize int) (messages []kafka.Message, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	for k := 0; k < maxChunkSize; k++ {
+		m, err := i.kReader.FetchMessage(ctx)
+		if err != nil {
+			if err == context.DeadlineExceeded {
+				return messages, nil
+			}
+
+			return nil, err
+		}
+
+		messages = append(messages, m)
+	}
+
+	return messages, nil
+}
+
+type bulkResult struct {
+	Took   int  `json:"took"`
+	Errors bool `json:"errors"`
+	Items  []struct {
+		Index struct {
+			Index   string `json:"_index"`
+			Type    string `json:"_type"`
+			ID      string `json:"_id"`
+			Version int    `json:"_version"`
+			Result  string `json:"result"`
+			Shards  struct {
+				Total      int `json:"total"`
+				Successful int `json:"successful"`
+				Failed     int `json:"failed"`
+			} `json:"_shards"`
+			SeqNo       int `json:"_seq_no"`
+			PrimaryTerm int `json:"_primary_term"`
+			Status      int `json:"status"`
+		} `json:"index"`
+	} `json:"items"`
 }
