@@ -55,7 +55,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 }
 
 func (i *Indexer) runStep() error {
-	messages, err := i.readMessageBlock(5*time.Second, i.bulkSize)
+	messages, err := i.readMessageBlock(5*time.Second, i.bulkChunkSize)
 	log.Println("Messages Bulk: ", len(messages))
 	if err != nil {
 		return err
