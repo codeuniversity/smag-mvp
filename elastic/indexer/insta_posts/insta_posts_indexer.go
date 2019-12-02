@@ -28,12 +28,12 @@ func main() {
 	waitUntilClosed()
 }
 
-func indexPost(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
+func indexPost(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	currentPost := &models.InstaPost{}
 	err := json.Unmarshal(m.Payload.After, currentPost)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	switch m.Payload.Op {
@@ -44,7 +44,7 @@ func indexPost(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
 		err := json.Unmarshal(m.Payload.Before, previousPost)
 
 		if err != nil {
-			return &indexer.ElasticIndexer{}, err
+			return &indexer.BulkIndexDoc{}, err
 		}
 
 		if previousPost.Caption != currentPost.Caption {
@@ -52,10 +52,10 @@ func indexPost(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
 		}
 	}
 
-	return &indexer.ElasticIndexer{}, nil
+	return &indexer.BulkIndexDoc{}, nil
 }
 
-func createBulkUpsertOperation(post *models.InstaPost) (*indexer.ElasticIndexer, error) {
+func createBulkUpsertOperation(post *models.InstaPost) (*indexer.BulkIndexDoc, error) {
 	var bulkOperation = map[string]interface{}{
 		"update": map[string]interface{}{
 			"_id":    post.ID,
@@ -66,7 +66,7 @@ func createBulkUpsertOperation(post *models.InstaPost) (*indexer.ElasticIndexer,
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
@@ -88,12 +88,12 @@ func createBulkUpsertOperation(post *models.InstaPost) (*indexer.ElasticIndexer,
 	postUpsertJson, err := json.Marshal(commentUpsert)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	postUpsertJson = append(postUpsertJson, "\n"...)
 
 	bulkUpsertBody := string(bulkOperationJson) + string(postUpsertJson)
 
-	return &indexer.ElasticIndexer{DocumentId: strconv.Itoa(post.ID), BulkOperation: bulkUpsertBody}, err
+	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(post.ID), BulkOperation: bulkUpsertBody}, err
 }

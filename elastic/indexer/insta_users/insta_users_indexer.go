@@ -28,20 +28,20 @@ func main() {
 }
 
 // handleChangeMessage filters relevant events and upserts them
-func handleChangeMessage(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
+func handleChangeMessage(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	user := &models.InstaUser{}
 	if err := json.Unmarshal(m.Payload.After, user); err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	switch m.Payload.Op {
 	case "c", "r", "u":
 		return createBulkUpsertOperation(user)
 	}
-	return &indexer.ElasticIndexer{}, nil
+	return &indexer.BulkIndexDoc{}, nil
 }
 
-func createBulkUpsertOperation(user *models.InstaUser) (*indexer.ElasticIndexer, error) {
+func createBulkUpsertOperation(user *models.InstaUser) (*indexer.BulkIndexDoc, error) {
 	var bulkOperation = map[string]interface{}{
 		"update": map[string]interface{}{
 			"_id":    user.ID,
@@ -52,7 +52,7 @@ func createBulkUpsertOperation(user *models.InstaUser) (*indexer.ElasticIndexer,
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
@@ -77,12 +77,12 @@ func createBulkUpsertOperation(user *models.InstaUser) (*indexer.ElasticIndexer,
 	usersUpsertJson, err := json.Marshal(usersUpsert)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	usersUpsertJson = append(usersUpsertJson, "\n"...)
 
 	bulkUpsertBody := string(bulkOperationJson) + string(usersUpsertJson)
 
-	return &indexer.ElasticIndexer{DocumentId: strconv.Itoa(user.ID), BulkOperation: bulkUpsertBody}, err
+	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(user.ID), BulkOperation: bulkUpsertBody}, err
 }

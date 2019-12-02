@@ -29,50 +29,50 @@ func main() {
 	waitUntilDone()
 }
 
-func indexFace(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
+func indexFace(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 
 	switch m.Payload.Op {
 	case "r", "u", "c":
 		break
 	default:
-		return &indexer.ElasticIndexer{}, nil
+		return &indexer.BulkIndexDoc{}, nil
 	}
 
 	face := &models.FaceData{}
 	err := json.Unmarshal(m.Payload.After, face)
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	return createBulkIndexOperation(face)
 }
 
-func createBulkIndexOperation(face *models.FaceData) (*indexer.ElasticIndexer, error) {
+func createBulkIndexOperation(face *models.FaceData) (*indexer.BulkIndexDoc, error) {
 	bulkOperation := `{ "index": {}  }`
 
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
 
 	doc, err := esModels.FaceDocFromFaceData(face)
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	docJson, err := json.Marshal(doc)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	docJson = append(docJson, "\n"...)
 
 	bulkUpsertBody := string(bulkOperationJson) + string(docJson)
 
-	return &indexer.ElasticIndexer{DocumentId: strconv.Itoa(int(face.ID)), BulkOperation: bulkUpsertBody}, err
+	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(int(face.ID)), BulkOperation: bulkUpsertBody}, err
 
 }

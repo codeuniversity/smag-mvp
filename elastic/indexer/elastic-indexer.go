@@ -32,7 +32,7 @@ type Indexer struct {
 }
 
 // IndexFunc is the type for the functions which will insert data into elasticsearch
-type IndexFunc func(*changestream.ChangeMessage) (*ElasticIndexer, error)
+type IndexFunc func(*changestream.ChangeMessage) (*BulkIndexDoc, error)
 
 // New returns an initialised Indexer
 func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc, bulkChunkSize int) *Indexer {

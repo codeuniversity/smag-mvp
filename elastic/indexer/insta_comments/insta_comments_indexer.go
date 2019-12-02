@@ -28,12 +28,12 @@ func main() {
 	waitUntilClosed()
 }
 
-func indexComment(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
+func indexComment(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	comment := &models.InstaComment{}
 	err := json.Unmarshal(m.Payload.After, comment)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	switch m.Payload.Op {
@@ -41,10 +41,10 @@ func indexComment(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error
 		return createBulkUpsertOperation(comment)
 	}
 
-	return &indexer.ElasticIndexer{}, nil
+	return &indexer.BulkIndexDoc{}, nil
 }
 
-func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.ElasticIndexer, error) {
+func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.BulkIndexDoc, error) {
 	var bulkOperation = map[string]interface{}{
 		"update": map[string]interface{}{
 			"_id":    comment.ID,
@@ -54,7 +54,7 @@ func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.ElasticIn
 
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
@@ -75,12 +75,12 @@ func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.ElasticIn
 	commentUpsertJson, err := json.Marshal(commentUpsert)
 
 	if err != nil {
-		return &indexer.ElasticIndexer{}, err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	commentUpsertJson = append(commentUpsertJson, "\n"...)
 
 	bulkUpsertBody := string(bulkOperationJson) + string(commentUpsertJson)
 
-	return &indexer.ElasticIndexer{DocumentId: strconv.Itoa(comment.ID), BulkOperation: bulkUpsertBody}, err
+	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(comment.ID), BulkOperation: bulkUpsertBody}, err
 }
