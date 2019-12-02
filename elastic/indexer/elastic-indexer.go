@@ -27,16 +27,15 @@ type Indexer struct {
 	esClient  *elasticsearch.Client
 	kReader   *kafka.Reader
 	esIndex   string
+	bulkSize  int
 	indexFunc IndexFunc
 }
-
-const bulkLimit = 200
 
 // IndexFunc is the type for the functions which will insert data into elasticsearch
 type IndexFunc func(*changestream.ChangeMessage) (*ElasticIndexer, error)
 
 // New returns an initialised Indexer
-func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc) *Indexer {
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc, bulkSize int) *Indexer {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	i := &Indexer{}
@@ -44,6 +43,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	i.indexFunc = indexFunc
 	i.esIndex = esIndex
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
+	i.bulkSize = bulkSize
 
 	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
 		WithWorkStep(i.runStep).
@@ -55,7 +55,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 }
 
 func (i *Indexer) runStep() error {
-	messages, err := i.readMessageBlock(1*time.Second, bulkLimit)
+	messages, err := i.readMessageBlock(1*time.Second, i.bulkSize)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (i *Indexer) runStep() error {
 	}
 
 	var bulkBody string
-	bulkDocumentIdMessages := make(map[string]kafka.Message)
+	bulkDocumentIdKafkaMessages := make(map[string]kafka.Message)
 	for _, message := range messages {
 
 		changeMessage := &changestream.ChangeMessage{}
@@ -78,7 +78,7 @@ func (i *Indexer) runStep() error {
 			return err
 		}
 
-		bulkDocumentIdMessages[bulkOperation.DocumentId] = message
+		bulkDocumentIdKafkaMessages[bulkOperation.DocumentId] = message
 		bulkBody += bulkOperation.BulkOperation
 	}
 
@@ -104,7 +104,7 @@ func (i *Indexer) runStep() error {
 	for _, bulkResultOperation := range bulkResult.Items {
 
 		if bulkResultOperation.Index.Status == 200 || bulkResultOperation.Index.Status == 201 {
-			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdMessages[bulkResultOperation.Index.ID])
+			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
 
 			if err != nil {
 				return err
