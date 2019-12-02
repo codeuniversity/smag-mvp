@@ -346,8 +346,6 @@ workflows:
               only: master
       # TWITTER
       - twitter_scraper:
-          requires:
-            - tests
           filters:
             branches:
               only: master
