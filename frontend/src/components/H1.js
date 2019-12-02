@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-class Title extends Component {
+class H1 extends Component {
   render() {
     return (
       <div className="headline">
@@ -10,4 +10,4 @@ class Title extends Component {
   }
 }
 
-export default Title;
+export default H1;

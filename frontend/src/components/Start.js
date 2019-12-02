@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { CameraFeed } from "./camera-feed";
-import Title from "./Title";
+import H1 from "./H1";
 import { FaceSearchRequest } from "../protofiles/usersearch_pb";
 import IGPost from "./IGPost";
 
@@ -35,7 +35,7 @@ function Start({ apiClient, faceHits, addFaceHits, nextPage }) {
   return (
     <div className="body">
       <div className="column-center">
-        <Title />
+        <H1 />
         <p>Take a pictures!</p>
         <CameraFeed onFileSubmit={onFileSubmit} />
 
