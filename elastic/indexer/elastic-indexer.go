@@ -113,12 +113,12 @@ func (i *Indexer) runStep() error {
 	for _, bulkResultOperation := range result.Items {
 
 		if bulkResultOperation.Index.ID != "" {
-			err := i.commitKafkaMessages(bulkResultOperation.Index.Status, bulkResultOperation.Index.ID, bulkDocumentIdKafkaMessages)
+			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
 			if err != nil {
 				return err
 			}
 		} else if bulkResultOperation.Update.ID != "" {
-			err := i.commitKafkaMessages(bulkResultOperation.Update.Status, bulkResultOperation.Update.ID, bulkDocumentIdKafkaMessages)
+			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Update.ID])
 			if err != nil {
 				return err
 			}
@@ -152,18 +152,6 @@ func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
 func errorForHttpStatus(httpStatus int) error {
 	if httpStatus != 200 && httpStatus != 201 {
 		return fmt.Errorf("creating/updateing index failed Httpstatus: %d \n", httpStatus)
-	}
-	return nil
-}
-
-func (i *Indexer) commitKafkaMessages(httpStatus int, documentId string, bulkDocumentIdKafkaMessages map[string]kafka.Message) error {
-	if httpStatus == 200 || httpStatus == 201 {
-
-		err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[documentId])
-
-		if err != nil {
-			return err
-		}
 	}
 	return nil
 }
