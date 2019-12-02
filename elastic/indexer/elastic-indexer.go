@@ -112,12 +112,12 @@ func (i *Indexer) runStep() error {
 
 	for _, bulkResultOperation := range result.Items {
 
-		if bulkResultOperation.Index.ID != "" {
+		if bulkResultOperation.Index != nil {
 			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
 			if err != nil {
 				return err
 			}
-		} else if bulkResultOperation.Update.ID != "" {
+		} else if bulkResultOperation.Update != nil {
 			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Update.ID])
 			if err != nil {
 				return err
