@@ -85,15 +85,15 @@ func createBulkUpsertOperation(post *models.InstaPost) (*indexer.ElasticIndexer,
 		},
 	}
 
-	commentUpsertJson, err := json.Marshal(commentUpsert)
+	postUpsertJson, err := json.Marshal(commentUpsert)
 
 	if err != nil {
 		return &indexer.ElasticIndexer{}, err
 	}
 
-	commentUpsertJson = append(commentUpsertJson, "\n"...)
+	postUpsertJson = append(postUpsertJson, "\n"...)
 
-	bulkUpsertBody := string(bulkOperationJson) + string(commentUpsertJson)
+	bulkUpsertBody := string(bulkOperationJson) + string(postUpsertJson)
 
 	return &indexer.ElasticIndexer{DocumentId: strconv.Itoa(post.ID), BulkOperation: bulkUpsertBody}, err
 }
