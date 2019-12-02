@@ -2,11 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
-
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esutil"
 
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/indexer"
@@ -20,10 +16,10 @@ func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.GetStringFromEnvWithDefault("KAFKA_GROUPID", "insta_usersearch-inserter")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.users")
-
+	bulkSize := utils.GetNumberFromEnvWithDefault("BULK_SIZE", 10)
 	esHosts := utils.GetMultipleStringsFromEnvWithDefault("ES_HOSTS", []string{"http://localhost:9201"})
 
-	i := indexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangemessage)
+	i := indexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangeMessage, bulkSize)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
@@ -31,41 +27,37 @@ func main() {
 	waitUntilClosed()
 }
 
-// handleChangemessage filters relevant events and upserts them
-func handleChangemessage(esClient *elasticsearch.Client, m *changestream.ChangeMessage) error {
+// handleChangeMessage filters relevant events and upserts them
+func handleChangeMessage(m *changestream.ChangeMessage) (*indexer.ElasticIndexer, error) {
 	user := &models.InstaUser{}
 	if err := json.Unmarshal(m.Payload.After, user); err != nil {
-		return err
+		return &indexer.ElasticIndexer{}, err
 	}
 
 	switch m.Payload.Op {
 	case "c", "r", "u":
-		return upsertDocument(user, esClient)
+		return createBulkUpsertOperation(user)
 	}
-
-	return nil
+	return &indexer.ElasticIndexer{}, nil
 }
 
-func upsertDocument(u *models.InstaUser, esClient *elasticsearch.Client) error {
-	upsertBody := createUpsertBody(u)
-	response, err := esClient.Update(
-		elastic.UsersIndex,
-		strconv.Itoa(u.ID),
-		esutil.NewJSONReader(upsertBody))
+func createBulkUpsertOperation(user *models.InstaUser) (*indexer.ElasticIndexer, error) {
+	var bulkOperation = map[string]interface{}{
+		"update": map[string]interface{}{
+			"_id":    user.ID,
+			"_index": elastic.UsersIndex,
+		},
+	}
+
+	bulkOperationJson, err := json.Marshal(bulkOperation)
+
 	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-
-	if response.StatusCode != 200 && response.StatusCode != 201 {
-		return fmt.Errorf("upsertDocument Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
+		return &indexer.ElasticIndexer{}, err
 	}
 
-	return nil
-}
+	bulkOperationJson = append(bulkOperationJson, "\n"...)
 
-func createUpsertBody(user *models.InstaUser) map[string]interface{} {
-	var commentUpsert = map[string]interface{}{
+	var usersUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.user_name = params.user_name; ctx._source.real_name = params.real_name; ctx._source.bio = params.bio",
 			"lang":   "painless",
@@ -82,5 +74,15 @@ func createUpsertBody(user *models.InstaUser) map[string]interface{} {
 		},
 	}
 
-	return commentUpsert
+	usersUpsertJson, err := json.Marshal(usersUpsert)
+
+	if err != nil {
+		return &indexer.ElasticIndexer{}, err
+	}
+
+	usersUpsertJson = append(usersUpsertJson, "\n"...)
+
+	bulkUpsertBody := string(bulkOperationJson) + string(usersUpsertJson)
+
+	return &indexer.ElasticIndexer{DocumentId: strconv.Itoa(user.ID), BulkOperation: bulkUpsertBody}, err
 }
