@@ -194,6 +194,13 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc 
 
 		u = append(u, &user)
 
+		if s.userNamesWriter != nil {
+			log.Println("writing user", user.UserName, "to user topic")
+			err := s.userNamesWriter.WriteMessages(context.Background(), kafka.Message{Value: []byte(user.UserName)})
+			if err != nil {
+				return nil, err
+			}
+		}
 	}
 
 	return u, nil
