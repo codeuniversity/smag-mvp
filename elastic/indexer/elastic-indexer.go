@@ -128,6 +128,9 @@ func (i *Indexer) runStep() error {
 }
 
 func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
+	if result == nil {
+		return fmt.Errorf("BulkResult is nil")
+	}
 	for _, bulkResultOperation := range result.Items {
 		if bulkResultOperation.Index.ID != "" {
 			return checkHttpStatus(bulkResultOperation.Index.Status)
