@@ -11,9 +11,9 @@ class Greeting extends Component {
       <div className="container-center">
         <div className="column-center">
           <div className="greeting">
-            <H1 h1="Welcome to SocialRecord" />
-            <H2 h2="Sit back and enjoy the experience." />
-            <Button button="Start" buttonlink="/start" />
+            <H1>Welcome to SocialRecord</H1>
+            <H2>Sit back and enjoy the experience.</H2>
+            <Button buttonlink="/start">Start</Button>
           </div>
         </div>
       </div>

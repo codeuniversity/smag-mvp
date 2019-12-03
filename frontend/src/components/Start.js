@@ -35,8 +35,7 @@ function Start({ apiClient, faceHits, addFaceHits, nextPage }) {
   return (
     <div className="body">
       <div className="column-center">
-        <H1 />
-        <p>Take a pictures!</p>
+        <H1>Take a pictures!</H1>
         <CameraFeed onFileSubmit={onFileSubmit} />
 
         {Object.entries(faceHits)

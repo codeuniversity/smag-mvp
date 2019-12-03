@@ -1,13 +1,11 @@
 import React, { Component } from "react";
 
-class H1 extends Component {
-  render() {
-    return (
-      <div className="headline">
-        <h1>{this.props.h1}</h1>
-      </div>
-    );
-  }
+function H1(props) {
+  return (
+    <div className="headline">
+      <h1>{props.children}</h1>
+    </div>
+  );
 }
 
 export default H1;
