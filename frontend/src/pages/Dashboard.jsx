@@ -5,6 +5,8 @@ import ProfileCard from "../components/ProfileCard";
 import StatsCard from "../components/StatsCard";
 import BioCard from "../components/BioCard";
 import Button from "../components/Button";
+import EndButton from "../components/EndButton";
+import PostCard from "../components/PostsCard";
 
 class Dashboard extends Component {
   constructor(props) {
@@ -36,14 +38,11 @@ class Dashboard extends Component {
   render() {
     return (
       <div className="dashboard">
+        <EndButton link="/" />
         <h1 className="dashboardTitle">Here's what we found out about you:</h1>
         <div className="dashboardGrid">
           <ProfileCard pictureUrl="https://avatars3.githubusercontent.com/u/17454617?s=460&v=4" />
-          <InterestCard
-            title="Favorites"
-            details={["Holidays", "Shoes", "Food"]}
-            slides={this.state.slides0}
-          />
+          <PostCard slides={this.state.slides2} />
           <InterestCard
             title="Music"
             details={["Coldplay", "Nickelback", "Rammstein"]}
@@ -52,9 +51,9 @@ class Dashboard extends Component {
           <StatsCard count="53" />
           <BioCard />
           <InterestCard
-            title="Food"
-            details={["Pizza", "Pasta", "Königsberger Klopse"]}
-            slides={this.state.slides2}
+            title="Favorites"
+            details={["Holidays", "Shoes", "Food"]}
+            slides={this.state.slides0}
           />
           <InterestCard
             title="Brands"

@@ -1,17 +1,20 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 
-class ProfileCard extends Component {
-  render() {
-    return (
-      <div className="dashboardCard">
-        <img
-          src={this.props.pictureUrl}
-          alt="profile picture"
-          className="profilePictureImg"
-        />
-      </div>
-    );
-  }
-}
+const ProfileCard = props => {
+  return (
+    <div className="dashboardCard">
+      <img
+        src={props.pictureUrl}
+        alt="your avatar"
+        className="profilePictureImg"
+      />
+    </div>
+  );
+};
+
+ProfileCard.propTypes = {
+  pictureUrl: PropTypes.string
+};
 
 export default ProfileCard;
