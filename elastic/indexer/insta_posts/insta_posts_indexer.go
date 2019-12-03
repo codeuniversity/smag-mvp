@@ -92,7 +92,6 @@ func createBulkUpsertOperation(post *models.InstaPost) (*indexer.BulkIndexDoc, e
 	}
 
 	postUpsertJson = append(postUpsertJson, "\n"...)
-
 	bulkUpsertBody := string(bulkOperationJson) + string(postUpsertJson)
 
 	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(post.ID), BulkOperation: bulkUpsertBody}, err
