@@ -42,17 +42,6 @@ function Start({ apiClient, faceHits, addFaceHits, nextPage }) {
         </H1>
         <CameraFeed onFileSubmit={onFileSubmit} />
         <H2>Give us your smile face :)</H2>
-
-        {Object.entries(faceHits)
-          .sort((a, b) => b[1].length - a[1].length)
-          .map(([postId, faces]) => {
-            return (
-              <IGPost
-                key={postId}
-                post={{ img: faces[0].fullImageSrc, shortcode: "" }}
-              />
-            );
-          })}
       </div>
     </div>
   );
