@@ -39,20 +39,22 @@
   margin: 0px;
   /* box-shadow: 10px 10px 15px silver; */
   border-radius: 4px;
+  background-color: #fafafa;
 }
 
 .cardGrid {
-  width: 100%;
-  height: 100%;
+  width: 405px;
+  height: 405px;
   display: grid;
   grid-template-columns: 1fr;
   grid-template-rows: 78% 22%;
 }
 
 .slideshow {
-  width: 405px;
-  height: auto;
-  background-color: #fafafa;
+  max-width: 100%;
+  width: 100%;
+  max-height: 100%;
+  height: 100%;
 }
 
 .slides,
@@ -74,7 +76,7 @@
 }
 
 .interestFooter {
-  width: 100%;
+  max-width: 405px;
   height: 100%;
   background-color: #fafafa;
   display: grid;
@@ -101,7 +103,7 @@
 }
 
 .dashboardCard img {
-  width: 405px;
+  width: 100%;
   height: 100%;
   object-fit: cover;
   max-width: 100%;
