@@ -1,15 +1,18 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 
-class StatsCard extends Component {
-  render() {
-    return (
-      <div className="dashboardCard statsCard">
-        <p>We were able to reuse</p>
-        <h1>{this.props.count}</h1>
-        <p>snippets of your data.</p>
-      </div>
-    );
-  }
-}
+const StatsCard = props => {
+  return (
+    <div className="dashboardCard statsCard">
+      <p>We were able to reuse</p>
+      <h1>{props.count}</h1>
+      <p>snippets of your data.</p>
+    </div>
+  );
+};
+
+StatsCard.propTypes = {
+  count: PropTypes.number
+};
 
 export default StatsCard;
