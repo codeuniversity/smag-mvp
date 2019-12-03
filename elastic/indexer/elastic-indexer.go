@@ -178,7 +178,6 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 		if err != nil {
 			return err
 		}
-		log.Println(response.String())
 	} else if response.StatusCode == 200 {
 		return nil
 	} else {
