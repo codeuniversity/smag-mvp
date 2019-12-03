@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import Start from "./Start";
 import ProfileSelection from "./ProfileSelection";
 import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
+import Dashboard from "../pages/Dashboard";
 import "../creativeCode.css";
 
 const START_PAGE = "start";
 const PROFILE_SELECTION_PAGE = "profile_selection";
+const DASHBOARD_PAGE = "dashboard";
 const NECESARY_FACE_SAMPLES = 5;
 const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
@@ -25,7 +27,15 @@ function FlowStateWrapper(props) {
         />
       );
     case PROFILE_SELECTION_PAGE:
-      return <ProfileSelection apiClient={apiClient} faceHits={faceHits} />;
+      return (
+        <ProfileSelection
+          apiClient={apiClient}
+          faceHits={faceHits}
+          nextPage={() => setPage(DASHBOARD_PAGE)}
+        />
+      );
+    case DASHBOARD_PAGE:
+      return <Dashboard />;
     default:
       return `page ${page} not found`;
   }
