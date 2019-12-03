@@ -103,8 +103,6 @@ func (i *Indexer) runStep() error {
 	}
 
 	log.Println("BulkResultItem: ", len(result.Items))
-	log.Println("BulkResult: ", string(body))
-
 	err = i.checkAllResultMessagesAreValid(&result)
 	if err != nil {
 		return err
