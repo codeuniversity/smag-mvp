@@ -48,7 +48,7 @@ func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.BulkIndex
 	var bulkOperation = map[string]interface{}{
 		"update": map[string]interface{}{
 			"_id":    comment.ID,
-			"_index": elastic.PostsIndex,
+			"_index": elastic.CommentsIndex,
 		},
 	}
 
