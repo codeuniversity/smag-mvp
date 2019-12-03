@@ -44,6 +44,7 @@ export class CameraFeed extends Component {
 
   componentWillUnmount() {
     clearInterval(this.intervalId);
+    this.videoPlayer.pause();
   }
 
   /**
