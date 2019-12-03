@@ -4,7 +4,9 @@ import ProfileSelection from "./ProfileSelection";
 import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
 import Dashboard from "../pages/Dashboard";
 import "../creativeCode.css";
+import Greeting from "../pages/Greeting";
 
+const GREETING_PAGE = "greeting";
 const START_PAGE = "start";
 const PROFILE_SELECTION_PAGE = "profile_selection";
 const DASHBOARD_PAGE = "dashboard";
@@ -12,12 +14,14 @@ const NECESARY_FACE_SAMPLES = 5;
 const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
 function FlowStateWrapper(props) {
-  const [page, setPage] = useState(START_PAGE);
+  const [page, setPage] = useState(GREETING_PAGE);
   const { faceHits, addFaceHits } = useFaceHitState(() =>
     setPage(PROFILE_SELECTION_PAGE)
   );
 
   switch (page) {
+    case GREETING_PAGE:
+      return <Greeting nextPage={() => setPage(START_PAGE)} />;
     case START_PAGE:
       return (
         <Start

@@ -267,6 +267,7 @@ video {
   display: inline-block;
   text-align: center;
   margin: 0 20px;
+  cursor: pointer;
 }
 
 /*--------responsive-----------*/

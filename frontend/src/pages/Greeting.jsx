@@ -13,7 +13,7 @@ class Greeting extends Component {
           <div className="greeting">
             <H1>Welcome to SocialRecord</H1>
             <H2>Sit back and enjoy the experience.</H2>
-            <Button buttonlink="/start">Start</Button>
+            <Button onClick={this.props.nextPage}>Start</Button>
           </div>
         </div>
       </div>
