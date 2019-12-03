@@ -56,7 +56,6 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 
 func (i *Indexer) runStep() error {
 	messages, err := i.readMessageBlock(5*time.Second, i.bulkChunkSize)
-	log.Println("Messages Bulk: ", len(messages))
 	if err != nil {
 		return err
 	}
@@ -87,7 +86,6 @@ func (i *Indexer) runStep() error {
 	if err != nil {
 		return err
 	}
-	log.Println("Result Messages Bulk: ", bulkResponse.Status())
 
 	body, err := ioutil.ReadAll(bulkResponse.Body)
 
@@ -102,7 +100,6 @@ func (i *Indexer) runStep() error {
 		return err
 	}
 
-	log.Println("BulkResultItem: ", len(result.Items))
 	err = i.checkAllResultMessagesAreValid(&result)
 	if err != nil {
 		return err
