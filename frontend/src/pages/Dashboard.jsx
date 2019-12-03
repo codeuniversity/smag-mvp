@@ -4,6 +4,7 @@ import "./../Dashboard.css";
 import ProfileCard from "../components/ProfileCard";
 import StatsCard from "../components/StatsCard";
 import BioCard from "../components/BioCard";
+import Button from "../components/Button";
 
 class Dashboard extends Component {
   constructor(props) {
@@ -66,6 +67,7 @@ class Dashboard extends Component {
             slides={this.state.slides4}
           />
         </div>
+        <Button>See more details about your network</Button>
       </div>
     );
   }

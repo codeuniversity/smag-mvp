@@ -19,6 +19,7 @@
   height: 42px;
   width: 663px;
   align-self: flex-start;
+  margin: 0;
 }
 
 .dashboardGrid {
@@ -28,6 +29,7 @@
   grid-template-columns: auto auto auto auto;
   grid-template-rows: 405px 405px;
   grid-gap: 50px;
+  margin: 30px 0px 30px 0px;
 }
 
 .dashboardCard {
