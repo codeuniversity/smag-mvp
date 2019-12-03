@@ -478,4 +478,87 @@ proto.proto.UserSearchServicePromiseClient.prototype.searchUsersWithWeightedPost
   );
 };
 
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.proto.UserIdRequest,
+ *   !proto.proto.UserDataPointCount>}
+ */
+const methodDescriptor_UserSearchService_DataPointCountForUserId = new grpc.web.MethodDescriptor(
+  "/proto.UserSearchService/DataPointCountForUserId",
+  grpc.web.MethodType.UNARY,
+  proto.proto.UserIdRequest,
+  proto.proto.UserDataPointCount,
+  /**
+   * @param {!proto.proto.UserIdRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.UserDataPointCount.deserializeBinary
+);
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.proto.UserIdRequest,
+ *   !proto.proto.UserDataPointCount>}
+ */
+const methodInfo_UserSearchService_DataPointCountForUserId = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.proto.UserDataPointCount,
+  /**
+   * @param {!proto.proto.UserIdRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.UserDataPointCount.deserializeBinary
+);
+
+/**
+ * @param {!proto.proto.UserIdRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.proto.UserDataPointCount)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.proto.UserDataPointCount>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.proto.UserSearchServiceClient.prototype.dataPointCountForUserId = function(
+  request,
+  metadata,
+  callback
+) {
+  return this.client_.rpcCall(
+    this.hostname_ + "/proto.UserSearchService/DataPointCountForUserId",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_DataPointCountForUserId,
+    callback
+  );
+};
+
+/**
+ * @param {!proto.proto.UserIdRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.proto.UserDataPointCount>}
+ *     A native promise that resolves to the response
+ */
+proto.proto.UserSearchServicePromiseClient.prototype.dataPointCountForUserId = function(
+  request,
+  metadata
+) {
+  return this.client_.unaryCall(
+    this.hostname_ + "/proto.UserSearchService/DataPointCountForUserId",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_DataPointCountForUserId
+  );
+};
+
 module.exports = proto.proto;

@@ -15,11 +15,21 @@ async function fetchPosts(apiClient, userId) {
   return posts.map(post => post.toObject()).filter(post => !!post.imgUrl);
 }
 
+async function fetchDataPoints(apiClient, userId) {
+  const userIdRequest = new UserIdRequest();
+  userIdRequest.setUserId(userId);
+
+  const response = await apiClient.dataPointCountForUserId(userIdRequest);
+  return response.getCount();
+}
+
 function Dashboard({ profile, apiClient }) {
   const [posts, setPosts] = useState([]);
+  const [dataPointCount, setDataPointCount] = useState(null);
 
   useEffect(() => {
     fetchPosts(apiClient, profile.user.id).then(setPosts);
+    fetchDataPoints(apiClient, profile.user.id).then(setDataPointCount);
   }, []);
 
   const slides0 = profile.facesList.map(face => face.fullImageSrc);
@@ -55,7 +65,7 @@ function Dashboard({ profile, apiClient }) {
           details={["Coldplay", "Nickelback", "Rammstein"]}
           slides={slides1}
         />
-        <StatsCard count="53" />
+        <StatsCard count={dataPointCount} />
         <BioCard bio={profile.user.bio} />
         <InterestCard
           title="Food"
