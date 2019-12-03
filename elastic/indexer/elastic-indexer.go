@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/codeuniversity/smag-mvp/elastic"
@@ -23,24 +24,26 @@ import (
 type Indexer struct {
 	*worker.Worker
 
-	esClient *elasticsearch.Client
-	kReader  *kafka.Reader
-
-	indexFunc IndexFunc
+	esClient      *elasticsearch.Client
+	kReader       *kafka.Reader
+	esIndex       string
+	bulkChunkSize int
+	indexFunc     IndexFunc
 }
 
 // IndexFunc is the type for the functions which will insert data into elasticsearch
-type IndexFunc func(*elasticsearch.Client, *changestream.ChangeMessage) error
+type IndexFunc func(*changestream.ChangeMessage) (*BulkIndexDoc, error)
 
 // New returns an initialised Indexer
-func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc) *Indexer {
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc, bulkChunkSize int) *Indexer {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	i := &Indexer{}
 	i.kReader = kf.NewReader(readerConfig)
 	i.indexFunc = indexFunc
-
+	i.esIndex = esIndex
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
+	i.bulkChunkSize = bulkChunkSize
 
 	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
 		WithWorkStep(i.runStep).
@@ -52,20 +55,103 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 }
 
 func (i *Indexer) runStep() error {
-	m, err := i.kReader.FetchMessage(context.Background())
+	messages, err := i.readMessageBlock(5*time.Second, i.bulkChunkSize)
+	log.Println("Messages Bulk: ", len(messages))
 	if err != nil {
 		return err
 	}
 
-	changeMessage := &changestream.ChangeMessage{}
-	if err := json.Unmarshal(m.Value, changeMessage); err != nil {
+	if len(messages) == 0 {
+		return nil
+	}
+
+	var bulkBody string
+	bulkDocumentIdKafkaMessages := make(map[string]kafka.Message)
+	for _, message := range messages {
+
+		changeMessage := &changestream.ChangeMessage{}
+		if err := json.Unmarshal(message.Value, changeMessage); err != nil {
+			return err
+		}
+		bulkOperation, err := i.indexFunc(changeMessage)
+
+		if err != nil {
+			return err
+		}
+
+		bulkDocumentIdKafkaMessages[bulkOperation.DocumentId] = message
+		bulkBody += bulkOperation.BulkOperation
+	}
+
+	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
+	if err != nil {
+		return err
+	}
+	log.Println("Result Messages Bulk: ", bulkResponse.Status())
+
+	body, err := ioutil.ReadAll(bulkResponse.Body)
+
+	if err != nil {
 		return err
 	}
 
-	if err := i.indexFunc(i.esClient, changeMessage); err != nil {
+	var result bulkResult
+	err = json.Unmarshal(body, &result)
+
+	if err != nil {
 		return err
 	}
-	return i.kReader.CommitMessages(context.Background(), m)
+
+	log.Println("BulkResultItem: ", len(result.Items))
+	err = i.checkAllResultMessagesAreValid(&result)
+	if err != nil {
+		return err
+	}
+
+	for _, bulkResultOperation := range result.Items {
+
+		if bulkResultOperation.Index != nil {
+			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
+			if err != nil {
+				return err
+			}
+		} else if bulkResultOperation.Update != nil {
+			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Update.ID])
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
+	if result == nil {
+		return fmt.Errorf("BulkResult is nil")
+	}
+	for _, bulkResultOperation := range result.Items {
+		if bulkResultOperation.Index != nil {
+
+			err := errorForHttpStatus(bulkResultOperation.Index.Status)
+			if err != nil {
+				return err
+			}
+		} else if bulkResultOperation.Update != nil {
+
+			err := errorForHttpStatus(bulkResultOperation.Index.Status)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func errorForHttpStatus(httpStatus int) error {
+	if httpStatus != 200 && httpStatus != 201 {
+		return fmt.Errorf("creating/updateing index failed Httpstatus: %d \n", httpStatus)
+	}
+	return nil
 }
 
 func (i *Indexer) createIndex(esIndex, esMapping string) error {
@@ -102,4 +188,60 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 		return fmt.Errorf("error finding index: %d %s", response.StatusCode, string(body))
 	}
 	return nil
+}
+
+func (i *Indexer) readMessageBlock(timeout time.Duration, maxChunkSize int) (messages []kafka.Message, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	for k := 0; k < maxChunkSize; k++ {
+		m, err := i.kReader.FetchMessage(ctx)
+		if err != nil {
+			if err == context.DeadlineExceeded {
+				return messages, nil
+			}
+
+			return nil, err
+		}
+
+		messages = append(messages, m)
+	}
+
+	return messages, nil
+}
+
+type bulkResult struct {
+	Took   int  `json:"took"`
+	Errors bool `json:"errors"`
+	Items  []struct {
+		Index *struct {
+			Index   string `json:"_index"`
+			Type    string `json:"_type"`
+			ID      string `json:"_id"`
+			Version int    `json:"_version"`
+			Result  string `json:"result"`
+			Shards  struct {
+				Total      int `json:"total"`
+				Successful int `json:"successful"`
+				Failed     int `json:"failed"`
+			} `json:"_shards"`
+			SeqNo       int `json:"_seq_no"`
+			PrimaryTerm int `json:"_primary_term"`
+			Status      int `json:"status"`
+		} `json:"index,omitempty"`
+		Update *struct {
+			Index   string `json:"_index"`
+			Type    string `json:"_type"`
+			ID      string `json:"_id"`
+			Version int    `json:"_version"`
+			Result  string `json:"result"`
+			Shards  struct {
+				Total      int `json:"total"`
+				Successful int `json:"successful"`
+				Failed     int `json:"failed"`
+			} `json:"_shards"`
+			SeqNo       int `json:"_seq_no"`
+			PrimaryTerm int `json:"_primary_term"`
+			Status      int `json:"status"`
+		} `json:"update,omitempty"`
+	} `json:"items"`
 }

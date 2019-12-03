@@ -2,11 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"strconv"
-
-	"github.com/elastic/go-elasticsearch/v7"
-	"github.com/elastic/go-elasticsearch/v7/esutil"
 
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/indexer"
@@ -19,11 +15,12 @@ import (
 func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
+	bulkChunkSize := utils.GetNumberFromEnvWithDefault("BULK_CHUNK_SIZE", 10)
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.posts")
 
 	esHosts := utils.GetMultipleStringsFromEnvWithDefault("ES_HOSTS", []string{"localhost:9201"})
 
-	i := indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment)
+	i := indexer.New(esHosts, elastic.CommentsIndex, elastic.CommentsIndexMapping, kafkaAddress, changesTopic, groupID, indexComment, bulkChunkSize)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
@@ -31,39 +28,36 @@ func main() {
 	waitUntilClosed()
 }
 
-func indexComment(client *elasticsearch.Client, m *changestream.ChangeMessage) error {
+func indexComment(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	comment := &models.InstaComment{}
 	err := json.Unmarshal(m.Payload.After, comment)
 
 	if err != nil {
-		return err
+		return &indexer.BulkIndexDoc{}, err
 	}
 
 	switch m.Payload.Op {
 	case "r", "c":
-		return upsertComment(comment, client)
+		return createBulkUpsertOperation(comment)
 	}
 
-	return nil
+	return &indexer.BulkIndexDoc{}, nil
 }
 
-func upsertComment(comment *models.InstaComment, client *elasticsearch.Client) error {
+func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.BulkIndexDoc, error) {
+	var bulkOperation = map[string]interface{}{
+		"update": map[string]interface{}{
+			"_id":    comment.ID,
+			"_index": elastic.PostsIndex,
+		},
+	}
 
-	upsertBody := createUpsertBody(comment)
-	response, err := client.Update(elastic.CommentsIndex, strconv.Itoa(comment.ID), esutil.NewJSONReader(upsertBody))
-
+	bulkOperationJson, err := json.Marshal(bulkOperation)
 	if err != nil {
-		return err
+		return &indexer.BulkIndexDoc{}, err
 	}
-	defer response.Body.Close()
 
-	if response.StatusCode != 200 && response.StatusCode != 201 {
-		return fmt.Errorf("upsertDocument Upsert Document Failed StatusCode=%s Body=%s", response.Status(), response.String())
-	}
-	return nil
-}
-
-func createUpsertBody(comment *models.InstaComment) map[string]interface{} {
+	bulkOperationJson = append(bulkOperationJson, "\n"...)
 	var commentUpsert = map[string]interface{}{
 		"script": map[string]interface{}{
 			"source": "ctx._source.comment = params.comment",
@@ -78,5 +72,15 @@ func createUpsertBody(comment *models.InstaComment) map[string]interface{} {
 		},
 	}
 
-	return commentUpsert
+	commentUpsertJson, err := json.Marshal(commentUpsert)
+
+	if err != nil {
+		return &indexer.BulkIndexDoc{}, err
+	}
+
+	commentUpsertJson = append(commentUpsertJson, "\n"...)
+
+	bulkUpsertBody := string(bulkOperationJson) + string(commentUpsertJson)
+
+	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(comment.ID), BulkOperation: bulkUpsertBody}, err
 }

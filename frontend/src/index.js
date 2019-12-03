@@ -5,6 +5,7 @@ import { Route, Link, BrowserRouter as Router, Switch } from "react-router-dom";
 import App from "./App";
 import { BrowserRouter } from "react-router-dom";
 import Result from "./components/Result";
+import Dashboard from "./pages/Dashboard";
 import Notfound from "./notfound";
 import FlowWrapper from "./components/FlowWrapper";
 import Popup from "./components/Popup";
@@ -20,6 +21,7 @@ ReactDOM.render(
         <Route exact path="/result" component={Result} />
         <Route exact path="/greeting" component={Greeting} />
         <Route exact path="/popup" component={Popup} />
+        <Route exact path="/dashboard" component={Dashboard} />
         <Route exact path="/start" component={FlowWrapper} />
         <Route component={Notfound} />
       </Switch>
