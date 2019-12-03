@@ -48,7 +48,7 @@ func indexFace(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 }
 
 func createBulkIndexOperation(face *models.FaceData) (*indexer.BulkIndexDoc, error) {
-	bulkOperation := `{ "index": {}  }`
+	//bulkOperation := `{ "index": {}  }`
 
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 
