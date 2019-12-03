@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"strings"
 	"time"
 
@@ -168,7 +167,7 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 
 	if response.StatusCode == 404 {
 		bodyReader := bytes.NewReader([]byte(esMapping))
-		response, err := i.esClient.Indices.Create(
+		_, err := i.esClient.Indices.Create(
 			esIndex,
 			i.esClient.Indices.Create.WithHuman(),
 			i.esClient.Indices.Create.WithPretty(),
