@@ -18,6 +18,7 @@ function FlowStateWrapper(props) {
   const { faceHits, addFaceHits } = useFaceHitState(() =>
     setPage(PROFILE_SELECTION_PAGE)
   );
+  const [selectedProfile, setSelectedProfile] = useState(null);
 
   switch (page) {
     case GREETING_PAGE:
@@ -35,11 +36,14 @@ function FlowStateWrapper(props) {
         <ProfileSelection
           apiClient={apiClient}
           faceHits={faceHits}
-          nextPage={() => setPage(DASHBOARD_PAGE)}
+          onProfileSelect={profile => {
+            setPage(DASHBOARD_PAGE);
+            setSelectedProfile(profile);
+          }}
         />
       );
     case DASHBOARD_PAGE:
-      return <Dashboard />;
+      return <Dashboard profile={selectedProfile} apiClient={apiClient} />;
     default:
       return `page ${page} not found`;
   }

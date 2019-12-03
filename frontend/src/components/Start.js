@@ -30,7 +30,7 @@ function findFacesInImage(apiClient, onFindFaces) {
   };
 }
 
-function Start({ apiClient, faceHits, addFaceHits, nextPage }) {
+function Start({ apiClient, faceHits, addFaceHits }) {
   const onFileSubmit = findFacesInImage(apiClient, addFaceHits);
 
   return (

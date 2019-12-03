@@ -43,7 +43,7 @@ async function searchProfiles(apiClient, faceHits) {
   return profiles;
 }
 
-function ProfileSelection({ apiClient, faceHits, nextPage }) {
+function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
   const [foundProfiles, setFoundProfiles] = useState([]);
   const [loadingAnimationDone, setLoadingAnimationDone] = useState(false);
   useEffect(() => {
@@ -65,7 +65,7 @@ function ProfileSelection({ apiClient, faceHits, nextPage }) {
     (sum, profile) => sum + profile.weight,
     0
   );
-  console.log(foundProfiles);
+
   return (
     <div className="body">
       <div className="column-center">
@@ -74,7 +74,7 @@ function ProfileSelection({ apiClient, faceHits, nextPage }) {
             <p>
               {profile.user.userName}:{" "}
               {Math.round((profile.weight / weightSum) * 100)}% confidence
-              <button onClick={nextPage}>Next Page</button>
+              <button onClick={() => onProfileSelect(profile)}>This</button>
             </p>
             {uniqWith(profile.facesList, (a, b) => a.postId === b.postId).map(
               face => (
