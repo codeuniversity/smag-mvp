@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Form from "./components/Form";
-import Title from "./components/Title";
+import H1 from "./components/H1";
 import Result from "./components/Result";
 import "./index.css";
 import {
@@ -47,7 +47,7 @@ class App extends Component {
     return (
       <div className="container-center">
         <div className="column-center">
-          <Title h1="Find out your public digital identity!" />
+          <H1>Find out your public digital identity!</H1>
           <Form onSubmit={this.handleSubmit} />
         </div>
       </div>

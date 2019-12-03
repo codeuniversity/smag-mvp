@@ -8,6 +8,8 @@ import Result from "./components/Result";
 import Dashboard from "./pages/Dashboard";
 import Notfound from "./notfound";
 import FlowWrapper from "./components/FlowWrapper";
+import Popup from "./components/Popup";
+import Greeting from "./pages/Greeting.jsx";
 
 const root = document.getElementById("root");
 
@@ -17,6 +19,8 @@ ReactDOM.render(
       <Switch>
         <Route exact path="/" component={App} />
         <Route exact path="/result" component={Result} />
+        <Route exact path="/greeting" component={Greeting} />
+        <Route exact path="/popup" component={Popup} />
         <Route exact path="/dashboard" component={Dashboard} />
         <Route exact path="/start" component={FlowWrapper} />
         <Route component={Notfound} />
