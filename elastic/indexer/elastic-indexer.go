@@ -78,11 +78,18 @@ func (i *Indexer) runStep() error {
 		if err != nil {
 			return err
 		}
-
 		bulkDocumentIdKafkaMessages[bulkOperation.DocumentId] = message
 		bulkBody += bulkOperation.BulkOperation
 	}
 
+	log.Println("RequestBody: ", bulkBody)
+	if bulkBody == "" {
+		err := i.kReader.CommitMessages(context.Background(), messages...)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
 	if err != nil {
 		return err
@@ -90,7 +97,6 @@ func (i *Indexer) runStep() error {
 	log.Println("Result Messages Bulk: ", bulkResponse.Status())
 
 	body, err := ioutil.ReadAll(bulkResponse.Body)
-
 	if err != nil {
 		return err
 	}
@@ -111,11 +117,13 @@ func (i *Indexer) runStep() error {
 	for _, bulkResultOperation := range result.Items {
 
 		if bulkResultOperation.Index != nil {
+			log.Println("Index Status: ", bulkResultOperation.Index.Status)
 			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
 			if err != nil {
 				return err
 			}
 		} else if bulkResultOperation.Update != nil {
+			log.Println("Update Status: ", bulkResultOperation.Update.Status)
 			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Update.ID])
 			if err != nil {
 				return err
@@ -129,6 +137,7 @@ func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
 	if result == nil {
 		return fmt.Errorf("BulkResult is nil")
 	}
+
 	for _, bulkResultOperation := range result.Items {
 		if bulkResultOperation.Index != nil {
 
