@@ -44,10 +44,7 @@ function FlowStateWrapper(props) {
 function FlowWrapper(props) {
   return (
     <>
-      <div className="white-background"></div>
-      <div className="container">
-        <FlowStateWrapper />
-      </div>
+      <FlowStateWrapper />
     </>
   );
 }
