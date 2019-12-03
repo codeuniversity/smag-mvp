@@ -45,6 +45,7 @@ code {
   text-align: center;
   width: 100vw;
   height: 100vh;
+  overflow: hidden;
 }
 .container-popup {
   display: flex;
@@ -240,11 +241,10 @@ video {
   position: absolute;
   top: 50%;
   left: 50%;
-  min-width: 100vw;
-  min-height: 100vh;
+  min-height: 70vh;
   width: auto;
   height: auto;
-  z-index: -100;
+  margin: 10px;
   transform: translateX(-50%) translateY(-50%);
   object-fit: cover;
 }
