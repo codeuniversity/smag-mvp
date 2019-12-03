@@ -1,0 +1,22 @@
+.endButton {
+  height: 50px;
+  width: 50px;
+  background-color: #fafafa;
+  border-radius: 25px;
+  position: fixed;
+  z-index: 2;
+  top: 20px;
+  right: 20px;
+}
+
+.endButton a {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.endButton a svg {
+  color: black;
+}
