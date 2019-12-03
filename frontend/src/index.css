@@ -4,7 +4,12 @@
     url("./static/fonts/FontsFree-Net-SFProDisplay-Regular.ttf")
       format("truetype");
 }
-
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
 body {
   font-family: SFPro;
   font-weight: 300;
@@ -33,6 +38,12 @@ code {
 }
 .column {
   padding: 10px;
+}
+.column-full {
+  flex-wrap: wrap;
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
 }
 .container-popup {
   display: flex;
@@ -181,6 +192,9 @@ button {
   padding: 20px;
   float: right;
 }
+video {
+  padding: 0px;
+}
 .ig-post {
   width: 25%;
   max-width: 600px;
@@ -214,9 +228,28 @@ button {
   display: block;
 }
 video {
-  padding: 20px;
+  padding: 0px;
 }
-
+.parent-container {
+  position: relative;
+  object-fit: cover;
+  height: 75vh;
+}
+.video-container video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-width: 100vw;
+  min-height: 100vh;
+  width: auto;
+  height: auto;
+  z-index: -100;
+  transform: translateX(-50%) translateY(-50%);
+  object-fit: cover;
+}
+.canvas {
+  display: none;
+}
 #defaultCanvas0 {
   position: absolute;
   top: 0;
