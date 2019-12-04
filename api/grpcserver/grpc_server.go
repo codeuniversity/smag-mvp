@@ -174,7 +174,7 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	return u, nil
 }
 
-//GetUserWithUsername returns one User with the given username
+//GetUserWithUserId returns one User with the given username
 func (s *GrpcServer) GetUserWithUserId(_ context.Context, username *proto.UserNameRequest) (*proto.User, error) {
 	u := &proto.User{}
 	log.Println(username)
