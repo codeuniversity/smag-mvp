@@ -110,7 +110,9 @@ function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
         <div className="profile-button">
           <div className="container-profile">
             <div className="column-one-fourth">
-              <Button buttonlink="/">My profile is not shown.</Button>
+              <Button buttonlink="/search-profile">
+                My profile is not shown.
+              </Button>
             </div>
             <div className="column-one-fourth">
               <Button buttonlink="/result" style={{ fontSize: 20 }}>
