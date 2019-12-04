@@ -76,13 +76,12 @@ func (i *Indexer) runStep() error {
 			return err
 		}
 		bulkOperation, err := i.indexFunc(changeMessage)
-
 		if err != nil {
 			return err
 		}
 
 		bulkDocumentIdKafkaMessages[bulkOperation.DocumentId] = message
-		if bulkOperation == nil {
+		if bulkOperation.BulkOperation == "" {
 			continue
 		}
 		bulkBody += bulkOperation.BulkOperation
@@ -96,6 +95,7 @@ func (i *Indexer) runStep() error {
 		}
 		return nil
 	}
+	fmt.Println("Before Bulk")
 	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
 	if err != nil {
 		return err
@@ -115,7 +115,7 @@ func (i *Indexer) runStep() error {
 	}
 
 	log.Println("BulkResultItem: ", len(result.Items))
-	log.Println("BulResult: ", string(body))
+	log.Println("BulkResult: ", string(body))
 	err = i.checkAllResultMessagesAreValid(&result)
 	if err != nil {
 		return err

@@ -52,7 +52,7 @@ func indexPost(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 		}
 	}
 
-	return nil, nil
+	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(currentPost.ID)}, nil
 }
 
 func createBulkUpsertOperation(post *models.InstaPost) (*indexer.BulkIndexDoc, error) {
