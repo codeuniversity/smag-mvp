@@ -10,6 +10,7 @@ import Notfound from "./notfound";
 import FlowWrapper from "./components/FlowWrapper";
 import Popup from "./components/Popup";
 import Greeting from "./pages/Greeting.jsx";
+import Network from "./pages/Network.jsx";
 
 const root = document.getElementById("root");
 
@@ -23,6 +24,7 @@ ReactDOM.render(
         <Route exact path="/popup" component={Popup} />
         <Route exact path="/dashboard" component={Dashboard} />
         <Route exact path="/app" component={App} />
+        <Route exact path="/network" component={Network} />
         <Route component={Notfound} />
       </Switch>
     </div>

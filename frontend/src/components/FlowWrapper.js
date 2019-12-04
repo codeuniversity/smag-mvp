@@ -3,6 +3,7 @@ import Start from "./Start";
 import ProfileSelection from "./ProfileSelection";
 import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_web_pb";
 import Dashboard from "../pages/Dashboard";
+import Network from "../pages/Network";
 import "../creativeCode.css";
 import Greeting from "../pages/Greeting";
 
@@ -10,6 +11,7 @@ const GREETING_PAGE = "greeting";
 const START_PAGE = "start";
 const PROFILE_SELECTION_PAGE = "profile_selection";
 const DASHBOARD_PAGE = "dashboard";
+const NETWORK_PAGE = "network";
 const NECESARY_FACE_SAMPLES = 5;
 const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
@@ -44,6 +46,8 @@ function FlowStateWrapper(props) {
       );
     case DASHBOARD_PAGE:
       return <Dashboard profile={selectedProfile} apiClient={apiClient} />;
+    case NETWORK_PAGE:
+      return <Network profile={selectedProfile} />;
     default:
       return `page ${page} not found`;
   }
