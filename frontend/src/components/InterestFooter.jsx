@@ -1,28 +1,17 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 
-class InterestFooter extends Component {
-  getDetailsString = () => {
-    let detailsString = "";
+const InterestFooter = props => {
+  return (
+    <div className="interestFooter">
+      <h2>{props.title}</h2>
+      <p>{props.details}</p>
+    </div>
+  );
+};
 
-    this.props.details.map((item, index) => {
-      detailsString += item;
-
-      if (index < this.props.details.length - 1) {
-        detailsString += ", ";
-      }
-    });
-
-    return detailsString;
-  };
-
-  render() {
-    return (
-      <div className="interestFooter">
-        <h2>{this.props.title}</h2>
-        <p>{this.getDetailsString()}</p>
-      </div>
-    );
-  }
-}
+InterestFooter.propTypes = {
+  title: PropTypes.string
+};
 
 export default InterestFooter;

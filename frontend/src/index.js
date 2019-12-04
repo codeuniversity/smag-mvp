@@ -11,6 +11,9 @@ import FlowWrapper from "./components/FlowWrapper";
 import Popup from "./components/Popup";
 import Greeting from "./pages/Greeting.jsx";
 import Network from "./pages/Network.jsx";
+import Endscreen from "./pages/Endscreen";
+import SearchProfile from "./pages/SearchProfile";
+import ExampleProfileSelection from "./pages/ExampleProfileSelection";
 
 const root = document.getElementById("root");
 
@@ -22,9 +25,16 @@ ReactDOM.render(
         <Route exact path="/result" component={Result} />
         <Route exact path="/greeting" component={Greeting} />
         <Route exact path="/popup" component={Popup} />
+        <Route exact path="/endscreen" component={Endscreen} />
         <Route exact path="/dashboard" component={Dashboard} />
         <Route exact path="/app" component={App} />
         <Route exact path="/network" component={Network} />
+        <Route exact path="/search-profile" component={SearchProfile} />
+        <Route
+          exact
+          path="/example-profile-selection"
+          component={ExampleProfileSelection}
+        />
         <Route component={Notfound} />
       </Switch>
     </div>

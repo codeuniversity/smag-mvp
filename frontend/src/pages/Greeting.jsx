@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router";
 import Button from "../components/Button";
 import "./../index.css";
 import H1 from "../components/H1";
@@ -13,7 +12,9 @@ class Greeting extends Component {
           <div className="greeting">
             <H1>Welcome to SocialRecord</H1>
             <H2>Sit back and enjoy the experience.</H2>
-            <Button onClick={this.props.nextPage}>Start</Button>
+            <div style={{ marginTop: 50 }}>
+              <Button onClick={this.props.nextPage}>Start</Button>
+            </div>
           </div>
         </div>
       </div>
