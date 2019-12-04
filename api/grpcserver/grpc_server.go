@@ -175,22 +175,26 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 }
 
 //GetUserWithUserId returns one User with the given username
-func (s *GrpcServer) GetUserWithUserId(_ context.Context, username *proto.UserNameRequest) (*proto.User, error) {
-	u := &proto.User{}
-	log.Println(username)
-
-	err := s.db.QueryRow(`SELECT id, COALESCE(user_name, '') as user_name,
-									COALESCE(real_name, '') as real_name,
-									COALESCE(bio, '') as bio,
-									COALESCE(avatar_url, '') as avatar_url
-									FROM users WHERE id = $1`, username.id).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+func (s *GrpcServer) GetUserWithUserId(_ context.Context, username *proto.UserIdRequest) (*proto.User, error) {
+	userID, err := strconv.ParseInt(username.UserId, 10, 64)
 	if err != nil {
 		return nil, err
 	}
 
-	return u
-}
+	u := &proto.User{}
+	log.Println(username)
 
+	err = s.db.QueryRow(`SELECT id, COALESCE(user_name, '') as user_name,
+									COALESCE(real_name, '') as real_name,
+									COALESCE(bio, '') as bio,
+									COALESCE(avatar_url, '') as avatar_url
+									FROM users WHERE id = $1`, userID).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
 
 func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc scanFunc) ([]*proto.User, error) {
 
