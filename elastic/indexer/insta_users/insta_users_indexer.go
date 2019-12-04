@@ -32,7 +32,7 @@ func main() {
 func handleChangeMessage(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	user := &models.InstaUser{}
 	if err := json.Unmarshal(m.Payload.After, user); err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	switch m.Payload.Op {
