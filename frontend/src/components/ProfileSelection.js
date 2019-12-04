@@ -102,15 +102,6 @@ function ProfileSelection({
                 {Math.round((profile.weight / weightSum) * 100)}% confidence
               </div>
             </div>
-
-            {/* {uniqWith(profile.facesList, (a, b) => a.postId === b.postId).map(
-              face => (
-                <IGPost
-                  key={`${profile.user.userName}/${face.postId}`}
-                  post={{ img: face.fullImageSrc, shortcode: "" }}
-                />
-              )
-            )} */}
           </div>
         ))}
         <div className="profile-button">
