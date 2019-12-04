@@ -18,30 +18,15 @@ import PropTypes from "prop-types";
 // eslint-disable-next-line
 
 class SearchProfile extends Component {
-  handleSubmit = userName => {
-    const userSearch = new UserSearchServiceClient("http://localhost:4000");
-
+  handleSubmit = async userName => {
     const requestUser = new UserNameRequest();
-
     requestUser.setUserName(userName);
-    userSearch.getUserWithUsername(requestUser, {}, (err, response) => {
-      if (err) {
-        console.log(err);
-        return;
-      }
-      const user = {
-        id: response.getId(),
-        bio: response.getBio(),
-        avatarurl: response.getAvatarUrl(),
-        username: response.getUserName(),
-        realname: response.getRealName()
-      };
-
-      this.props.history.push({
-        pathname: "/dashboard",
-        state: { user }
-      });
-    });
+    const response = await this.props.apiClient.getUserWithUsername(
+      requestUser
+    );
+    const user = response.toObject();
+    const profile = { facesList: [], weight: 0, user: user };
+    this.props.onProfileSelect(profile);
   };
   render() {
     return (
@@ -50,7 +35,9 @@ class SearchProfile extends Component {
           <H2>We couldn't find you. Please enter your instagram username.</H2>
           <Form onSubmit={this.handleSubmit} />
           <br />
-          <Button buttonlink="/endsession">I don't use instagram</Button>
+          <Button onClick={this.props.goToExample}>
+            I don't use instagram
+          </Button>
         </div>
       </div>
     );

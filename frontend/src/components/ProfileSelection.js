@@ -45,7 +45,13 @@ async function searchProfiles(apiClient, faceHits) {
   return profiles;
 }
 
-function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
+function ProfileSelection({
+  apiClient,
+  faceHits,
+  onProfileSelect,
+  goToExample,
+  goToSearch
+}) {
   const [foundProfiles, setFoundProfiles] = useState([]);
   const [loadingAnimationDone, setLoadingAnimationDone] = useState(false);
   useEffect(() => {
@@ -73,7 +79,7 @@ function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
       <div className="column-popup">
         <H1>Please select your profile</H1>
 
-        {foundProfiles.map(profile => (
+        {foundProfiles.slice(0, 6).map(profile => (
           <div
             className="profile-card"
             key={profile.user.userName}
@@ -110,12 +116,10 @@ function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
         <div className="profile-button">
           <div className="container-profile">
             <div className="column-one-fourth">
-              <Button buttonlink="/search-profile">
-                My profile is not shown.
-              </Button>
+              <Button onClick={goToSearch}>My profile is not shown.</Button>
             </div>
             <div className="column-one-fourth">
-              <Button buttonlink="/result" style={{ fontSize: 20 }}>
+              <Button onClick={goToExample} style={{ fontSize: 20 }}>
                 I don't use instagram.
               </Button>
             </div>

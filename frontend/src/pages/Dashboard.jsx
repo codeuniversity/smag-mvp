@@ -64,7 +64,7 @@ function Dashboard({ profile, apiClient }) {
       <div className="dashboardGrid">
         <ProfileCard
           pictureUrl={profile.user.avatarUrl}
-          alt={profile.facesList[0].fullImageSrc}
+          alt={profile.facesList[0] && profile.facesList[0].fullImageSrc}
         />
         <InterestCard
           title="Your images"

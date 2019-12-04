@@ -5,12 +5,16 @@ import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_we
 import Dashboard from "../pages/Dashboard";
 import "../creativeCode.css";
 import Greeting from "../pages/Greeting";
+import ExampleProfileSelection from "../pages/ExampleProfileSelection";
+import SearchProfile from "../pages/SearchProfile";
 
 const GREETING_PAGE = "greeting";
 const START_PAGE = "start";
 const PROFILE_SELECTION_PAGE = "profile_selection";
 const DASHBOARD_PAGE = "dashboard";
-const NECESARY_FACE_SAMPLES = 5;
+const EXAMPLE_PROFILE_PAGE = "example-profile";
+const SEARCH_PROFILE_PAGE = "search-profile";
+const NECESARY_FACE_SAMPLES = 1;
 const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
 function FlowStateWrapper(props) {
@@ -37,12 +41,36 @@ function FlowStateWrapper(props) {
         <ProfileSelection
           apiClient={apiClient}
           faceHits={faceHits}
+          goToSearch={() => setPage(SEARCH_PROFILE_PAGE)}
+          goToExample={() => setPage(EXAMPLE_PROFILE_PAGE)}
           onProfileSelect={profile => {
             setPage(DASHBOARD_PAGE);
             setSelectedProfile(profile);
           }}
         />
       );
+    case SEARCH_PROFILE_PAGE:
+      return (
+        <SearchProfile
+          apiClient={apiClient}
+          goToExample={() => setPage(EXAMPLE_PROFILE_PAGE)}
+          onProfileSelect={profile => {
+            setSelectedProfile(profile);
+            setPage(DASHBOARD_PAGE);
+          }}
+        />
+      );
+    case EXAMPLE_PROFILE_PAGE:
+      return (
+        <ExampleProfileSelection
+          apiClient={apiClient}
+          onProfileSelect={profile => {
+            setSelectedProfile(profile);
+            setPage(DASHBOARD_PAGE);
+          }}
+        />
+      );
+
     case DASHBOARD_PAGE:
       return <Dashboard profile={selectedProfile} apiClient={apiClient} />;
     default:
