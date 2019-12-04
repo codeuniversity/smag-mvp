@@ -27,7 +27,7 @@ async function fetchDataPoints(apiClient, userId) {
   return response.getCount();
 }
 
-function Dashboard({ profile, apiClient }) {
+function Dashboard({ profile, apiClient, nextPage }) {
   const [posts, setPosts] = useState([]);
   const [dataPointCount, setDataPointCount] = useState(null);
 
@@ -61,7 +61,7 @@ function Dashboard({ profile, apiClient }) {
       <div className="dashboardGrid">
         <ProfileCard
           pictureUrl={profile.user.avatarUrl}
-          alt={profile.facesList[0].fullImageSrc}
+          alt={profile.facesList[0] && profile.facesList[0].fullImageSrc}
         />
         <InterestCard
           title="Your images"
@@ -89,7 +89,9 @@ function Dashboard({ profile, apiClient }) {
           slides={["http://socialengineindia.com/images/home/expert1.png"]}
         />
       </div>
-      <Button>See more details about your network</Button>
+      <div className="dashboardFooter">
+        <Button onClick={nextPage}>See more details about your network.</Button>
+      </div>
     </div>
   );
 }

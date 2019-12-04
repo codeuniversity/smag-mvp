@@ -5,11 +5,19 @@ import { UserSearchServicePromiseClient } from "../protofiles/usersearch_grpc_we
 import Dashboard from "../pages/Dashboard";
 import "../creativeCode.css";
 import Greeting from "../pages/Greeting";
+import ExampleProfileSelection from "../pages/ExampleProfileSelection";
+import SearchProfile from "../pages/SearchProfile";
+import GroupIntent from "../pages/GroupIntent";
+import EndScreen from "../pages/Endscreen";
 
 const GREETING_PAGE = "greeting";
 const START_PAGE = "start";
 const PROFILE_SELECTION_PAGE = "profile_selection";
 const DASHBOARD_PAGE = "dashboard";
+const EXAMPLE_PROFILE_PAGE = "example-profile";
+const SEARCH_PROFILE_PAGE = "search-profile";
+const GROUP_INTENT_PAGE = "group_intent";
+const END_PAGE = "endscreen";
 const NECESARY_FACE_SAMPLES = 5;
 const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
@@ -37,14 +45,47 @@ function FlowStateWrapper(props) {
         <ProfileSelection
           apiClient={apiClient}
           faceHits={faceHits}
+          goToSearch={() => setPage(SEARCH_PROFILE_PAGE)}
+          goToExample={() => setPage(EXAMPLE_PROFILE_PAGE)}
           onProfileSelect={profile => {
             setPage(DASHBOARD_PAGE);
             setSelectedProfile(profile);
           }}
         />
       );
+    case SEARCH_PROFILE_PAGE:
+      return (
+        <SearchProfile
+          apiClient={apiClient}
+          goToExample={() => setPage(EXAMPLE_PROFILE_PAGE)}
+          onProfileSelect={profile => {
+            setSelectedProfile(profile);
+            setPage(DASHBOARD_PAGE);
+          }}
+        />
+      );
+    case EXAMPLE_PROFILE_PAGE:
+      return (
+        <ExampleProfileSelection
+          apiClient={apiClient}
+          onProfileSelect={profile => {
+            setSelectedProfile(profile);
+            setPage(DASHBOARD_PAGE);
+          }}
+        />
+      );
     case DASHBOARD_PAGE:
-      return <Dashboard profile={selectedProfile} apiClient={apiClient} />;
+      return (
+        <Dashboard
+          profile={selectedProfile}
+          apiClient={apiClient}
+          nextPage={() => setPage(GROUP_INTENT_PAGE)}
+        />
+      );
+    case GROUP_INTENT_PAGE:
+      return <GroupIntent nextPage={() => setPage(END_PAGE)} />;
+    case END_PAGE:
+      return <EndScreen nextPage={() => window.location.reload()} />;
     default:
       return `page ${page} not found`;
   }

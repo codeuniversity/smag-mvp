@@ -5,6 +5,8 @@ import {
   Face
 } from "../protofiles/usersearch_pb";
 import IGPost from "./IGPost";
+import H1 from "./H1";
+import Button from "./Button";
 import uniqWith from "lodash/uniqWith";
 import FaceHitAnimation from "./FaceHitAnimation";
 
@@ -43,7 +45,13 @@ async function searchProfiles(apiClient, faceHits) {
   return profiles;
 }
 
-function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
+function ProfileSelection({
+  apiClient,
+  faceHits,
+  onProfileSelect,
+  goToExample,
+  goToSearch
+}) {
   const [foundProfiles, setFoundProfiles] = useState([]);
   const [loadingAnimationDone, setLoadingAnimationDone] = useState(false);
   useEffect(() => {
@@ -67,25 +75,47 @@ function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
   );
 
   return (
-    <div className="body">
-      <div className="column-center">
-        {foundProfiles.map(profile => (
-          <div className="container-card" key={profile.user.userName}>
-            <p>
-              {profile.user.userName}:{" "}
-              {Math.round((profile.weight / weightSum) * 100)}% confidence
-              <button onClick={() => onProfileSelect(profile)}>This</button>
-            </p>
-            {uniqWith(profile.facesList, (a, b) => a.postId === b.postId).map(
-              face => (
-                <IGPost
-                  key={`${profile.user.userName}/${face.postId}`}
-                  post={{ img: face.fullImageSrc, shortcode: "" }}
-                />
-              )
-            )}
+    <div className="container-popup">
+      <div className="column-popup">
+        <H1>Please select your profile</H1>
+
+        {foundProfiles.slice(0, 6).map(profile => (
+          <div
+            className="profile-card"
+            key={profile.user.userName}
+            onClick={() => onProfileSelect(profile)}
+          >
+            <div className="avatar-image-container">
+              <img className="avatar-image" src={profile.user.avatarUrl} />
+            </div>
+
+            <div
+              className="sub-headline-profile"
+              style={{
+                paddingLeft: 10
+              }}
+            >
+              <div>
+                {profile.user.userName}: <br />
+              </div>
+              <div style={{ fontSize: 14 }}>
+                {Math.round((profile.weight / weightSum) * 100)}% confidence
+              </div>
+            </div>
           </div>
         ))}
+        <div className="profile-button">
+          <div className="container-profile">
+            <div className="column-one-fourth">
+              <Button onClick={goToSearch}>My profile is not shown.</Button>
+            </div>
+            <div className="column-one-fourth">
+              <Button onClick={goToExample} style={{ fontSize: 20 }}>
+                I don't use instagram.
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

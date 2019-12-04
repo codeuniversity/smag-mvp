@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { withRouter } from "react-router";
 import Button from "../components/Button";
 import "./../index.css";
 import H1 from "../components/H1";
