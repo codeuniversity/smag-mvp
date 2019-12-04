@@ -39,7 +39,7 @@ func handleChangeMessage(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, 
 	case "c", "r", "u":
 		return createBulkUpsertOperation(user)
 	}
-	return &indexer.BulkIndexDoc{}, nil
+	return nil, nil
 }
 
 func createBulkUpsertOperation(user *models.InstaUser) (*indexer.BulkIndexDoc, error) {
@@ -53,7 +53,7 @@ func createBulkUpsertOperation(user *models.InstaUser) (*indexer.BulkIndexDoc, e
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
@@ -78,7 +78,7 @@ func createBulkUpsertOperation(user *models.InstaUser) (*indexer.BulkIndexDoc, e
 	usersUpsertJson, err := json.Marshal(usersUpsert)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	usersUpsertJson = append(usersUpsertJson, "\n"...)
