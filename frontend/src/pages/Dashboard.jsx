@@ -6,12 +6,9 @@ import StatsCard from "../components/StatsCard";
 import BioCard from "../components/BioCard";
 import { UserIdRequest } from "../protofiles/usersearch_grpc_web_pb";
 import Button from "../components/Button";
-<<<<<<< HEAD
 import EndButton from "../components/EndButton";
 import uniqWith from "lodash/uniqWith";
 import PostsCard from "../components/PostsCard";
-=======
->>>>>>> .
 
 async function fetchPosts(apiClient, userId) {
   const userIdRequest = new UserIdRequest();

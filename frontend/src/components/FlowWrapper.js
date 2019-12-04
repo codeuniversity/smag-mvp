@@ -14,7 +14,7 @@ const PROFILE_SELECTION_PAGE = "profile_selection";
 const DASHBOARD_PAGE = "dashboard";
 const EXAMPLE_PROFILE_PAGE = "example-profile";
 const SEARCH_PROFILE_PAGE = "search-profile";
-const NECESARY_FACE_SAMPLES = 1;
+const NECESARY_FACE_SAMPLES = 5;
 const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
 function FlowStateWrapper(props) {
