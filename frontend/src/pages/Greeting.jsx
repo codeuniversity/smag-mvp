@@ -13,7 +13,9 @@ class Greeting extends Component {
           <div className="greeting">
             <H1>Welcome to SocialRecord</H1>
             <H2>Sit back and enjoy the experience.</H2>
-            <Button onClick={this.props.nextPage}>Start</Button>
+            <div style={{ marginTop: 50 }}>
+              <Button onClick={this.props.nextPage}>Start</Button>
+            </div>
           </div>
         </div>
       </div>
