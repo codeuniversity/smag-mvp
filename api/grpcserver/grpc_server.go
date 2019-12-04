@@ -431,3 +431,42 @@ func (s *GrpcServer) SearchUsersWithWeightedPosts(ctx context.Context, weightedP
 
 	return weightedUsers, nil
 }
+
+// DataPointCountForUserId counts all tables for the given user id
+func (s *GrpcServer) DataPointCountForUserId(ctx context.Context, request *proto.UserIdRequest) (*proto.UserDataPointCount, error) {
+	userID, err := strconv.ParseInt(request.UserId, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	row := s.db.QueryRow("select count(*) from posts where user_id = $1", userID)
+	var postsCount int
+	err = row.Scan(&postsCount)
+	if err != nil {
+		return nil, err
+	}
+
+	row = s.db.QueryRow("select count(*) from comments where owner_user_id = $1", userID)
+	var commentsCount int
+	err = row.Scan(&commentsCount)
+	if err != nil {
+		return nil, err
+	}
+
+	row = s.db.QueryRow("select count (*) from post_likes where user_id = $1", userID)
+	var likesCount int
+	err = row.Scan(&likesCount)
+	if err != nil {
+		return nil, err
+	}
+
+	row = s.db.QueryRow("select count(*) from follows where to_id = $1 or from_id = $1", userID)
+	var followCount int
+	err = row.Scan(&followCount)
+	if err != nil {
+		return nil, err
+	}
+
+	totalCount := postsCount + commentsCount + likesCount + followCount
+	return &proto.UserDataPointCount{Count: int32(totalCount)}, nil
+}

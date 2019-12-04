@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { CameraFeed } from "./camera-feed";
 import H1 from "./H1";
+import H2 from "./H2";
 import { FaceSearchRequest } from "../protofiles/usersearch_pb";
 import IGPost from "./IGPost";
 
@@ -29,25 +30,18 @@ function findFacesInImage(apiClient, onFindFaces) {
   };
 }
 
-function Start({ apiClient, faceHits, addFaceHits, nextPage }) {
+function Start({ apiClient, faceHits, addFaceHits }) {
   const onFileSubmit = findFacesInImage(apiClient, addFaceHits);
 
   return (
     <div className="body">
-      <div className="column-center">
-        <H1>Take a pictures!</H1>
+      <div className="column-full">
+        <H1>
+          Are you aware that wherever you are recorded, your identity can be
+          found?
+        </H1>
         <CameraFeed onFileSubmit={onFileSubmit} />
-
-        {Object.entries(faceHits)
-          .sort((a, b) => b[1].length - a[1].length)
-          .map(([postId, faces]) => {
-            return (
-              <IGPost
-                key={postId}
-                post={{ img: faces[0].fullImageSrc, shortcode: "" }}
-              />
-            );
-          })}
+        <H2>Give us your smile face :)</H2>
       </div>
     </div>
   );

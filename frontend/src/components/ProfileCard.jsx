@@ -6,7 +6,7 @@ class ProfileCard extends Component {
       <div className="dashboardCard">
         <img
           src={this.props.pictureUrl}
-          alt="profile picture"
+          alt={this.props.alt}
           className="profilePictureImg"
         />
       </div>

@@ -4,27 +4,22 @@
     url("./static/fonts/FontsFree-Net-SFProDisplay-Regular.ttf")
       format("truetype");
 }
-
 html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
 body {
   font-family: SFPro;
   font-weight: 300;
   background-color: #ffffff;
-  width: 100%;
-  height: 100%;
-  min-width: 100%;
-  min-height: 100%;
   margin: 0;
 }
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
-}
-
-#root,
-#root div {
-  height: 100%;
 }
 
 .h1 h1 {
@@ -44,6 +39,13 @@ code {
 }
 .column {
   padding: 10px;
+}
+.column-full {
+  flex-wrap: wrap;
+  text-align: center;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 .container-popup {
   display: flex;
@@ -192,6 +194,9 @@ button {
   padding: 20px;
   float: right;
 }
+video {
+  padding: 0px;
+}
 .ig-post {
   width: 25%;
   max-width: 600px;
@@ -225,9 +230,27 @@ button {
   display: block;
 }
 video {
-  padding: 20px;
+  padding: 0px;
 }
-
+.parent-container {
+  position: relative;
+  object-fit: cover;
+  height: 75vh;
+}
+.video-container video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  min-height: 70vh;
+  width: auto;
+  height: auto;
+  margin: 10px;
+  transform: translateX(-50%) translateY(-50%);
+  object-fit: cover;
+}
+.canvas {
+  display: none;
+}
 #defaultCanvas0 {
   position: absolute;
   top: 0;
@@ -244,6 +267,7 @@ video {
   display: inline-block;
   text-align: center;
   margin: 0 20px;
+  cursor: pointer;
 }
 
 /*--------responsive-----------*/

@@ -6,6 +6,7 @@ import {
 } from "../protofiles/usersearch_pb";
 import IGPost from "./IGPost";
 import uniqWith from "lodash/uniqWith";
+import FaceHitAnimation from "./FaceHitAnimation";
 
 async function searchProfiles(apiClient, faceHits) {
   const weightedPosts = new WeightedPosts();
@@ -42,24 +43,29 @@ async function searchProfiles(apiClient, faceHits) {
   return profiles;
 }
 
-function ProfileSelection({ apiClient, faceHits }) {
+function ProfileSelection({ apiClient, faceHits, onProfileSelect }) {
   const [foundProfiles, setFoundProfiles] = useState([]);
-
+  const [loadingAnimationDone, setLoadingAnimationDone] = useState(false);
   useEffect(() => {
     searchProfiles(apiClient, faceHits).then(profiles => {
       setFoundProfiles(profiles);
     });
   }, []);
 
-  if (foundProfiles.length == 0) {
-    return "Loading...";
+  if (foundProfiles.length == 0 || !loadingAnimationDone) {
+    return (
+      <FaceHitAnimation
+        faceHits={faceHits}
+        onAnimationFinished={() => setLoadingAnimationDone(true)}
+      />
+    );
   }
 
   const weightSum = foundProfiles.reduce(
     (sum, profile) => sum + profile.weight,
     0
   );
-  console.log(foundProfiles);
+
   return (
     <div className="body">
       <div className="column-center">
@@ -68,6 +74,7 @@ function ProfileSelection({ apiClient, faceHits }) {
             <p>
               {profile.user.userName}:{" "}
               {Math.round((profile.weight / weightSum) * 100)}% confidence
+              <button onClick={() => onProfileSelect(profile)}>This</button>
             </p>
             {uniqWith(profile.facesList, (a, b) => a.postId === b.postId).map(
               face => (

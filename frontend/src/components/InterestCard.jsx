@@ -3,25 +3,14 @@ import Slideshow from "./Slideshow";
 import InterestFooter from "./InterestFooter";
 
 class InterestCard extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      slides: this.props.slides,
-      title: this.props.title,
-      details: this.props.details
-    };
-  }
-
   render() {
+    const { slides, title, details } = this.props;
+
     return (
       <div className="dashboardCard">
         <div className="cardGrid">
-          <Slideshow slides={this.state.slides} />
-          <InterestFooter
-            title={this.state.title}
-            details={this.state.details}
-          />
+          <Slideshow slides={slides} />
+          <InterestFooter title={title} details={details} />
         </div>
       </div>
     );
