@@ -1,4 +1,5 @@
-import React, { Component } from "react";
+import React from "react";
+import PropTypes from "prop-types";
 import { Zoom } from "react-slideshow-image";
 
 const properties = {
@@ -9,18 +10,20 @@ const properties = {
   arrows: false
 };
 
-class Slideshow extends Component {
-  render() {
-    return (
-      <div className="slideshow">
-        <Zoom className="slides" {...properties}>
-          {this.props.slides.map((imageUrl, index) => (
-            <img key={index} src={imageUrl} alt="slide" />
-          ))}
-        </Zoom>
-      </div>
-    );
-  }
-}
+const Slideshow = props => {
+  return (
+    <div className="slideshow">
+      <Zoom className="slides" {...properties}>
+        {props.slides.map((imageUrl, index) => (
+          <img key={index} src={imageUrl} alt="slide" />
+        ))}
+      </Zoom>
+    </div>
+  );
+};
+
+Slideshow.propTypes = {
+  slides: PropTypes.array
+};
 
 export default Slideshow;

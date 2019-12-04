@@ -5,6 +5,9 @@ import ProfileCard from "../components/ProfileCard";
 import StatsCard from "../components/StatsCard";
 import BioCard from "../components/BioCard";
 import { UserIdRequest } from "../protofiles/usersearch_grpc_web_pb";
+import Button from "../components/Button";
+import EndButton from "../components/EndButton";
+import PostCard from "../components/PostsCard";
 
 async function fetchPosts(apiClient, userId) {
   const userIdRequest = new UserIdRequest();
@@ -49,6 +52,7 @@ function Dashboard({ profile, apiClient }) {
 
   return (
     <div className="dashboard">
+      <EndButton link="/" />
       <h1 className="dashboardTitle">Here's what we found out about you:</h1>
       <div className="dashboardGrid">
         <ProfileCard
@@ -79,6 +83,7 @@ function Dashboard({ profile, apiClient }) {
           slides={slides4}
         />
       </div>
+      <Button>See more details about your network</Button>
     </div>
   );
 }
