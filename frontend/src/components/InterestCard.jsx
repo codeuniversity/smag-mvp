@@ -17,7 +17,7 @@ const InterestCard = props => {
 InterestCard.propTypes = {
   slides: PropTypes.array,
   title: PropTypes.string,
-  details: PropTypes.array
+  details: PropTypes.string
 };
 
 export default InterestCard;

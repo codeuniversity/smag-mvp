@@ -52,7 +52,7 @@
 
 .slideshow {
   width: 405px;
-  height: auto;
+  height: 100%;
   background-color: #fafafa;
 }
 
@@ -64,6 +64,10 @@
 .images-wrap {
   width: 100%;
   height: 100%;
+}
+
+.zoom-wrapper div {
+  max-height: 405px;
 }
 
 .images-wrap img {
