@@ -11,6 +11,7 @@ import FlowWrapper from "./components/FlowWrapper";
 import Popup from "./components/Popup";
 import Greeting from "./pages/Greeting.jsx";
 import Endscreen from "./pages/Endscreen";
+import SearchProfile from "./pages/SearchProfile";
 
 const root = document.getElementById("root");
 
@@ -25,6 +26,7 @@ ReactDOM.render(
         <Route exact path="/endscreen" component={Endscreen} />
         <Route exact path="/dashboard" component={Dashboard} />
         <Route exact path="/app" component={App} />
+        <Route exact path="/search-profile" component={SearchProfile} />
         <Route component={Notfound} />
       </Switch>
     </div>
