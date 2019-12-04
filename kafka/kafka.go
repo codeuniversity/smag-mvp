@@ -1,8 +1,6 @@
 package kafka
 
 import (
-	"time"
-
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/segmentio/kafka-go"
 )
@@ -45,16 +43,11 @@ func NewWriterConfig(kafkaAddress, topic string, async bool) *WriterConfig {
 // configuration and additionally applying the ReaderConfig on it
 func NewReader(c *ReaderConfig) *kafka.Reader {
 	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:               []string{c.Address},
-		GroupID:               c.GroupID,
-		Topic:                 c.Topic,
-		MinBytes:              1e3,   // 1KB
-		MaxBytes:              100e6, // 10MB
-		QueueCapacity:         10000,
-		CommitInterval:        time.Second,
-		ReadBackoffMax:        time.Second * 5,
-		WatchPartitionChanges: true,
-		RetentionTime:         time.Hour * 24 * 30,
+		Brokers:  []string{c.Address},
+		GroupID:  c.GroupID,
+		Topic:    c.Topic,
+		MinBytes: 10e3, // 10KB
+		MaxBytes: 10e6, // 10MB
 	})
 }
 

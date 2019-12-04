@@ -196,18 +196,21 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 }
 
 func (i *Indexer) readMessageBlock(maxChunkSize int) (messages []kafka.Message, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(i.bulkFetchTimeoutSeconds))
-	defer cancel()
+	startReadingTime := time.Now()
 	for k := 0; k < maxChunkSize; k++ {
-		m, err := i.kReader.FetchMessage(ctx)
+		log.Println("Before Kafka Read")
+		m, err := i.kReader.FetchMessage(context.Background())
+		nowTime := time.Now()
+		currentDuration := nowTime.Sub(startReadingTime)
+		log.Println("Got Message")
+		if currentDuration.Seconds() > float64(i.bulkFetchTimeoutSeconds) {
+			return messages, nil
+		}
+		log.Println("Fetch Message: ", err)
 		if err != nil {
-			if err == context.DeadlineExceeded {
-				return messages, nil
-			}
-
 			return nil, err
 		}
-
+		log.Println("Found Message")
 		messages = append(messages, m)
 	}
 

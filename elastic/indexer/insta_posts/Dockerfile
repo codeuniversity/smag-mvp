@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build \
     elastic/indexer/insta_posts/insta_posts_indexer.go
 
 FROM alpine
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates bash
 WORKDIR /app
 COPY --from=builder /app/insta_posts_indexer .
 CMD ["./insta_posts_indexer"]
