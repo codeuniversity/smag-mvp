@@ -63,7 +63,7 @@ export default FlowWrapper;
 function useFaceHitState(onEnoughFacesCollected) {
   const [faceHits, setFaceHits] = useState({});
   const [faceSampleCount, setFaceSampleCount] = useState(0);
-  const [hasTriggerEnoughCollected, setHasTriggerEngouhCollected] = useState(
+  const [hasTriggerEnoughCollected, setHasTriggerEnoughCollected] = useState(
     false
   );
   const addFaceHits = faces => {
@@ -78,7 +78,7 @@ function useFaceHitState(onEnoughFacesCollected) {
       faceSampleCount >= NECESARY_FACE_SAMPLES &&
       !hasTriggerEnoughCollected
     ) {
-      setHasTriggerEngouhCollected(true);
+      setHasTriggerEnoughCollected(true);
       onEnoughFacesCollected();
     }
   }, [faceSampleCount]);
