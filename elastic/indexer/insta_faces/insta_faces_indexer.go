@@ -48,15 +48,7 @@ func indexFace(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 }
 
 func createBulkIndexOperation(face *models.FaceData) (*indexer.BulkIndexDoc, error) {
-	bulkOperation := "{ \"index\": {}  }"
-
-	bulkOperationJson, err := json.Marshal(bulkOperation)
-
-	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
-	}
-
-	bulkOperationJson = append(bulkOperationJson, "\n"...)
+	bulkOperation := `{ "index": {}  }` + "\n"
 
 	doc, err := esModels.FaceDocFromFaceData(face)
 	if err != nil {
@@ -71,7 +63,7 @@ func createBulkIndexOperation(face *models.FaceData) (*indexer.BulkIndexDoc, err
 
 	docJson = append(docJson, "\n"...)
 
-	bulkUpsertBody := string(bulkOperationJson) + string(docJson)
+	bulkUpsertBody := bulkOperation + string(docJson)
 
 	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(int(face.ID)), BulkOperation: bulkUpsertBody}, err
 
