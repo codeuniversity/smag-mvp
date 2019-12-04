@@ -7,7 +7,7 @@ import BioCard from "../components/BioCard";
 import { UserIdRequest } from "../protofiles/usersearch_grpc_web_pb";
 import Button from "../components/Button";
 import EndButton from "../components/EndButton";
-import PostCard from "../components/PostsCard";
+import uniqWith from "lodash/uniqWith";
 
 async function fetchPosts(apiClient, userId) {
   const userIdRequest = new UserIdRequest();
@@ -35,7 +35,10 @@ function Dashboard({ profile, apiClient }) {
     fetchDataPoints(apiClient, profile.user.id).then(setDataPointCount);
   }, []);
 
-  const slides0 = profile.facesList.map(face => face.fullImageSrc);
+  const slides0 = uniqWith(
+    profile.facesList,
+    (a, b) => a.postId === b.postId
+  ).map(face => face.fullImageSrc);
   const slides1 = posts.map(post => post.imgUrl);
 
   const slides2 = [
