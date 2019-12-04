@@ -80,7 +80,11 @@ func (i *Indexer) runStep() error {
 		if err != nil {
 			return err
 		}
+
 		bulkDocumentIdKafkaMessages[bulkOperation.DocumentId] = message
+		if bulkOperation == nil {
+			continue
+		}
 		bulkBody += bulkOperation.BulkOperation
 	}
 
@@ -116,20 +120,10 @@ func (i *Indexer) runStep() error {
 	if err != nil {
 		return err
 	}
-	for _, bulkResultOperation := range result.Items {
-
-		if bulkResultOperation.Index != nil {
-			log.Println("Index Status: ", bulkResultOperation.Index.Status)
-			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
-			if err != nil {
-				return err
-			}
-		} else if bulkResultOperation.Update != nil {
-			log.Println("Update Status: ", bulkResultOperation.Update.Status)
-			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Update.ID])
-			if err != nil {
-				return err
-			}
+	for _, message := range bulkDocumentIdKafkaMessages {
+		err := i.kReader.CommitMessages(context.Background(), message)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
