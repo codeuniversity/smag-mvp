@@ -72,6 +72,7 @@ export class CameraFeed extends Component {
             min-width="100vw"
             min-height="100vh"
           />
+          {this.props.children}
         </div>
         <div className="canvas">
           <canvas width="800" height="600" ref={ref => (this.canvas = ref)} />

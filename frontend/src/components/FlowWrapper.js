@@ -15,7 +15,7 @@ const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
 function FlowStateWrapper(props) {
   const [page, setPage] = useState(GREETING_PAGE);
-  const { faceHits, addFaceHits } = useFaceHitState(() =>
+  const { faceHits, addFaceHits, faceSampleCount } = useFaceHitState(() =>
     setPage(PROFILE_SELECTION_PAGE)
   );
   const [selectedProfile, setSelectedProfile] = useState(null);
@@ -29,6 +29,7 @@ function FlowStateWrapper(props) {
           apiClient={apiClient}
           faceHits={faceHits}
           addFaceHits={addFaceHits}
+          progress={faceSampleCount / NECESARY_FACE_SAMPLES}
         />
       );
     case PROFILE_SELECTION_PAGE:
@@ -77,7 +78,8 @@ function useFaceHitState(onEnoughFacesCollected) {
 
   return {
     faceHits,
-    addFaceHits
+    addFaceHits,
+    faceSampleCount
   };
 }
 
