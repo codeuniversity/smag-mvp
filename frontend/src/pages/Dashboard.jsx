@@ -35,6 +35,7 @@ function Dashboard({ profile, apiClient }) {
     fetchDataPoints(apiClient, profile.user.id).then(setDataPointCount);
   }, []);
 
+  // get the imageSrc of the de-duplicated list of posts where we found that face
   const slides0 = uniqWith(
     profile.facesList,
     (a, b) => a.postId === b.postId
