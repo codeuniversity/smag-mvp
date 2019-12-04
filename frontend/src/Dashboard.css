@@ -30,6 +30,9 @@
   grid-template-rows: 405px 405px;
   grid-gap: 50px;
 }
+.dashboard-headline {
+  color: #000000 !important;
+}
 
 .dashboardCard {
   height: 405px;
