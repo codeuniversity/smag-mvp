@@ -135,8 +135,12 @@ code {
 }
 .avatar-image {
   border-radius: 50%;
-  height: 120px;
-  width: 120px;
+  height: 120px !important;
+  width: 120px !important;
+}
+.avatar-image-container {
+  height: 120px !important;
+  width: 120px !important;
 }
 .headline {
   color: #ffffff;
@@ -145,6 +149,7 @@ code {
   letter-spacing: 0.36px;
   font-weight: 600;
 }
+
 h1 {
   font-size: 2em;
   line-height: 1em;
@@ -157,7 +162,25 @@ h1 {
   font-weight: 600;
   flex-basis: 100%;
 }
-
+.sub-headline-profile {
+  display: flex;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 24px;
+  letter-spacing: 0.38px;
+  font-weight: 600;
+  flex-basis: 100%;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+.profile-button {
+  display: block;
+}
+.container-profile {
+  display: inline-flex;
+  padding: 20px 0px;
+}
 .body-text {
   color: #000000;
   font-size: 16px;
@@ -237,6 +260,15 @@ video {
   object-fit: cover;
   height: 75vh;
 }
+.profile-card {
+  width: 50%;
+  float: left;
+  display: flex;
+  vertical-align: middle;
+  padding: 20px 0px;
+  text-align: left;
+  cursor: pointer;
+}
 .video-container {
   position: absolute;
   top: 50%;
@@ -267,7 +299,7 @@ video {
   border-radius: 50px;
   border: 3px solid #2a9fd8;
   padding: 10px 60px;
-  font-size: 34px;
+  font-size: 24px;
   color: #ffffff;
   display: inline-block;
   text-align: center;
