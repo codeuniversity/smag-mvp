@@ -118,7 +118,6 @@ func (i *Indexer) runStep() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println()
 	for _, bulkResultOperation := range result.Items {
 
 		if bulkResultOperation.Index != nil {
