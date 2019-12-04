@@ -27,7 +27,7 @@ async function fetchDataPoints(apiClient, userId) {
   return response.getCount();
 }
 
-function Dashboard({ profile, apiClient }) {
+function Dashboard({ profile, apiClient, nextPage }) {
   const [posts, setPosts] = useState([]);
   const [dataPointCount, setDataPointCount] = useState(null);
 
@@ -90,9 +90,7 @@ function Dashboard({ profile, apiClient }) {
         />
       </div>
       <div className="dashboardFooter">
-        <Button buttonlink="/endscreen">
-          See more details about your network.
-        </Button>
+        <Button onClick={nextPage}>See more details about your network.</Button>
       </div>
     </div>
   );

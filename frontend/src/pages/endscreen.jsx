@@ -5,7 +5,7 @@ import "./../index.css";
 import H1 from "../components/H1";
 import H2 from "../components/H2";
 
-class Greeting extends Component {
+class EndScreen extends Component {
   render() {
     return (
       <div className="container-center">
@@ -23,7 +23,7 @@ class Greeting extends Component {
             <H2>2. Check your private settings again.</H2>
             <H2>3. Switch your profile to private.</H2>
             <br />
-            <Button buttonlink="/">End session</Button>
+            <Button onClick={this.props.nextPage}>End session</Button>
           </div>
         </div>
       </div>
@@ -31,4 +31,4 @@ class Greeting extends Component {
   }
 }
 
-export default Greeting;
+export default EndScreen;
