@@ -24,12 +24,12 @@ import (
 type Indexer struct {
 	*worker.Worker
 
-	esClient         *elasticsearch.Client
-	kReader          *kafka.Reader
-	esIndex          string
-	bulkChunkSize    int
-	bulkFetchTimeout int
-	indexFunc        IndexFunc
+	esClient                *elasticsearch.Client
+	kReader                 *kafka.Reader
+	esIndex                 string
+	bulkChunkSize           int
+	bulkFetchTimeoutSeconds int
+	indexFunc               IndexFunc
 }
 
 // IndexFunc is the type for the functions which will insert data into elasticsearch
@@ -45,7 +45,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	i.esIndex = esIndex
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
 	i.bulkChunkSize = bulkChunkSize
-	i.bulkFetchTimeout = bulkFetchTimeout
+	i.bulkFetchTimeoutSeconds = bulkFetchTimeout
 
 	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
 		WithWorkStep(i.runStep).
@@ -193,7 +193,7 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 }
 
 func (i *Indexer) readMessageBlock(maxChunkSize int) (messages []kafka.Message, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(i.bulkFetchTimeout))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(i.bulkFetchTimeoutSeconds))
 	defer cancel()
 	for k := 0; k < maxChunkSize; k++ {
 		m, err := i.kReader.FetchMessage(ctx)
