@@ -183,7 +183,7 @@ func (s *GrpcServer) GetUserWithUserId(_ context.Context, username *proto.UserNa
 									COALESCE(real_name, '') as real_name,
 									COALESCE(bio, '') as bio,
 									COALESCE(avatar_url, '') as avatar_url
-									FROM users WHERE user_name = $1`, username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+									FROM users WHERE id = $1`, username.id).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
 	if err != nil {
 		return nil, err
 	}
