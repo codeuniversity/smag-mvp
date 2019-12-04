@@ -85,7 +85,14 @@ func (i *Indexer) runStep() error {
 		bulkBody += bulkOperation.BulkOperation
 	}
 
-	log.Println("BulkResponse: ", bulkBody)
+	log.Println("RequestBody: ", bulkBody)
+	if bulkBody == "" {
+		err := i.kReader.CommitMessages(context.Background(), messages...)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
 	if err != nil {
 		return err
