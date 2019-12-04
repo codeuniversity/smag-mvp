@@ -5,6 +5,7 @@ import ProfileCard from "../components/ProfileCard";
 import StatsCard from "../components/StatsCard";
 import BioCard from "../components/BioCard";
 import { UserIdRequest } from "../protofiles/usersearch_grpc_web_pb";
+import Button from "../components/Button";
 
 async function fetchPosts(apiClient, userId) {
   const userIdRequest = new UserIdRequest();
@@ -78,6 +79,11 @@ function Dashboard({ profile, apiClient }) {
           details={["Sister, Mother"]}
           slides={slides4}
         />
+      </div>
+      <div className="dashboardFooter">
+        <Button buttonlink="/endsession">
+          See more details about your network.
+        </Button>
       </div>
     </div>
   );
