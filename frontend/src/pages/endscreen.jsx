@@ -14,15 +14,16 @@ class Greeting extends Component {
             <H1>
               Think again about whether all this data about you should be
               visible to everyone!
-              <br />
-              If not, we want to give you 3 important tips.
             </H1>
+            <H2>If not, we want to give you 3 important tips.</H2>
+            <br />
             <H2>
-              1.Think twice about what information you want to make public.
+              1. Think twice about what information you want to make public.
             </H2>
             <H2>2. Check your private settings again.</H2>
             <H2>3. Switch your profile to private.</H2>
-            <Button buttonlink="/">End ssession</Button>
+            <br />
+            <Button buttonlink="/">End session</Button>
           </div>
         </div>
       </div>
