@@ -85,6 +85,14 @@ func (i *Indexer) runStep() error {
 		bulkBody += bulkOperation.BulkOperation
 	}
 
+	log.Println("RequestBody: ", bulkBody)
+	if bulkBody == "" {
+		err := i.kReader.CommitMessages(context.Background(), messages...)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
 	if err != nil {
 		return err
@@ -105,11 +113,11 @@ func (i *Indexer) runStep() error {
 	}
 
 	log.Println("BulkResultItem: ", len(result.Items))
+	log.Println("BulResult: ", string(body))
 	err = i.checkAllResultMessagesAreValid(&result)
 	if err != nil {
 		return err
 	}
-
 	for _, bulkResultOperation := range result.Items {
 
 		if bulkResultOperation.Index != nil {
