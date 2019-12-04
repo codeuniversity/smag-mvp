@@ -6,9 +6,12 @@ import StatsCard from "../components/StatsCard";
 import BioCard from "../components/BioCard";
 import { UserIdRequest } from "../protofiles/usersearch_grpc_web_pb";
 import Button from "../components/Button";
+<<<<<<< HEAD
 import EndButton from "../components/EndButton";
 import uniqWith from "lodash/uniqWith";
 import PostsCard from "../components/PostsCard";
+=======
+>>>>>>> .
 
 async function fetchPosts(apiClient, userId) {
   const userIdRequest = new UserIdRequest();
@@ -89,7 +92,11 @@ function Dashboard({ profile, apiClient }) {
           slides={["http://socialengineindia.com/images/home/expert1.png"]}
         />
       </div>
-      <Button>See more details about your network</Button>
+      <div className="dashboardFooter">
+        <Button buttonlink="/endsession">
+          See more details about your network.
+        </Button>
+      </div>
     </div>
   );
 }
