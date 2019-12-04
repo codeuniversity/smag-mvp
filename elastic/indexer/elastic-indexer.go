@@ -85,6 +85,7 @@ func (i *Indexer) runStep() error {
 		bulkBody += bulkOperation.BulkOperation
 	}
 
+	log.Println("BulkResponse: ", bulkBody)
 	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
 	if err != nil {
 		return err
@@ -105,11 +106,12 @@ func (i *Indexer) runStep() error {
 	}
 
 	log.Println("BulkResultItem: ", len(result.Items))
+	log.Println("BulResult: ", string(body))
 	err = i.checkAllResultMessagesAreValid(&result)
 	if err != nil {
 		return err
 	}
-
+	fmt.Println()
 	for _, bulkResultOperation := range result.Items {
 
 		if bulkResultOperation.Index != nil {
