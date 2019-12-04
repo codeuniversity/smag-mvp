@@ -33,7 +33,7 @@ func indexComment(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) 
 	err := json.Unmarshal(m.Payload.After, comment)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	switch m.Payload.Op {
@@ -41,7 +41,7 @@ func indexComment(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) 
 		return createBulkUpsertOperation(comment)
 	}
 
-	return &indexer.BulkIndexDoc{}, nil
+	return nil, nil
 }
 
 func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.BulkIndexDoc, error) {
@@ -54,7 +54,7 @@ func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.BulkIndex
 
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
@@ -75,7 +75,7 @@ func createBulkUpsertOperation(comment *models.InstaComment) (*indexer.BulkIndex
 	commentUpsertJson, err := json.Marshal(commentUpsert)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	commentUpsertJson = append(commentUpsertJson, "\n"...)

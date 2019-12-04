@@ -35,13 +35,13 @@ func indexFace(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	case "r", "u", "c":
 		break
 	default:
-		return &indexer.BulkIndexDoc{}, nil
+		return nil, nil
 	}
 
 	face := &models.FaceData{}
 	err := json.Unmarshal(m.Payload.After, face)
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	return createBulkIndexOperation(face)
@@ -52,13 +52,13 @@ func createBulkIndexOperation(face *models.FaceData) (*indexer.BulkIndexDoc, err
 
 	doc, err := esModels.FaceDocFromFaceData(face)
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	docJson, err := json.Marshal(doc)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	docJson = append(docJson, "\n"...)
