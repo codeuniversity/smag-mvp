@@ -237,7 +237,7 @@ video {
   object-fit: cover;
   height: 75vh;
 }
-.video-container video {
+.video-container {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -248,6 +248,11 @@ video {
   transform: translateX(-50%) translateY(-50%);
   object-fit: cover;
 }
+
+.video-container video {
+  min-height: 70vh;
+}
+
 .canvas {
   display: none;
 }
