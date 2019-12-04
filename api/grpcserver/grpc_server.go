@@ -174,6 +174,24 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	return u, nil
 }
 
+//GetUserWithUsername returns one User with the given username
+func (s *GrpcServer) GetUserWithUserId(_ context.Context, username *proto.UserNameRequest) (*proto.User, error) {
+	u := &proto.User{}
+	log.Println(username)
+
+	err := s.db.QueryRow(`SELECT id, COALESCE(user_name, '') as user_name,
+									COALESCE(real_name, '') as real_name,
+									COALESCE(bio, '') as bio,
+									COALESCE(avatar_url, '') as avatar_url
+									FROM users WHERE user_name = $1`, username.UserName).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return u
+}
+
+
 func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc scanFunc) ([]*proto.User, error) {
 
 	u := []*proto.User{}
