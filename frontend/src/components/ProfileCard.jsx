@@ -5,8 +5,8 @@ const ProfileCard = props => {
   return (
     <div className="dashboardCard">
       <img
-        src={this.props.pictureUrl}
-        alt={this.props.alt}
+        src={props.pictureUrl}
+        alt={props.alt}
         className="profilePictureImg"
       />
     </div>
