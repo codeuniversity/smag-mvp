@@ -138,7 +138,7 @@ func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
 			}
 		} else if bulkResultOperation.Update != nil {
 
-			err := errorForHttpStatus(bulkResultOperation.Index.Status)
+			err := errorForHttpStatus(bulkResultOperation.Update.Status)
 			if err != nil {
 				return err
 			}
