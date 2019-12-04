@@ -81,7 +81,7 @@ function Dashboard({ profile, apiClient }) {
         />
       </div>
       <div className="dashboardFooter">
-        <Button buttonlink="/endsession">
+        <Button buttonlink="/endscreen">
           See more details about your network.
         </Button>
       </div>
