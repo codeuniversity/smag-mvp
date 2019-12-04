@@ -63,6 +63,8 @@ function useFaceHitState(onEnoughFacesCollected) {
   const [faceHits, setFaceHits] = useState({});
   const [faceSampleCount, setFaceSampleCount] = useState(0);
   const addFaceHits = faces => {
+    if (faces.length == 0) return;
+
     setFaceSampleCount(prevCount => prevCount + 1);
     setFaceHits(prevHits => mergeFacesIntoHits(faces, prevHits));
   };
