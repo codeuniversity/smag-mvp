@@ -9,7 +9,7 @@ import Greeting from "../pages/Greeting";
 import ExampleProfileSelection from "../pages/ExampleProfileSelection";
 import SearchProfile from "../pages/SearchProfile";
 import GroupIntent from "../pages/GroupIntent";
-import EndScreen from "../pages/Endscreen";
+import EndScreen from "../pages/endscreen";
 
 const GREETING_PAGE = "greeting";
 const START_PAGE = "start";
@@ -70,6 +70,7 @@ function FlowStateWrapper(props) {
       return (
         <ExampleProfileSelection
           apiClient={apiClient}
+          goToEnd={() => setPage(END_PAGE)}
           onProfileSelect={profile => {
             setSelectedProfile(profile);
             setPage(DASHBOARD_PAGE);

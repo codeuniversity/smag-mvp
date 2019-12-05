@@ -11,7 +11,7 @@ import FlowWrapper from "./components/FlowWrapper";
 import Popup from "./components/Popup";
 import Greeting from "./pages/Greeting.jsx";
 import Network from "./pages/Network.jsx";
-import Endscreen from "./pages/Endscreen";
+import Endscreen from "./pages/endscreen";
 import SearchProfile from "./pages/SearchProfile";
 import ExampleProfileSelection from "./pages/ExampleProfileSelection";
 

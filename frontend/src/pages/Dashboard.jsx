@@ -90,7 +90,7 @@ function Dashboard({ profile, apiClient, nextPage }) {
         />
       </div>
       <div className="dashboardFooter">
-        <Button onClick={nextPage}>See more details about your network.</Button>
+        <Button onClick={nextPage}>Why?</Button>
       </div>
     </div>
   );

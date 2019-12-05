@@ -18,7 +18,7 @@ function Form(props) {
         <input
           type="text"
           id="filter"
-          placeholder="Full name or username"
+          placeholder="Username"
           value={value}
           onChange={e => {
             e.preventDefault();
