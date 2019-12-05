@@ -31,7 +31,7 @@ function ExampleProfileSelection(props) {
         </H2>
         <div className="column-one-fourth" />
         <div className="column-one-fourth">
-          <Button buttonlink="/endscreen">End</Button>
+          <Button onClick={props.goToEnd}>End</Button>
         </div>
         <div className="column-one-fourth">
           <Button

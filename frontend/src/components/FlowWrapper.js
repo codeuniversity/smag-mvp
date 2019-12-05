@@ -68,6 +68,7 @@ function FlowStateWrapper(props) {
       return (
         <ExampleProfileSelection
           apiClient={apiClient}
+          goToEnd={() => setPage(END_PAGE)}
           onProfileSelect={profile => {
             setSelectedProfile(profile);
             setPage(DASHBOARD_PAGE);
