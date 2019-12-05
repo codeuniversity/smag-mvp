@@ -30,18 +30,27 @@ function findFacesInImage(apiClient, onFindFaces) {
   };
 }
 
-function Start({ apiClient, faceHits, addFaceHits }) {
+function Start({ apiClient, faceHits, addFaceHits, progress }) {
   const onFileSubmit = findFacesInImage(apiClient, addFaceHits);
 
   return (
     <div className="body">
       <div className="column-full">
         <H1>
-          Are you aware that wherever you are recorded, your identity can be
-          found?
+          Are you aware that wherever you are recorded,
+          <br /> your identity can be found?
         </H1>
-        <CameraFeed onFileSubmit={onFileSubmit} />
-        <H2>Give us your smile face :)</H2>
+        <CameraFeed onFileSubmit={onFileSubmit}>
+          <div
+            style={{
+              position: "absolute",
+              bottom: 3,
+              width: `${progress * 99 + 1}%`,
+              height: 10,
+              backgroundColor: "rgba(42, 159, 216, 0.8)"
+            }}
+          ></div>
+        </CameraFeed>
       </div>
     </div>
   );

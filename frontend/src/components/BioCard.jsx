@@ -8,7 +8,7 @@ class BioCard extends Component {
         <table>
           <tr>
             <th>
-              <H2>{this.props.bio}</H2>
+              <h2 className="dashboard-headline">{this.props.bio}</h2>
             </th>
           </tr>
         </table>
