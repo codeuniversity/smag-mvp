@@ -80,6 +80,10 @@ message UserDataPointCount {
     int32 count = 1;
 }
 
+message FoundCities {
+    repeated string city_names = 1;
+}
+
 service UserSearchService {
     rpc GetAllUsersLikeUsername(UserNameRequest) returns (UserSearchResponse);
     rpc GetUserWithUserId(UserIdRequest) returns (User);
@@ -88,4 +92,5 @@ service UserSearchService {
     rpc SearchSimilarFaces(FaceSearchRequest) returns(FaceSearchResponse);
     rpc SearchUsersWithWeightedPosts(WeightedPosts) returns (WeightedUsers);
     rpc DataPointCountForUserId(UserIdRequest) returns (UserDataPointCount);
+    rpc FindCitiesForUserId(UserIdRequest) returns (FoundCities);
 }
