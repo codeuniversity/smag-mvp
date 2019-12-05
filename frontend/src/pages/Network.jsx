@@ -6,8 +6,9 @@ import {
   UserIdRequest,
   UserSearchServicePromiseClient
 } from "../protofiles/usersearch_grpc_web_pb";
+import Button from "../components/Button";
 
-export default function Network({ profile, foo }) {
+export default function Network({ profile, apiClient, nextPage }) {
   const [graph, setGraph] = useState(undefined);
 
   const options = {
@@ -32,15 +33,12 @@ export default function Network({ profile, foo }) {
     edges: {
       color: "#ffffff"
     },
-    height: "1080px"
+    height: "900px"
   };
 
   const events = {
-    select: function(event) {
-      var { nodes, edges } = event;
-    }
+    select: function(event) {}
   };
-  const apiClient = new UserSearchServicePromiseClient("http://localhost:4000");
 
   const getUserData = async id => {
     const userIdRequest = new UserIdRequest();
@@ -59,35 +57,37 @@ export default function Network({ profile, foo }) {
     };
 
     return session
-      .run(`match p=()-[:FOLLOWS]->(:USER{id: ${id}}) return p`, {})
+      .run(`match p=()-[:FOLLOWS]-(:USER{id: ${id}}) return p`, {})
       .then(function(result) {
         console.log(result);
         return Promise.all(
-          result.records.map(element => {
-            const start = element.get("p").start.properties.id.low;
-            const end = element.get("p").end.properties.id.low;
+          result.records
+            .map(element => {
+              const start = element.get("p").start.properties.id.low;
+              const end = element.get("p").end.properties.id.low;
 
-            return getUserData(start.toString()).then(protoUser => {
-              const user = protoUser.toObject();
-              graphResult.nodes.push({
-                id: start,
-                shape: "circularImage",
-                image: user.avatarUrl,
-                label: user.userName
+              return getUserData(start.toString()).then(protoUser => {
+                const user = protoUser.toObject();
+                graphResult.nodes.push({
+                  id: start,
+                  shape: "circularImage",
+                  image: user.avatarUrl,
+                  label: user.userName
+                });
+                graphResult.edges.push({ from: start, to: end });
               });
-              graphResult.edges.push({ from: start, to: end });
-            });
-          }),
-          getUserData(id.toString()).then(protoUser => {
-            const user = protoUser.toObject();
-            graphResult.nodes.push({
-              id: id,
-              shape: "circularImage",
-              image: user.avatarUrl,
-              label: user.userName,
-              size: 60
-            });
-          })
+            })
+            .concat(
+              getUserData(id.toString()).then(protoUser => {
+                const user = protoUser.toObject();
+                graphResult.nodes.push({
+                  id: Number(id),
+                  shape: "circularImage",
+                  image: user.avatarUrl,
+                  label: user.userName
+                });
+              })
+            )
         ).then(() => {
           session.close();
           driver.close();
@@ -103,15 +103,27 @@ export default function Network({ profile, foo }) {
   };
 
   useEffect(() => {
-    gettNodesAndEdges(897148).then(result => setGraph(result));
+    gettNodesAndEdges(profile.user.id).then(result => setGraph(result));
   }, []);
 
   console.log(graph);
   if (graph) {
     return (
       <div>
-        <H1>See who is following you</H1>
+        <div className="headline">
+          <h1 style={{ textAlign: "center" }}>See who is following you</h1>
+        </div>
         <Graph graph={graph} options={options} events={events} />;
+        <div
+          style={{
+            position: "fixed",
+            left: "50%",
+            bottom: 50,
+            transform: "translateX(-50%)"
+          }}
+        >
+          <Button onClick={nextPage}>Why?</Button>
+        </div>
       </div>
     );
   }

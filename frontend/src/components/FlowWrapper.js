@@ -82,11 +82,17 @@ function FlowStateWrapper(props) {
         <Dashboard
           profile={selectedProfile}
           apiClient={apiClient}
-          nextPage={() => setPage(GROUP_INTENT_PAGE)}
+          nextPage={() => setPage(NETWORK_PAGE)}
         />
       );
     case NETWORK_PAGE:
-      return <Network profile={selectedProfile} />;
+      return (
+        <Network
+          profile={selectedProfile}
+          apiClient={apiClient}
+          nextPage={() => setPage(GROUP_INTENT_PAGE)}
+        />
+      );
     case GROUP_INTENT_PAGE:
       return <GroupIntent nextPage={() => setPage(END_PAGE)} />;
     case END_PAGE:
