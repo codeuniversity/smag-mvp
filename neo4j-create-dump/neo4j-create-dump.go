@@ -59,10 +59,10 @@ func (i *Neo4jImport) Run() {
 	for k := 0; k < 100; k++ {
 		messages, err := i.readMessageBlock(10*time.Second, i.kafkaChunkSize)
 
+		log.Println("Messages Bulk: ", len(messages))
 		if len(messages) == 0 {
 			continue
 		}
-		log.Println("Messages Bulk: ", len(messages))
 
 		if err != nil {
 			panic(err)
