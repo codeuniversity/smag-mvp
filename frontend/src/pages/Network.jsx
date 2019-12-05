@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Graph from "react-graph-vis";
 import neo4j from "neo4j-driver";
+import H1 from "./../components/H1";
 import {
   UserIdRequest,
   UserSearchServicePromiseClient
@@ -11,12 +12,27 @@ export default function Network({ profile, foo }) {
 
   const options = {
     layout: {
-      hierarchical: true
+      hierarchical: false
+    },
+    interaction: {
+      dragNodes: false,
+      dragView: false,
+      zoomView: false
+    },
+    nodes: {
+      font: "16px Helvetica white",
+      size: 30,
+      borderWidth: 1,
+      color: {
+        border: "black"
+      },
+      brokenImage:
+        "https://www.autodeskfusionlifecycle.com/app/uploads/2017/06/default-user.png"
     },
     edges: {
       color: "#ffffff"
     },
-    height: "1000px"
+    height: "1080px"
   };
 
   const events = {
@@ -57,8 +73,7 @@ export default function Network({ profile, foo }) {
                 id: start,
                 shape: "circularImage",
                 image: user.avatarUrl,
-                label: user.userName,
-                title: "USER node"
+                label: user.userName
               });
               graphResult.edges.push({ from: start, to: end });
             });
@@ -70,7 +85,7 @@ export default function Network({ profile, foo }) {
               shape: "circularImage",
               image: user.avatarUrl,
               label: user.userName,
-              title: "USER node"
+              size: 60
             });
           })
         ).then(() => {
@@ -88,12 +103,17 @@ export default function Network({ profile, foo }) {
   };
 
   useEffect(() => {
-    gettNodesAndEdges(profile.id).then(result => setGraph(result));
+    gettNodesAndEdges(897148).then(result => setGraph(result));
   }, []);
 
   console.log(graph);
   if (graph) {
-    return <Graph graph={graph} options={options} events={events} />;
+    return (
+      <div>
+        <H1>See who is following you</H1>
+        <Graph graph={graph} options={options} events={events} />;
+      </div>
+    );
   }
   return <h1></h1>;
 }
