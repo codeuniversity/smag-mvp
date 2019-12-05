@@ -20,7 +20,16 @@ func main() {
 	a := analyzer.New([]string{"localhost:9200"})
 
 	// TODO: load cities.json
-	cityMap := make(map[string][]string)
+	jsonFile, err := os.Open("cities.json")
+	defer jsonFile.Close()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	var cityMap map[string][]string
+	if err := json.Unmarshal(byteValue, &cityMap); err != nil {
+		panic(err)
+	}
 
 	foundCities := make(map[string]bool)
 	for city, cityTerms := range cityMap {

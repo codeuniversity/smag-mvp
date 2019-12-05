@@ -1,0 +1,67 @@
+{
+    "berlin": [
+        "berlin",
+        "BLN",
+        "Brandenburg Gate",
+        "Brandenburger Tor",
+        "Bundestag"
+    ],
+    "london": [
+        "london",
+        "LDN",
+        "Big Ben",
+        "Tower Bridge"
+    ],
+    "munich": [
+        "munich",
+        "münchen",
+        "MUC"
+    ],
+    "hamburg": [
+        "hamburg",
+        "⚓"
+    ],
+    "paris": [
+        "paris",
+        "Eiffel Tower",
+        "Eiffelturm",
+        "cdg"
+    ],
+    "rome": [
+        "rome",
+        "rom",
+        "colosseum"
+    ],
+    "amsterdam": [
+        "amsterdam",
+        "AMS"
+    ],
+    "barcelona": [
+        "barcelona",
+        "BCN"
+    ],
+    "copenhagen": [
+        "copenhagen",
+        "kopenhagen",
+        "cph"
+    ],
+    "lisbon": [
+        "lisbon",
+        "lissabon",
+        "lis"
+    ],
+    "vienna": [
+        "vienna",
+        "wien",
+        "VIE"
+    ],
+    "prague": [
+        "prague",
+        "prag",
+        "PRG"
+    ],
+    "madrid": [
+        "madrid",
+        "mad"
+    ]
+}
