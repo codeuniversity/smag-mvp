@@ -98,6 +98,11 @@ func (i *Neo4jImport) Run() {
 		if _, err = i.file.WriteString(string(followsJson)); err != nil {
 			panic(err)
 		}
+
+		err = i.kReader.CommitMessages(context.Background(), messages...)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	if _, err := i.file.WriteString(endJson); err != nil {
