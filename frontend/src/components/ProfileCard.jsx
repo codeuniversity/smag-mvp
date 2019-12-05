@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 const ProfileCard = props => {
   return (
-    <div className="dashboardCard">
+    <div className="smallCard dashboard-avatar">
       <img
         src={props.pictureUrl}
         alt={props.alt}

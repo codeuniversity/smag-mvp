@@ -4,7 +4,7 @@ import Slideshow from "./Slideshow";
 
 const PostsCard = props => {
   return (
-    <div className="dashboardCard">
+    <div className="largeCard dashboard-posts">
       <Slideshow slides={props.slides} />
     </div>
   );

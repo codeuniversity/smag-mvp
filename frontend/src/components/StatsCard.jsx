@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 const StatsCard = props => {
   return (
-    <div className="dashboardCard statsCard">
+    <div className="dashboardCard statsCard dashboard-stats">
       <p>We were able to reuse</p>
       <h1>{props.count}</h1>
       <p>snippets of your data.</p>
