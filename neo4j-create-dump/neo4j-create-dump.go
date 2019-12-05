@@ -28,7 +28,7 @@ func New(kafkaAddress, changesTopic, kafkaGroupID string, kafkaChunkSize int) *N
 	i.kReader = kf.NewReader(readerConfig)
 	i.kafkaChunkSize = kafkaChunkSize
 
-	file, err := os.OpenFile("neoj4-dump", os.O_APPEND|os.O_WRONLY, 0600)
+	file, err := os.OpenFile("neo4j-dump.json", os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)
 	}
