@@ -99,6 +99,7 @@
 }
 .slideshow-image {
   width: 860px;
+  object-fit: cover;
 }
 
 .slides,
