@@ -5,13 +5,17 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
+
 	// required for postgres
 	_ "github.com/lib/pq"
 	"github.com/segmentio/kafka-go"
@@ -26,6 +30,7 @@ import (
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/search/faces"
 	recognition "github.com/codeuniversity/smag-mvp/faces/proto"
+	analyzer "github.com/codeuniversity/smag-mvp/nlp/frequency-analyzer"
 )
 
 const (
@@ -41,10 +46,11 @@ type GrpcServer struct {
 	downloadBucketName string
 	region             string
 	imageUploadBucket  string
-
-	userNamesWriter *kafka.Writer
+	userNamesWriter    *kafka.Writer
 
 	facesClient *faces.Client
+	nlpAnalyzer *analyzer.Analyzer
+	citiesMap   map[string][]string
 }
 
 type scanFunc func(row *sql.Rows) (proto.User, error)
@@ -53,6 +59,16 @@ type scanFunc func(row *sql.Rows) (proto.User, error)
 func NewGrpcServer(grpcPort string, userNamesWriter *kafka.Writer, s3Config *config.S3Config, imageUploadBucket string, postgresConfig *config.PostgresConfig, esHosts []string, recognitionServiceAddress string) *GrpcServer {
 	s := &GrpcServer{}
 
+	// TODO: load cities.json
+	jsonFile, err := os.Open("cities.json")
+	defer jsonFile.Close()
+	if err != nil {
+		log.Fatalln(err)
+	}
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err := json.Unmarshal(byteValue, &s.citiesMap); err != nil {
+		panic(err)
+	}
 	s.userNamesWriter = userNamesWriter
 
 	s.downloadBucketName = s3Config.S3BucketName
@@ -62,6 +78,7 @@ func NewGrpcServer(grpcPort string, userNamesWriter *kafka.Writer, s3Config *con
 	minioClient, err := minio.New(s3Config.S3Endpoint, s3Config.S3AccessKeyID, s3Config.S3SecretAccessKey, s3Config.S3UseSSL)
 	utils.MustBeNil(err)
 	log.Println("✅ Minio connection established")
+	s.nlpAnalyzer = analyzer.New(esHosts)
 
 	s.minioClient = minioClient
 
@@ -482,4 +499,28 @@ func (s *GrpcServer) DataPointCountForUserId(ctx context.Context, request *proto
 
 	totalCount := postsCount + commentsCount + likesCount + followCount
 	return &proto.UserDataPointCount{Count: int32(totalCount)}, nil
+}
+
+// FindCitiesForUserId in elasticsearch
+func (s *GrpcServer) FindCitiesForUserId(ctx context.Context, request *proto.UserIdRequest) (*proto.FoundCities, error) {
+	userID, err := strconv.ParseInt(request.UserId, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	foundCities := []string{}
+	for city, cityTerms := range s.citiesMap {
+		foundTerms, err := s.nlpAnalyzer.MatchTermsForUser(int(userID), cityTerms)
+		if err != nil {
+			panic(err)
+		}
+		log.Printf("city=%v \t-> foundTerms=%+v", city, foundTerms)
+		// check if there are results for city
+		if len(foundTerms) > 0 {
+			foundCities = append(foundCities, city)
+		}
+	}
+	log.Printf("foundCities=%+v", foundCities)
+
+	return &proto.FoundCities{CityNames: foundCities}, nil
 }

@@ -27,13 +27,22 @@ async function fetchDataPoints(apiClient, userId) {
   return response.getCount();
 }
 
+async function fetchCities(apiClient, userId) {
+  const userIdRequest = new UserIdRequest();
+  userIdRequest.setUserId(userId);
+
+  const response = await apiClient.findCitiesForUserId(userIdRequest);
+  return response.getCityNamesList();
+}
+
 function Dashboard({ profile, apiClient, nextPage }) {
   const [posts, setPosts] = useState([]);
   const [dataPointCount, setDataPointCount] = useState(null);
-
+  const [foundCities, setFoundCities] = useState([]);
   useEffect(() => {
     fetchPosts(apiClient, profile.user.id).then(setPosts);
     fetchDataPoints(apiClient, profile.user.id).then(setDataPointCount);
+    fetchCities(apiClient, profile.user.id).then(setFoundCities);
   }, []);
 
   // get the imageSrc of the de-duplicated list of posts where we found that face
@@ -88,10 +97,8 @@ function Dashboard({ profile, apiClient, nextPage }) {
           slides={food}
         />
         <InterestCard
-          title="Your Network"
-          details={
-            "Here you can find more details about people related to you."
-          }
+          title="Cities"
+          details={foundCities.join(", ")}
           slides={["http://socialengineindia.com/images/home/expert1.png"]}
         />
       </div>
