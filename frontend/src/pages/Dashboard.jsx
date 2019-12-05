@@ -63,11 +63,17 @@ function Dashboard({ profile, apiClient, nextPage }) {
           pictureUrl={profile.user.avatarUrl}
           alt={profile.facesList[0] && profile.facesList[0].fullImageSrc}
         />
+
         <InterestCard
           title="Your images"
-          details={"These are the images where you found your face on."}
+          details={
+            slides0.length > 0
+              ? "These are the images where you found your face on."
+              : "We couldn't find you in any posts"
+          }
           slides={slides0}
         />
+
         <PostsCard slides={slides1} />
         <StatsCard count={dataPointCount} />
         <BioCard bio={profile.user.bio} />
@@ -90,7 +96,7 @@ function Dashboard({ profile, apiClient, nextPage }) {
         />
       </div>
       <div className="dashboardFooter">
-        <Button onClick={nextPage}>Why?</Button>
+        <Button onClick={nextPage}>Your network</Button>
       </div>
     </div>
   );

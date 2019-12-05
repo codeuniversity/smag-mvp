@@ -5,14 +5,13 @@
  */
 
 // GENERATED CODE -- DO NOT EDIT!
-
-
+/* eslint-disable*/
 
 const grpc = {};
-grpc.web = require('grpc-web');
+grpc.web = require("grpc-web");
 
 const proto = {};
-proto.proto = require('./usersearch_pb.js');
+proto.proto = require("./usersearch_pb.js");
 
 /**
  * @param {string} hostname
@@ -22,10 +21,9 @@ proto.proto = require('./usersearch_pb.js');
  * @struct
  * @final
  */
-proto.proto.UserSearchServiceClient =
-    function(hostname, credentials, options) {
+proto.proto.UserSearchServiceClient = function(hostname, credentials, options) {
   if (!options) options = {};
-  options['format'] = 'text';
+  options["format"] = "text";
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -49,7 +47,6 @@ proto.proto.UserSearchServiceClient =
   this.options_ = options;
 };
 
-
 /**
  * @param {string} hostname
  * @param {?Object} credentials
@@ -58,10 +55,13 @@ proto.proto.UserSearchServiceClient =
  * @struct
  * @final
  */
-proto.proto.UserSearchServicePromiseClient =
-    function(hostname, credentials, options) {
+proto.proto.UserSearchServicePromiseClient = function(
+  hostname,
+  credentials,
+  options
+) {
   if (!options) options = {};
-  options['format'] = 'text';
+  options["format"] = "text";
 
   /**
    * @private @const {!grpc.web.GrpcWebClientBase} The client
@@ -84,7 +84,6 @@ proto.proto.UserSearchServicePromiseClient =
    */
   this.options_ = options;
 };
-
 
 /**
  * @const
@@ -93,7 +92,7 @@ proto.proto.UserSearchServicePromiseClient =
  *   !proto.proto.UserSearchResponse>}
  */
 const methodDescriptor_UserSearchService_GetAllUsersLikeUsername = new grpc.web.MethodDescriptor(
-  '/proto.UserSearchService/GetAllUsersLikeUsername',
+  "/proto.UserSearchService/GetAllUsersLikeUsername",
   grpc.web.MethodType.UNARY,
   proto.proto.UserNameRequest,
   proto.proto.UserSearchResponse,
@@ -103,7 +102,6 @@ const methodDescriptor_UserSearchService_GetAllUsersLikeUsername = new grpc.web.
   },
   proto.proto.UserSearchResponse.deserializeBinary
 );
-
 
 /**
  * @const
@@ -120,7 +118,6 @@ const methodInfo_UserSearchService_GetAllUsersLikeUsername = new grpc.web.Abstra
   proto.proto.UserSearchResponse.deserializeBinary
 );
 
-
 /**
  * @param {!proto.proto.UserNameRequest} request The
  *     request proto
@@ -131,16 +128,19 @@ const methodInfo_UserSearchService_GetAllUsersLikeUsername = new grpc.web.Abstra
  * @return {!grpc.web.ClientReadableStream<!proto.proto.UserSearchResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.proto.UserSearchServiceClient.prototype.getAllUsersLikeUsername =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/proto.UserSearchService/GetAllUsersLikeUsername',
-      request,
-      metadata || {},
-      methodDescriptor_UserSearchService_GetAllUsersLikeUsername,
-      callback);
+proto.proto.UserSearchServiceClient.prototype.getAllUsersLikeUsername = function(
+  request,
+  metadata,
+  callback
+) {
+  return this.client_.rpcCall(
+    this.hostname_ + "/proto.UserSearchService/GetAllUsersLikeUsername",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetAllUsersLikeUsername,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.proto.UserNameRequest} request The
@@ -150,15 +150,17 @@ proto.proto.UserSearchServiceClient.prototype.getAllUsersLikeUsername =
  * @return {!Promise<!proto.proto.UserSearchResponse>}
  *     A native promise that resolves to the response
  */
-proto.proto.UserSearchServicePromiseClient.prototype.getAllUsersLikeUsername =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/proto.UserSearchService/GetAllUsersLikeUsername',
-      request,
-      metadata || {},
-      methodDescriptor_UserSearchService_GetAllUsersLikeUsername);
+proto.proto.UserSearchServicePromiseClient.prototype.getAllUsersLikeUsername = function(
+  request,
+  metadata
+) {
+  return this.client_.unaryCall(
+    this.hostname_ + "/proto.UserSearchService/GetAllUsersLikeUsername",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetAllUsersLikeUsername
+  );
 };
-
 
 /**
  * @const
@@ -167,7 +169,7 @@ proto.proto.UserSearchServicePromiseClient.prototype.getAllUsersLikeUsername =
  *   !proto.proto.User>}
  */
 const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.MethodDescriptor(
-  '/proto.UserSearchService/GetUserWithUsername',
+  "/proto.UserSearchService/GetUserWithUsername",
   grpc.web.MethodType.UNARY,
   proto.proto.UserNameRequest,
   proto.proto.User,
@@ -177,7 +179,6 @@ const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.Meth
   },
   proto.proto.User.deserializeBinary
 );
-
 
 /**
  * @const
@@ -194,7 +195,6 @@ const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractCl
   proto.proto.User.deserializeBinary
 );
 
-
 /**
  * @param {!proto.proto.UserNameRequest} request The
  *     request proto
@@ -205,16 +205,19 @@ const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractCl
  * @return {!grpc.web.ClientReadableStream<!proto.proto.User>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.proto.UserSearchServiceClient.prototype.getUserWithUsername =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/proto.UserSearchService/GetUserWithUsername',
-      request,
-      metadata || {},
-      methodDescriptor_UserSearchService_GetUserWithUsername,
-      callback);
+proto.proto.UserSearchServiceClient.prototype.getUserWithUsername = function(
+  request,
+  metadata,
+  callback
+) {
+  return this.client_.rpcCall(
+    this.hostname_ + "/proto.UserSearchService/GetUserWithUsername",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetUserWithUsername,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.proto.UserNameRequest} request The
@@ -224,15 +227,17 @@ proto.proto.UserSearchServiceClient.prototype.getUserWithUsername =
  * @return {!Promise<!proto.proto.User>}
  *     A native promise that resolves to the response
  */
-proto.proto.UserSearchServicePromiseClient.prototype.getUserWithUsername =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/proto.UserSearchService/GetUserWithUsername',
-      request,
-      metadata || {},
-      methodDescriptor_UserSearchService_GetUserWithUsername);
+proto.proto.UserSearchServicePromiseClient.prototype.getUserWithUsername = function(
+  request,
+  metadata
+) {
+  return this.client_.unaryCall(
+    this.hostname_ + "/proto.UserSearchService/GetUserWithUsername",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetUserWithUsername
+  );
 };
-
 
 /**
  * @const
@@ -241,7 +246,7 @@ proto.proto.UserSearchServicePromiseClient.prototype.getUserWithUsername =
  *   !proto.proto.InstaPostsResponse>}
  */
 const methodDescriptor_UserSearchService_GetInstaPostsWithUserId = new grpc.web.MethodDescriptor(
-  '/proto.UserSearchService/GetInstaPostsWithUserId',
+  "/proto.UserSearchService/GetInstaPostsWithUserId",
   grpc.web.MethodType.UNARY,
   proto.proto.UserIdRequest,
   proto.proto.InstaPostsResponse,
@@ -251,7 +256,6 @@ const methodDescriptor_UserSearchService_GetInstaPostsWithUserId = new grpc.web.
   },
   proto.proto.InstaPostsResponse.deserializeBinary
 );
-
 
 /**
  * @const
@@ -268,7 +272,6 @@ const methodInfo_UserSearchService_GetInstaPostsWithUserId = new grpc.web.Abstra
   proto.proto.InstaPostsResponse.deserializeBinary
 );
 
-
 /**
  * @param {!proto.proto.UserIdRequest} request The
  *     request proto
@@ -279,16 +282,19 @@ const methodInfo_UserSearchService_GetInstaPostsWithUserId = new grpc.web.Abstra
  * @return {!grpc.web.ClientReadableStream<!proto.proto.InstaPostsResponse>|undefined}
  *     The XHR Node Readable Stream
  */
-proto.proto.UserSearchServiceClient.prototype.getInstaPostsWithUserId =
-    function(request, metadata, callback) {
-  return this.client_.rpcCall(this.hostname_ +
-      '/proto.UserSearchService/GetInstaPostsWithUserId',
-      request,
-      metadata || {},
-      methodDescriptor_UserSearchService_GetInstaPostsWithUserId,
-      callback);
+proto.proto.UserSearchServiceClient.prototype.getInstaPostsWithUserId = function(
+  request,
+  metadata,
+  callback
+) {
+  return this.client_.rpcCall(
+    this.hostname_ + "/proto.UserSearchService/GetInstaPostsWithUserId",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetInstaPostsWithUserId,
+    callback
+  );
 };
-
 
 /**
  * @param {!proto.proto.UserIdRequest} request The
@@ -298,15 +304,16 @@ proto.proto.UserSearchServiceClient.prototype.getInstaPostsWithUserId =
  * @return {!Promise<!proto.proto.InstaPostsResponse>}
  *     A native promise that resolves to the response
  */
-proto.proto.UserSearchServicePromiseClient.prototype.getInstaPostsWithUserId =
-    function(request, metadata) {
-  return this.client_.unaryCall(this.hostname_ +
-      '/proto.UserSearchService/GetInstaPostsWithUserId',
-      request,
-      metadata || {},
-      methodDescriptor_UserSearchService_GetInstaPostsWithUserId);
+proto.proto.UserSearchServicePromiseClient.prototype.getInstaPostsWithUserId = function(
+  request,
+  metadata
+) {
+  return this.client_.unaryCall(
+    this.hostname_ + "/proto.UserSearchService/GetInstaPostsWithUserId",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetInstaPostsWithUserId
+  );
 };
 
-
 module.exports = proto.proto;
-

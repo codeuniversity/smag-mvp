@@ -1,4 +1,3 @@
-/* eslint-disable */
 /**
  * @fileoverview gRPC-Web generated client stub for proto
  * @enhanceable
@@ -6,6 +5,7 @@
  */
 
 // GENERATED CODE -- DO NOT EDIT!
+/* eslint-disable*/
 
 const grpc = {};
 grpc.web = require("grpc-web");
@@ -34,6 +34,17 @@ proto.proto.UserSearchServiceClient = function(hostname, credentials, options) {
    * @private @const {string} The hostname
    */
   this.hostname_ = hostname;
+
+  /**
+   * @private @const {?Object} The credentials to be used to connect
+   *    to the server
+   */
+  this.credentials_ = credentials;
+
+  /**
+   * @private @const {?Object} Options for the client
+   */
+  this.options_ = options;
 };
 
 /**
@@ -61,6 +72,17 @@ proto.proto.UserSearchServicePromiseClient = function(
    * @private @const {string} The hostname
    */
   this.hostname_ = hostname;
+
+  /**
+   * @private @const {?Object} The credentials to be used to connect
+   *    to the server
+   */
+  this.credentials_ = credentials;
+
+  /**
+   * @private @const {?Object} Options for the client
+   */
+  this.options_ = options;
 };
 
 /**
@@ -74,10 +96,7 @@ const methodDescriptor_UserSearchService_GetAllUsersLikeUsername = new grpc.web.
   grpc.web.MethodType.UNARY,
   proto.proto.UserNameRequest,
   proto.proto.UserSearchResponse,
-  /**
-   * @param {!proto.proto.UserNameRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserNameRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -92,10 +111,7 @@ const methodDescriptor_UserSearchService_GetAllUsersLikeUsername = new grpc.web.
  */
 const methodInfo_UserSearchService_GetAllUsersLikeUsername = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.UserSearchResponse,
-  /**
-   * @param {!proto.proto.UserNameRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserNameRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -149,6 +165,83 @@ proto.proto.UserSearchServicePromiseClient.prototype.getAllUsersLikeUsername = f
 /**
  * @const
  * @type {!grpc.web.MethodDescriptor<
+ *   !proto.proto.UserIdRequest,
+ *   !proto.proto.User>}
+ */
+const methodDescriptor_UserSearchService_GetUserWithUserId = new grpc.web.MethodDescriptor(
+  "/proto.UserSearchService/GetUserWithUserId",
+  grpc.web.MethodType.UNARY,
+  proto.proto.UserIdRequest,
+  proto.proto.User,
+  /** @param {!proto.proto.UserIdRequest} request */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.User.deserializeBinary
+);
+
+/**
+ * @const
+ * @type {!grpc.web.AbstractClientBase.MethodInfo<
+ *   !proto.proto.UserIdRequest,
+ *   !proto.proto.User>}
+ */
+const methodInfo_UserSearchService_GetUserWithUserId = new grpc.web.AbstractClientBase.MethodInfo(
+  proto.proto.User,
+  /** @param {!proto.proto.UserIdRequest} request */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.proto.User.deserializeBinary
+);
+
+/**
+ * @param {!proto.proto.UserIdRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.Error, ?proto.proto.User)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.proto.User>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.proto.UserSearchServiceClient.prototype.getUserWithUserId = function(
+  request,
+  metadata,
+  callback
+) {
+  return this.client_.rpcCall(
+    this.hostname_ + "/proto.UserSearchService/GetUserWithUserId",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetUserWithUserId,
+    callback
+  );
+};
+
+/**
+ * @param {!proto.proto.UserIdRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.proto.User>}
+ *     A native promise that resolves to the response
+ */
+proto.proto.UserSearchServicePromiseClient.prototype.getUserWithUserId = function(
+  request,
+  metadata
+) {
+  return this.client_.unaryCall(
+    this.hostname_ + "/proto.UserSearchService/GetUserWithUserId",
+    request,
+    metadata || {},
+    methodDescriptor_UserSearchService_GetUserWithUserId
+  );
+};
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
  *   !proto.proto.UserNameRequest,
  *   !proto.proto.User>}
  */
@@ -157,10 +250,7 @@ const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.Meth
   grpc.web.MethodType.UNARY,
   proto.proto.UserNameRequest,
   proto.proto.User,
-  /**
-   * @param {!proto.proto.UserNameRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserNameRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -175,10 +265,7 @@ const methodDescriptor_UserSearchService_GetUserWithUsername = new grpc.web.Meth
  */
 const methodInfo_UserSearchService_GetUserWithUsername = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.User,
-  /**
-   * @param {!proto.proto.UserNameRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserNameRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -240,10 +327,7 @@ const methodDescriptor_UserSearchService_GetInstaPostsWithUserId = new grpc.web.
   grpc.web.MethodType.UNARY,
   proto.proto.UserIdRequest,
   proto.proto.InstaPostsResponse,
-  /**
-   * @param {!proto.proto.UserIdRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserIdRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -258,10 +342,7 @@ const methodDescriptor_UserSearchService_GetInstaPostsWithUserId = new grpc.web.
  */
 const methodInfo_UserSearchService_GetInstaPostsWithUserId = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.InstaPostsResponse,
-  /**
-   * @param {!proto.proto.UserIdRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserIdRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -323,10 +404,7 @@ const methodDescriptor_UserSearchService_SearchSimilarFaces = new grpc.web.Metho
   grpc.web.MethodType.UNARY,
   proto.proto.FaceSearchRequest,
   proto.proto.FaceSearchResponse,
-  /**
-   * @param {!proto.proto.FaceSearchRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.FaceSearchRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -341,10 +419,7 @@ const methodDescriptor_UserSearchService_SearchSimilarFaces = new grpc.web.Metho
  */
 const methodInfo_UserSearchService_SearchSimilarFaces = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.FaceSearchResponse,
-  /**
-   * @param {!proto.proto.FaceSearchRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.FaceSearchRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -406,10 +481,7 @@ const methodDescriptor_UserSearchService_SearchUsersWithWeightedPosts = new grpc
   grpc.web.MethodType.UNARY,
   proto.proto.WeightedPosts,
   proto.proto.WeightedUsers,
-  /**
-   * @param {!proto.proto.WeightedPosts} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.WeightedPosts} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -424,10 +496,7 @@ const methodDescriptor_UserSearchService_SearchUsersWithWeightedPosts = new grpc
  */
 const methodInfo_UserSearchService_SearchUsersWithWeightedPosts = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.WeightedUsers,
-  /**
-   * @param {!proto.proto.WeightedPosts} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.WeightedPosts} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -489,10 +558,7 @@ const methodDescriptor_UserSearchService_DataPointCountForUserId = new grpc.web.
   grpc.web.MethodType.UNARY,
   proto.proto.UserIdRequest,
   proto.proto.UserDataPointCount,
-  /**
-   * @param {!proto.proto.UserIdRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserIdRequest} request */
   function(request) {
     return request.serializeBinary();
   },
@@ -507,10 +573,7 @@ const methodDescriptor_UserSearchService_DataPointCountForUserId = new grpc.web.
  */
 const methodInfo_UserSearchService_DataPointCountForUserId = new grpc.web.AbstractClientBase.MethodInfo(
   proto.proto.UserDataPointCount,
-  /**
-   * @param {!proto.proto.UserIdRequest} request
-   * @return {!Uint8Array}
-   */
+  /** @param {!proto.proto.UserIdRequest} request */
   function(request) {
     return request.serializeBinary();
   },

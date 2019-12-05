@@ -82,6 +82,7 @@ message UserDataPointCount {
 
 service UserSearchService {
     rpc GetAllUsersLikeUsername(UserNameRequest) returns (UserSearchResponse);
+    rpc GetUserWithUserId(UserIdRequest) returns (User);
     rpc GetUserWithUsername(UserNameRequest) returns (User);
     rpc GetInstaPostsWithUserId(UserIdRequest) returns (InstaPostsResponse);
     rpc SearchSimilarFaces(FaceSearchRequest) returns(FaceSearchResponse);
