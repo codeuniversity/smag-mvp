@@ -10,15 +10,31 @@ import (
 
 func main() {
 	if len(os.Args) != 3 {
-		log.Fatal("Num of args isn't 2.\nUsage: go run main.go <user_name:string> <num_of_words:int>")
+		log.Fatal("Num of args isn't 2.\nUsage: go run main.go <user_id:int>")
 	}
-	username := os.Args[1]
-	numOfWords, err := strconv.Atoi(os.Args[2])
+	userID, err := strconv.Atoi(os.Args[1])
 	if err != nil {
-		log.Fatal("Unable to convert os.Args[2] to integer.\nUsage: go run main.go <user_name:string> <num_of_words:int>")
+		log.Fatalf("Unable to convert user_id=%+v to integer.\nsage: go run main.go <user_id:int>", userID)
 	}
 
-	keywordMap := analyzer.GetMostFrequentTerms(username, numOfWords)
+	a := analyzer.New([]string{"localhost:9200"})
 
-	log.Printf("- %v most frequently used words for user %s: { %v }", numOfWords, username, keywordMap)
+	// TODO: load cities.json
+	cityMap := make(map[string][]string)
+
+	foundCities := make(map[string]bool)
+	for city, cityTerms := range cityMap {
+		foundTerms, err := a.MatchTermsForUser(userID, cityTerms)
+		if err != nil {
+			panic(err)
+		}
+		// check if there are results for city
+		if len(foundTerms) > 0 {
+			foundCities[city] = true
+		} else {
+			foundCities[city] = false
+		}
+	}
+
+	log.Printf("Could identify following cities for user=%v:\n{%v}", userID, foundCities)
 }
