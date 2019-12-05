@@ -4,7 +4,7 @@ import H2 from "./H2";
 class BioCard extends Component {
   render() {
     return (
-      <div className="smallCard bioCard">
+      <div className="dashboardCard bioCard">
         <table>
           <tr>
             <th>
