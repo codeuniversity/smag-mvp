@@ -45,13 +45,6 @@ type Follow struct {
 	ToID   int `json:"to_id"`
 }
 
-//type FollowDump struct {
-//	Followers []struct {
-//		FromUserID string `json:"fromUserId"`
-//		ToUserID   string `json:"toUserId"`
-//	} `json:"followers"`
-//}
-
 const startJson = `
 	{
   "followers": 
@@ -63,7 +56,7 @@ const endJson = `
 
 func (i *Neo4jImport) Run() {
 
-	for k := 0; k < 1000; k++ {
+	for k := 0; k < 10; k++ {
 		messages, err := i.readMessageBlock(10*time.Second, i.kafkaChunkSize)
 		log.Println("Messages Bulk: ", len(messages))
 
@@ -78,6 +71,8 @@ func (i *Neo4jImport) Run() {
 			if err := json.Unmarshal(message.Value, changeMessage); err != nil {
 				panic(err)
 			}
+
+			log.Println("Change Message: ", changeMessage.Payload.After)
 
 			f := &Follow{}
 			err := json.Unmarshal(changeMessage.Payload.After, f)
