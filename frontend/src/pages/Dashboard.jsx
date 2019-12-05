@@ -97,9 +97,15 @@ function Dashboard({ profile, apiClient, nextPage }) {
           slides={food}
         />
         <InterestCard
-          title="Cities"
-          details={foundCities.join(", ")}
-          slides={["http://socialengineindia.com/images/home/expert1.png"]}
+          title="Cities you were in"
+          details={
+            foundCities.length > 0
+              ? foundCities.join(", ")
+              : "We didn't find any cities for you."
+          }
+          slides={[
+            "http://www.brinknews.com/wp-content/uploads/2019/09/GettyImages-854625740.jpg"
+          ]}
         />
       </div>
       <div className="dashboardFooter">
