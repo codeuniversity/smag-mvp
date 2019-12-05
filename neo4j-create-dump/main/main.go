@@ -4,7 +4,7 @@ import neo4j_dump "github.com/codeuniversity/smag-mvp/neo4j-create-dump"
 
 func main() {
 
-	groupId := "neo4j-user-inserter"
+	groupId := "neo4j-user-inserter2"
 	topic := "postgres.public.follows"
 	kafkaAddress := "my-kafka:9092"
 	kafkaChunk := 10
