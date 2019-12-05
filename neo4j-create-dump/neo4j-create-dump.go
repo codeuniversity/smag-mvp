@@ -56,7 +56,7 @@ const endJson = `
 
 func (i *Neo4jImport) Run() {
 
-	for k := 0; k < 100; k++ {
+	for k := 0; k < 5; k++ {
 		messages, err := i.readMessageBlock(10*time.Second, i.kafkaChunkSize)
 
 		log.Println("Messages Bulk: ", len(messages))
