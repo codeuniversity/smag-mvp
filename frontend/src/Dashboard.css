@@ -87,11 +87,18 @@
   grid-template-columns: 1fr;
   grid-template-rows: 78% 22%;
 }
-
+.profilePictureImg {
+  width: 405px;
+  height: 405px;
+}
 .slideshow {
   width: 100%;
+  overflow: hidden;
   height: 100%;
   background-color: #fafafa;
+}
+.slideshow-image {
+  width: 860px;
 }
 
 .slides,

@@ -15,7 +15,12 @@ const Slideshow = props => {
     <div className="slideshow">
       <Zoom className="slides" {...properties}>
         {props.slides.map((imageUrl, index) => (
-          <img key={index} src={imageUrl} alt="slide" />
+          <img
+            key={index}
+            src={imageUrl}
+            alt="slide"
+            className="slideshow-image"
+          />
         ))}
       </Zoom>
     </div>
