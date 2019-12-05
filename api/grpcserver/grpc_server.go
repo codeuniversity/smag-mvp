@@ -174,8 +174,29 @@ func (s *GrpcServer) GetUserWithUsername(_ context.Context, username *proto.User
 	return u, nil
 }
 
-func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc scanFunc) ([]*proto.User, error) {
+//GetUserWithUserId returns one User with the given username
+func (s *GrpcServer) GetUserWithUserId(_ context.Context, username *proto.UserIdRequest) (*proto.User, error) {
+	userID, err := strconv.ParseInt(username.UserId, 10, 64)
+	if err != nil {
+		return nil, err
+	}
 
+	u := &proto.User{}
+	log.Println(username)
+
+	err = s.db.QueryRow(`SELECT id, COALESCE(user_name, '') as user_name,
+									COALESCE(real_name, '') as real_name,
+									COALESCE(bio, '') as bio,
+									COALESCE(avatar_url, '') as avatar_url
+									FROM users WHERE id = $1`, userID).Scan(&u.Id, &u.UserName, &u.RealName, &u.Bio, &u.AvatarUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
+}
+
+func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc scanFunc) ([]*proto.User, error) {
 	u := []*proto.User{}
 
 	rows, err := s.db.Query(query, userID)
@@ -193,14 +214,6 @@ func (s *GrpcServer) getRelationsFromUser(query string, userID string, scanFunc 
 		}
 
 		u = append(u, &user)
-
-		if s.userNamesWriter != nil {
-			log.Println("writing user", user.UserName, "to user topic")
-			err := s.userNamesWriter.WriteMessages(context.Background(), kafka.Message{Value: []byte(user.UserName)})
-			if err != nil {
-				return nil, err
-			}
-		}
 	}
 
 	return u, nil
@@ -430,4 +443,43 @@ func (s *GrpcServer) SearchUsersWithWeightedPosts(ctx context.Context, weightedP
 	}
 
 	return weightedUsers, nil
+}
+
+// DataPointCountForUserId counts all tables for the given user id
+func (s *GrpcServer) DataPointCountForUserId(ctx context.Context, request *proto.UserIdRequest) (*proto.UserDataPointCount, error) {
+	userID, err := strconv.ParseInt(request.UserId, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	row := s.db.QueryRow("select count(*) from posts where user_id = $1", userID)
+	var postsCount int
+	err = row.Scan(&postsCount)
+	if err != nil {
+		return nil, err
+	}
+
+	row = s.db.QueryRow("select count(*) from comments where owner_user_id = $1", userID)
+	var commentsCount int
+	err = row.Scan(&commentsCount)
+	if err != nil {
+		return nil, err
+	}
+
+	row = s.db.QueryRow("select count (*) from post_likes where user_id = $1", userID)
+	var likesCount int
+	err = row.Scan(&likesCount)
+	if err != nil {
+		return nil, err
+	}
+
+	row = s.db.QueryRow("select count(*) from follows where to_id = $1 or from_id = $1", userID)
+	var followCount int
+	err = row.Scan(&followCount)
+	if err != nil {
+		return nil, err
+	}
+
+	totalCount := postsCount + commentsCount + likesCount + followCount
+	return &proto.UserDataPointCount{Count: int32(totalCount)}, nil
 }

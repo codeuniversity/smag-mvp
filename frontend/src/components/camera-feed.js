@@ -44,6 +44,7 @@ export class CameraFeed extends Component {
 
   componentWillUnmount() {
     clearInterval(this.intervalId);
+    this.videoPlayer.pause();
   }
 
   /**
@@ -54,7 +55,7 @@ export class CameraFeed extends Component {
   takePhoto = () => {
     const { onFileSubmit } = this.props;
     const context = this.canvas.getContext("2d");
-    context.drawImage(this.videoPlayer, 0, 0, 800, 600);
+    context.drawImage(this.videoPlayer, 0, 0, 1280, 720);
     this.canvas.toBlob(onFileSubmit);
   };
 
@@ -64,9 +65,16 @@ export class CameraFeed extends Component {
 
   render() {
     return (
-      <div className="Button-center">
-        <video ref={ref => (this.videoPlayer = ref)} width="800" heigh="600" />
-        <div className="c-camera-feed__stage">
+      <div className="parent-container">
+        <div className="video-container">
+          <video
+            ref={ref => (this.videoPlayer = ref)}
+            min-width="100vw"
+            min-height="100vh"
+          />
+          {this.props.children}
+        </div>
+        <div className="canvas">
           <canvas width="800" height="600" ref={ref => (this.canvas = ref)} />
         </div>
       </div>

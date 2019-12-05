@@ -76,10 +76,16 @@ message WeightedUsers {
     repeated UserWithFaces users_with_faces = 1;
 }
 
+message UserDataPointCount {
+    int32 count = 1;
+}
+
 service UserSearchService {
     rpc GetAllUsersLikeUsername(UserNameRequest) returns (UserSearchResponse);
+    rpc GetUserWithUserId(UserIdRequest) returns (User);
     rpc GetUserWithUsername(UserNameRequest) returns (User);
     rpc GetInstaPostsWithUserId(UserIdRequest) returns (InstaPostsResponse);
     rpc SearchSimilarFaces(FaceSearchRequest) returns(FaceSearchResponse);
     rpc SearchUsersWithWeightedPosts(WeightedPosts) returns (WeightedUsers);
+    rpc DataPointCountForUserId(UserIdRequest) returns (UserDataPointCount);
 }

@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import H2 from "./H2";
 
 class BioCard extends Component {
   render() {
@@ -6,8 +7,9 @@ class BioCard extends Component {
       <div className="dashboardCard bioCard">
         <table>
           <tr>
-            <th>Age</th>
-            <th>20</th>
+            <th>
+              <h2 className="dashboard-headline">{this.props.bio}</h2>
+            </th>
           </tr>
         </table>
       </div>

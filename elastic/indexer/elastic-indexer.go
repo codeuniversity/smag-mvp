@@ -24,18 +24,19 @@ import (
 type Indexer struct {
 	*worker.Worker
 
-	esClient      *elasticsearch.Client
-	kReader       *kafka.Reader
-	esIndex       string
-	bulkChunkSize int
-	indexFunc     IndexFunc
+	esClient                *elasticsearch.Client
+	kReader                 *kafka.Reader
+	esIndex                 string
+	bulkChunkSize           int
+	bulkFetchTimeoutSeconds int
+	indexFunc               IndexFunc
 }
 
 // IndexFunc is the type for the functions which will insert data into elasticsearch
 type IndexFunc func(*changestream.ChangeMessage) (*BulkIndexDoc, error)
 
 // New returns an initialised Indexer
-func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc, bulkChunkSize int) *Indexer {
+func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafkaGroupID string, indexFunc IndexFunc, bulkChunkSize int, bulkFetchTimeout int) *Indexer {
 	readerConfig := kf.NewReaderConfig(kafkaAddress, kafkaGroupID, changesTopic)
 
 	i := &Indexer{}
@@ -44,6 +45,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 	i.esIndex = esIndex
 	i.esClient = elastic.InitializeElasticSearch(esHosts)
 	i.bulkChunkSize = bulkChunkSize
+	i.bulkFetchTimeoutSeconds = bulkFetchTimeout
 
 	i.Worker = worker.Builder{}.WithName(fmt.Sprintf("indexer[%s->es/%s]", changesTopic, esIndex)).
 		WithWorkStep(i.runStep).
@@ -55,7 +57,7 @@ func New(esHosts []string, esIndex, esMapping, kafkaAddress, changesTopic, kafka
 }
 
 func (i *Indexer) runStep() error {
-	messages, err := i.readMessageBlock(5*time.Second, i.bulkChunkSize)
+	messages, err := i.readMessageBlock(i.bulkChunkSize)
 	log.Println("Messages Bulk: ", len(messages))
 	if err != nil {
 		return err
@@ -80,9 +82,20 @@ func (i *Indexer) runStep() error {
 		}
 
 		bulkDocumentIdKafkaMessages[bulkOperation.DocumentId] = message
+		if bulkOperation == nil {
+			continue
+		}
 		bulkBody += bulkOperation.BulkOperation
 	}
 
+	log.Println("RequestBody: ", bulkBody)
+	if bulkBody == "" {
+		err := i.kReader.CommitMessages(context.Background(), messages...)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
 	bulkResponse, err := i.esClient.Bulk(strings.NewReader(bulkBody), i.esClient.Bulk.WithIndex(i.esIndex))
 	if err != nil {
 		return err
@@ -90,7 +103,6 @@ func (i *Indexer) runStep() error {
 	log.Println("Result Messages Bulk: ", bulkResponse.Status())
 
 	body, err := ioutil.ReadAll(bulkResponse.Body)
-
 	if err != nil {
 		return err
 	}
@@ -103,23 +115,15 @@ func (i *Indexer) runStep() error {
 	}
 
 	log.Println("BulkResultItem: ", len(result.Items))
+	log.Println("BulResult: ", string(body))
 	err = i.checkAllResultMessagesAreValid(&result)
 	if err != nil {
 		return err
 	}
-
-	for _, bulkResultOperation := range result.Items {
-
-		if bulkResultOperation.Index != nil {
-			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Index.ID])
-			if err != nil {
-				return err
-			}
-		} else if bulkResultOperation.Update != nil {
-			err := i.kReader.CommitMessages(context.Background(), bulkDocumentIdKafkaMessages[bulkResultOperation.Update.ID])
-			if err != nil {
-				return err
-			}
+	for _, message := range bulkDocumentIdKafkaMessages {
+		err := i.kReader.CommitMessages(context.Background(), message)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
@@ -129,6 +133,7 @@ func (i *Indexer) checkAllResultMessagesAreValid(result *bulkResult) error {
 	if result == nil {
 		return fmt.Errorf("BulkResult is nil")
 	}
+
 	for _, bulkResultOperation := range result.Items {
 		if bulkResultOperation.Index != nil {
 
@@ -190,8 +195,8 @@ func (i *Indexer) createIndex(esIndex, esMapping string) error {
 	return nil
 }
 
-func (i *Indexer) readMessageBlock(timeout time.Duration, maxChunkSize int) (messages []kafka.Message, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+func (i *Indexer) readMessageBlock(maxChunkSize int) (messages []kafka.Message, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(i.bulkFetchTimeoutSeconds))
 	defer cancel()
 	for k := 0; k < maxChunkSize; k++ {
 		m, err := i.kReader.FetchMessage(ctx)

@@ -17,9 +17,10 @@ func main() {
 	groupID := utils.GetStringFromEnvWithDefault("KAFKA_GROUPID", "insta_usersearch-inserter")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.users")
 	bulkChunkSize := utils.GetNumberFromEnvWithDefault("BULK_CHUNK_SIZE", 10)
+	bulkFetchTimeoutSeconds := utils.GetNumberFromEnvWithDefault("BULK_FETCH_TIMEOUT_SECONDS", 5)
 	esHosts := utils.GetMultipleStringsFromEnvWithDefault("ES_HOSTS", []string{"http://localhost:9201"})
 
-	i := indexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangeMessage, bulkChunkSize)
+	i := indexer.New(esHosts, elastic.UsersIndex, elastic.UsersIndexMapping, kafkaAddress, changesTopic, groupID, handleChangeMessage, bulkChunkSize, bulkFetchTimeoutSeconds)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
@@ -31,14 +32,14 @@ func main() {
 func handleChangeMessage(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	user := &models.InstaUser{}
 	if err := json.Unmarshal(m.Payload.After, user); err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	switch m.Payload.Op {
 	case "c", "r", "u":
 		return createBulkUpsertOperation(user)
 	}
-	return &indexer.BulkIndexDoc{}, nil
+	return nil, nil
 }
 
 func createBulkUpsertOperation(user *models.InstaUser) (*indexer.BulkIndexDoc, error) {
@@ -52,7 +53,7 @@ func createBulkUpsertOperation(user *models.InstaUser) (*indexer.BulkIndexDoc, e
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
@@ -77,7 +78,7 @@ func createBulkUpsertOperation(user *models.InstaUser) (*indexer.BulkIndexDoc, e
 	usersUpsertJson, err := json.Marshal(usersUpsert)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	usersUpsertJson = append(usersUpsertJson, "\n"...)

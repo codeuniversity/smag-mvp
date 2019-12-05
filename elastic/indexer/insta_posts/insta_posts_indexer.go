@@ -17,10 +17,10 @@ func main() {
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	bulkChunkSize := utils.GetNumberFromEnvWithDefault("BULK_CHUNK_SIZE", 10)
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.posts")
-
+	bulkFetchTimeoutSeconds := utils.GetNumberFromEnvWithDefault("BULK_FETCH_TIMEOUT_SECONDS", 5)
 	esHosts := utils.GetMultipleStringsFromEnvWithDefault("ES_HOSTS", []string{"localhost:9201"})
 
-	i := indexer.New(esHosts, elastic.PostsIndex, elastic.PostsIndexMapping, kafkaAddress, changesTopic, groupID, indexPost, bulkChunkSize)
+	i := indexer.New(esHosts, elastic.PostsIndex, elastic.PostsIndexMapping, kafkaAddress, changesTopic, groupID, indexPost, bulkChunkSize, bulkFetchTimeoutSeconds)
 
 	service.CloseOnSignal(i)
 	waitUntilClosed := i.Start()
@@ -33,7 +33,7 @@ func indexPost(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	err := json.Unmarshal(m.Payload.After, currentPost)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	switch m.Payload.Op {
@@ -44,7 +44,7 @@ func indexPost(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 		err := json.Unmarshal(m.Payload.Before, previousPost)
 
 		if err != nil {
-			return &indexer.BulkIndexDoc{}, err
+			return nil, err
 		}
 
 		if previousPost.Caption != currentPost.Caption {
@@ -52,7 +52,7 @@ func indexPost(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 		}
 	}
 
-	return &indexer.BulkIndexDoc{}, nil
+	return nil, nil
 }
 
 func createBulkUpsertOperation(post *models.InstaPost) (*indexer.BulkIndexDoc, error) {
@@ -66,7 +66,7 @@ func createBulkUpsertOperation(post *models.InstaPost) (*indexer.BulkIndexDoc, e
 	bulkOperationJson, err := json.Marshal(bulkOperation)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	bulkOperationJson = append(bulkOperationJson, "\n"...)
@@ -88,11 +88,10 @@ func createBulkUpsertOperation(post *models.InstaPost) (*indexer.BulkIndexDoc, e
 	postUpsertJson, err := json.Marshal(commentUpsert)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	postUpsertJson = append(postUpsertJson, "\n"...)
-
 	bulkUpsertBody := string(bulkOperationJson) + string(postUpsertJson)
 
 	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(post.ID), BulkOperation: bulkUpsertBody}, err

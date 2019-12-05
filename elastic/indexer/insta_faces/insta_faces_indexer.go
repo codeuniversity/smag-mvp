@@ -18,10 +18,10 @@ func main() {
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	bulkChunkSize := utils.GetNumberFromEnvWithDefault("BULK_CHUNK_SIZE", 10)
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.face_data")
-
+	bulkFetchTimeoutSeconds := utils.GetNumberFromEnvWithDefault("BULK_FETCH_TIMEOUT_SECONDS", 5)
 	esHosts := utils.GetMultipleStringsFromEnvWithDefault("ES_HOSTS", []string{"http://localhost:9200"})
 
-	i := indexer.New(esHosts, elastic.FacesIndex, elastic.FacesIndexMapping, kafkaAddress, changesTopic, groupID, indexFace, bulkChunkSize)
+	i := indexer.New(esHosts, elastic.FacesIndex, elastic.FacesIndexMapping, kafkaAddress, changesTopic, groupID, indexFace, bulkChunkSize, bulkFetchTimeoutSeconds)
 
 	service.CloseOnSignal(i)
 	waitUntilDone := i.Start()
@@ -35,43 +35,35 @@ func indexFace(m *changestream.ChangeMessage) (*indexer.BulkIndexDoc, error) {
 	case "r", "u", "c":
 		break
 	default:
-		return &indexer.BulkIndexDoc{}, nil
+		return nil, nil
 	}
 
 	face := &models.FaceData{}
 	err := json.Unmarshal(m.Payload.After, face)
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	return createBulkIndexOperation(face)
 }
 
 func createBulkIndexOperation(face *models.FaceData) (*indexer.BulkIndexDoc, error) {
-	bulkOperation := `{ "index": {}  }`
-
-	bulkOperationJson, err := json.Marshal(bulkOperation)
-
-	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
-	}
-
-	bulkOperationJson = append(bulkOperationJson, "\n"...)
+	bulkOperation := `{ "index": {}  }` + "\n"
 
 	doc, err := esModels.FaceDocFromFaceData(face)
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	docJson, err := json.Marshal(doc)
 
 	if err != nil {
-		return &indexer.BulkIndexDoc{}, err
+		return nil, err
 	}
 
 	docJson = append(docJson, "\n"...)
 
-	bulkUpsertBody := string(bulkOperationJson) + string(docJson)
+	bulkUpsertBody := bulkOperation + string(docJson)
 
 	return &indexer.BulkIndexDoc{DocumentId: strconv.Itoa(int(face.ID)), BulkOperation: bulkUpsertBody}, err
 
