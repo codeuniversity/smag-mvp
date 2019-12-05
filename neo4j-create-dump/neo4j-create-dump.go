@@ -4,7 +4,6 @@ import "C"
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/segmentio/kafka-go"
@@ -92,7 +91,7 @@ func (i *Neo4jImport) Run() {
 
 		followsJson, err := json.Marshal(follows)
 
-		fmt.Println("FollowJson: ", followsJson)
+		log.Println("FollowJson: ", string(followsJson))
 		if err != nil {
 			panic(err)
 		}

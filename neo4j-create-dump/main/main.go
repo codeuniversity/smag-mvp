@@ -7,7 +7,7 @@ func main() {
 	groupId := "neo4j-user-inserter"
 	topic := "postgres.public.follows"
 	kafkaAddress := "my-kafka:9092"
-	kafkaChunk := 200
+	kafkaChunk := 10
 
 	importDump := neo4j_dump.New(kafkaAddress, topic, groupId, kafkaChunk)
 
