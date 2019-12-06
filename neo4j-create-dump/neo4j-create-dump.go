@@ -97,8 +97,9 @@ func (i *Neo4jImport) Run() {
 				panic(err)
 			}
 
+			followsJson += string(followJson)
 			if i != (len(follows) - 1) {
-				followsJson += string(followJson) + ","
+				followsJson += ","
 			}
 		}
 
