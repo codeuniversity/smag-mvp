@@ -57,6 +57,7 @@ const endJson = `
 
 func (i *Neo4jImport) Run() {
 
+	isFirstWrite := true
 	for k := 0; k < 5; k++ {
 		messages, err := i.readMessageBlock(10*time.Second, i.kafkaChunkSize)
 
@@ -90,22 +91,23 @@ func (i *Neo4jImport) Run() {
 		}
 
 		var followsJson string
-		for i, follow := range follows {
+		for _, follow := range follows {
 			followJson, err := json.Marshal(follow)
 
 			if err != nil {
 				panic(err)
 			}
 
-			followsJson += string(followJson)
-			if i != (len(follows) - 1) {
+			if !isFirstWrite {
 				followsJson += ","
 			}
+			followsJson += string(followJson)
 		}
 
 		if _, err = i.file.WriteString(followsJson); err != nil {
 			panic(err)
 		}
+		isFirstWrite = false
 
 		err = i.kReader.CommitMessages(context.Background(), messages...)
 		if err != nil {
