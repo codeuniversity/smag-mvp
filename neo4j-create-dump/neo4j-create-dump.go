@@ -76,7 +76,7 @@ func (i *Neo4jImport) Run() {
 				panic(err)
 			}
 
-			log.Println("Change Message: ", changeMessage.Payload.After)
+			log.Println("Change Message: ", string(changeMessage.Payload.After))
 
 			f := &Follow{}
 			err := json.Unmarshal(changeMessage.Payload.After, f)
@@ -99,7 +99,7 @@ func (i *Neo4jImport) Run() {
 			followsJson += string(followJson) + ","
 		}
 
-		if _, err = i.file.WriteString(string(followsJson)); err != nil {
+		if _, err = i.file.WriteString(followsJson); err != nil {
 			panic(err)
 		}
 
