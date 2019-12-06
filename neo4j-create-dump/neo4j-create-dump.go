@@ -52,6 +52,7 @@ const startJson = `
 
 const endJson = `
 ]
+}
 `
 
 func (i *Neo4jImport) Run() {
@@ -89,14 +90,16 @@ func (i *Neo4jImport) Run() {
 		}
 
 		var followsJson string
-		for _, follow := range follows {
+		for i, follow := range follows {
 			followJson, err := json.Marshal(follow)
 
 			if err != nil {
 				panic(err)
 			}
 
-			followsJson += string(followJson) + ","
+			if i != (len(follows) - 1) {
+				followsJson += string(followJson) + ","
+			}
 		}
 
 		if _, err = i.file.WriteString(followsJson); err != nil {
