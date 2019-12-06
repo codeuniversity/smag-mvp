@@ -47,11 +47,11 @@ type Follow struct {
 
 const startJson = `
 	{
-  "followers": 
+  "followers": [
 `
 
 const endJson = `
-}
+]
 `
 
 func (i *Neo4jImport) Run() {
@@ -88,11 +88,15 @@ func (i *Neo4jImport) Run() {
 			follows = append(follows, *f)
 		}
 
-		followsJson, err := json.Marshal(follows)
+		var followsJson string
+		for _, follow := range follows {
+			followJson, err := json.Marshal(follow)
 
-		log.Println("FollowJson: ", string(followsJson))
-		if err != nil {
-			panic(err)
+			if err != nil {
+				panic(err)
+			}
+
+			followsJson += string(followJson) + ","
 		}
 
 		if _, err = i.file.WriteString(string(followsJson)); err != nil {
