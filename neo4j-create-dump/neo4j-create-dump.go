@@ -98,7 +98,7 @@ func (i *Neo4jImport) Run() {
 				panic(err)
 			}
 
-			if !isFirstWrite && i == 0 {
+			if !isFirstWrite || i != 0 {
 				followsJson += ","
 			}
 			followsJson += string(followJson)
