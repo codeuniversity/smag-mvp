@@ -91,14 +91,14 @@ func (i *Neo4jImport) Run() {
 		}
 
 		var followsJson string
-		for _, follow := range follows {
+		for i, follow := range follows {
 			followJson, err := json.Marshal(follow)
 
 			if err != nil {
 				panic(err)
 			}
 
-			if !isFirstWrite {
+			if !isFirstWrite && i == 0 {
 				followsJson += ","
 			}
 			followsJson += string(followJson)
