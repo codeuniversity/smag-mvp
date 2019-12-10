@@ -1,4 +1,4 @@
-package neo4j_dump
+package neo4j_import
 
 import "C"
 import (
@@ -137,6 +137,7 @@ func (i *Neo4jImport) writeTheEndJson() error {
 	if _, err := i.file.WriteString(endJson); err != nil {
 		return err
 	}
+	return nil
 }
 
 func (i *Neo4jImport) readMessageBlock(timeout time.Duration, maxChunkSize int) (messages []kafka.Message, err error) {

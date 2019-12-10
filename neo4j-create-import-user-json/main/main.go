@@ -1,7 +1,8 @@
 package main
 
 import (
-	neo4j_dump2 "github.com/codeuniversity/smag-mvp/neo4j-inserter/create-import-json"
+	"github.com/codeuniversity/smag-mvp/neo4j-create-import-user-json"
+	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
 
@@ -12,7 +13,10 @@ func main() {
 	rTopic := utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
 	kafkaChunk := utils.GetNumberFromEnvWithDefault("KAFKA_MESSAGE_CHUNK", 10)
 
-	importDump := neo4j_dump2.New(kafkaAddress, rTopic, groupID, kafkaChunk)
+	i := neo4j_import.New(kafkaAddress, rTopic, groupID, kafkaChunk)
 
-	importDump.Run()
+	service.CloseOnSignal(i)
+	waitUntilClosed := i.Start()
+
+	waitUntilClosed()
 }
