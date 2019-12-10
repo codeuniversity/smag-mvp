@@ -110,7 +110,7 @@ func (i *Neo4jImport) runStep() error {
 		followJson, err := json.Marshal(follow)
 
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		if !isFirstWrite || i != 0 {
@@ -120,7 +120,7 @@ func (i *Neo4jImport) runStep() error {
 	}
 
 	if _, err = i.file.WriteString(followsJson); err != nil {
-		panic(err)
+		return err
 	}
 	isFirstWrite = false
 
