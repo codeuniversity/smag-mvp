@@ -46,7 +46,7 @@ If you want to join us raising awareness for data privacy have a look into [`CON
 
 | Github handle                                    | Real name           | Instagram profile                                           | Twitter profile                                 |
 | :----------------------------------------------- | :------------------ | :---------------------------------------------------------- | :---------------------------------------------- |
-| [@1Jo1](https://github.com/1jo1)                 | Josef Grieb         | [josef_grieb](https://www.instagram.com/josef_grieb/)       | /                                               |
+| [@1Jo1](https://github.com/1jo1)                 | Josef Grieb         | [josef_grieb](https://www.instagram.com/josef_grieb/)       | [josefgrieb](https://twitter.com/josefgrieb)    |
 | [@Urhengulas](https://github.com/urhengulas)     | Johann Hemmann      | [Urhengulas](https://www.instagram.com/urhengulas/)         | [Johann](https://twitter.com/Urhengula5)        |
 | [@alexmorten](https://github.com/alexmorten)     | Alexander Martin    | no profile :(                                               | no profile :(                                   |
 | [@jo-fr](https://github.com/jo-fr)               | Jonathan Freiberger | [jonifreiberger](https://www.instagram.com/jonifreiberger/) | [Jonathan](https://twitter.com/jofr_)           |
