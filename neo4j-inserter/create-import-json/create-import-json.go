@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
+	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/segmentio/kafka-go"
 	"log"
 	"os"
@@ -15,7 +16,7 @@ import (
 type Neo4jImport struct {
 	kReader        *kafka.Reader
 	kafkaChunkSize int
-
+	*worker.Worker
 	file *os.File
 }
 
@@ -37,7 +38,13 @@ func New(kafkaAddress, changesTopic, kafkaGroupID string, kafkaChunkSize int) *N
 	if _, err = i.file.WriteString(startJson); err != nil {
 		panic(err)
 	}
-	return i
+
+	i.Worker = worker.Builder{}.WithName("insta_comments_scraper").
+		WithWorkStep(i.runStep).
+		AddShutdownHook("kReader", i.kReader.Close).
+		AddShutdownHook("writeTheEndJson", i.writeTheEndJson).
+		MustBuild()
+
 }
 
 type Follow struct {
@@ -55,70 +62,72 @@ const endJson = `
 }
 `
 
-func (i *Neo4jImport) Run() {
+var isFirstWrite = true
 
-	isFirstWrite := true
-	for true {
-		messages, err := i.readMessageBlock(10*time.Second, i.kafkaChunkSize)
+func (i *Neo4jImport) runStep() error {
 
-		log.Println("Messages Bulk: ", len(messages))
-		if len(messages) == 0 {
-			continue
-		}
+	messages, err := i.readMessageBlock(10*time.Second, i.kafkaChunkSize)
 
-		if err != nil {
-			panic(err)
-		}
-
-		follows := make([]Follow, i.kafkaChunkSize)
-		for _, message := range messages {
-
-			changeMessage := &changestream.ChangeMessage{}
-			if err := json.Unmarshal(message.Value, changeMessage); err != nil {
-				panic(err)
-			}
-
-			log.Println("Change Message: ", string(changeMessage.Payload.After))
-
-			f := &Follow{}
-			err := json.Unmarshal(changeMessage.Payload.After, f)
-
-			if err != nil {
-				panic(err)
-			}
-
-			follows = append(follows, *f)
-		}
-
-		var followsJson string
-		for i, follow := range follows {
-			followJson, err := json.Marshal(follow)
-
-			if err != nil {
-				panic(err)
-			}
-
-			if !isFirstWrite || i != 0 {
-				followsJson += ","
-			}
-			followsJson += string(followJson)
-		}
-
-		if _, err = i.file.WriteString(followsJson); err != nil {
-			panic(err)
-		}
-		isFirstWrite = false
-
-		err = i.kReader.CommitMessages(context.Background(), messages...)
-		if err != nil {
-			panic(err)
-		}
+	log.Println("Messages Bulk: ", len(messages))
+	if len(messages) == 0 {
+		return nil
 	}
 
-	if _, err := i.file.WriteString(endJson); err != nil {
+	if err != nil {
 		panic(err)
 	}
 
+	follows := make([]Follow, i.kafkaChunkSize)
+	for _, message := range messages {
+
+		changeMessage := &changestream.ChangeMessage{}
+		if err := json.Unmarshal(message.Value, changeMessage); err != nil {
+			panic(err)
+		}
+
+		log.Println("Change Message: ", string(changeMessage.Payload.After))
+
+		f := &Follow{}
+		err := json.Unmarshal(changeMessage.Payload.After, f)
+
+		if err != nil {
+			return err
+		}
+
+		follows = append(follows, *f)
+	}
+
+	var followsJson string
+	for i, follow := range follows {
+		followJson, err := json.Marshal(follow)
+
+		if err != nil {
+			panic(err)
+		}
+
+		if !isFirstWrite || i != 0 {
+			followsJson += ","
+		}
+		followsJson += string(followJson)
+	}
+
+	if _, err = i.file.WriteString(followsJson); err != nil {
+		panic(err)
+	}
+	isFirstWrite = false
+
+	err = i.kReader.CommitMessages(context.Background(), messages...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i *Neo4jImport) writeTheEndJson() error {
+	if _, err := i.file.WriteString(endJson); err != nil {
+		return err
+	}
 }
 
 func (i *Neo4jImport) readMessageBlock(timeout time.Duration, maxChunkSize int) (messages []kafka.Message, err error) {
