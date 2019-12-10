@@ -4,9 +4,11 @@ import "C"
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	kf "github.com/codeuniversity/smag-mvp/kafka"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/worker"
+	"github.com/google/uuid"
 	"github.com/segmentio/kafka-go"
 	"log"
 	"os"
@@ -28,7 +30,13 @@ func New(kafkaAddress, changesTopic, kafkaGroupID string, kafkaChunkSize int) *N
 	i.kReader = kf.NewReader(readerConfig)
 	i.kafkaChunkSize = kafkaChunkSize
 
-	file, err := os.OpenFile("neo4j-dump.json", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	id, err := uuid.NewUUID()
+	if err != nil {
+		panic(err)
+	}
+
+	fileName := fmt.Sprintf("neo4j-json-data-%s.json", id.String())
+	file, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -45,6 +53,7 @@ func New(kafkaAddress, changesTopic, kafkaGroupID string, kafkaChunkSize int) *N
 		AddShutdownHook("writeTheEndJson", i.writeTheEndJson).
 		MustBuild()
 
+	return i
 }
 
 type Follow struct {
