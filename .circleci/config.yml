@@ -303,6 +303,16 @@ jobs:
           command: |
             ./build_and_upload_image.sh insta_posts_face-inserter/Dockerfile codesmag/insta_posts_face-inserter
 
+  neo4j-create-import-user-json:
+    executor: job-runner
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Build and Publish Docker Image to Docker Hub
+          command: |
+            ./build_and_upload_image.sh neo4j-create-import-user-json/Dockerfile codesmag/neo4j-create-import-user-json
+
 workflows:
   version: 2
   workflow:
@@ -471,6 +481,12 @@ workflows:
             branches:
               only: master
       - insta_posts_faces_inserter:
+          requires:
+            - tests
+          filters:
+            branches:
+              only: master
+      - neo4j-create-import-user-json:
           requires:
             - tests
           filters:
