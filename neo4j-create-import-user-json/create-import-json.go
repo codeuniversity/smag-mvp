@@ -1,6 +1,5 @@
 package neo4j_import
 
-import "C"
 import (
 	"context"
 	"encoding/json"
