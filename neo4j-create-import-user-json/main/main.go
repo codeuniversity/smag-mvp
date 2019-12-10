@@ -10,7 +10,7 @@ func main() {
 	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
 
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
-	rTopic := utils.MustGetStringFromEnv("KAFKA_INFO_TOPIC")
+	rTopic := utils.MustGetStringFromEnv("KAFKA_CHANGE_TOPIC")
 	kafkaChunk := utils.GetNumberFromEnvWithDefault("KAFKA_MESSAGE_CHUNK", 10)
 
 	i := neo4j_import.New(kafkaAddress, rTopic, groupID, kafkaChunk)
