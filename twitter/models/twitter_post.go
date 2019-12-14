@@ -73,10 +73,10 @@ type TwitterPost struct {
 	Place    string
 
 	// content
-	Cashtags    pq.StringArray `gorm:"type:varchar(64)[]"`
-	Hashtags    pq.StringArray `gorm:"type:varchar(64)[]"`
+	Cashtags    pq.StringArray `gorm:"type:text[]"`
+	Hashtags    pq.StringArray `gorm:"type:text[]"`
 	Mentions    []*TwitterUser `gorm:"many2many:post_mentions;association_foreignkey:username;foreignkey:postIdentifier"`
-	Photos      pq.StringArray `gorm:"type:varchar(64)[]"`
+	Photos      pq.StringArray `gorm:"type:text[]"`
 	QuoteURL    string
 	ReplyTo     []*TwitterUser `gorm:"many2many:post_replies;association_foreignkey:username;foreignkey:postIdentifier"`
 	Retweet     bool
@@ -84,7 +84,7 @@ type TwitterPost struct {
 	RetweetID   string
 	Source      string
 	Tweet       string
-	URLs        pq.StringArray `gorm:"type:varchar(64)[]"`
+	URLs        pq.StringArray `gorm:"type:text[]"`
 	Video       int
 
 	// reactions
