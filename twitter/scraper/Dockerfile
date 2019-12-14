@@ -8,4 +8,4 @@ RUN pip install -r requirements.txt
 COPY ./twitterscraper ./twitterscraper
 
 ENTRYPOINT [ "python" ]
-CMD [ "-c", "raise Exception('Please set the CMD to either tweets_scraper.py or user_scraper.py')" ]
+CMD [ "-c", "raise Exception('Please set the CMD to either `-m twitterscraper.posts_scraper.py`, `-m twitterscraper.users_scraper.py`, `-m twitterscraper.follwers_scraper.py` or `-m twitterscraper.follwing_scraper.py`')" ]
