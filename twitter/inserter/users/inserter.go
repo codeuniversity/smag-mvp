@@ -12,7 +12,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 
 	dbUtils "github.com/codeuniversity/smag-mvp/db"
-	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/twitter/models"
 	"github.com/codeuniversity/smag-mvp/utils"
 	"github.com/codeuniversity/smag-mvp/worker"
 
@@ -40,7 +40,7 @@ func New(postgresHost, postgresPassword, dbName string, qReader *kafka.Reader) *
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
-	i.db = db
+	i.db = db // use db.Debug() here to get extensive logging
 
 	db.AutoMigrate(&models.TwitterUser{})
 
