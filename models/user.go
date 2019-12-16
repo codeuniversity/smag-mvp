@@ -53,6 +53,15 @@ type InstaComment struct {
 	OwnerUsername string `json:"owner_username"`
 }
 
+// Comment is the database model used for creating and updating comments in postgres
+type Comment struct {
+	gorm.Model
+	PostID      int
+	CommentID   string
+	CommentText string `gorm:"type:text"`
+	OwnerUserID int    `gorm:"column:owner_user_id"`
+}
+
 type InstaLike struct {
 	ID            string `json:"id"`
 	PostID        string `json:"post_id"`
@@ -63,6 +72,7 @@ type InstaLike struct {
 
 // InstagramPost is a Post on instagram
 type InstagramPost struct {
+	gorm.Model
 	PostID      string   `json:"post_id"`
 	ShortCode   string   `json:"short_code"`
 	UserName    string   `json:"user_name"`
@@ -70,6 +80,17 @@ type InstagramPost struct {
 	PictureURL  string   `json:"picture_url"`
 	TaggedUsers []string `json:"tagged_users"`
 	Caption     string   `json:"caption"`
+}
+
+// Post is the database model used for creating and updating posts in postgres
+type Post struct {
+	gorm.Model
+	UserID             int
+	PostID             string
+	ShortCode          string
+	PictureURL         string `gorm:"column:picture_url;type:text"`
+	Caption            string `gorm:"type:text"`
+	InternalPictureURL string `gorm:"column:internal_picture_url"`
 }
 
 // InstaPostScrapeError s are written to the error topic of the scraper when even after retries we can't scrape the comments

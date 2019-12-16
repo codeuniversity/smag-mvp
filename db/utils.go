@@ -26,6 +26,24 @@ func CreateOrUpdate(db *gorm.DB, out interface{}, where interface{}, update inte
 	return nil
 }
 
+// FindOrCreate checks whether a specific (gorm) database entry already exists using a model filter
+// and creates it in case no record is found
+func FindOrCreate(db *gorm.DB, out interface{}, where interface{}, update interface{}) error {
+	var err error
+
+	tx := db.Begin()
+	if tx.Where(where).First(out).RecordNotFound() {
+		err = tx.Create(update).Scan(out).Error
+	}
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+	tx.Commit()
+
+	return nil
+}
+
 //Create just create a new entry in the database
 func Create(db *gorm.DB, out interface{}, update interface{}) error {
 	return db.Create(update).Scan(out).Error

@@ -2,17 +2,20 @@ package inserter
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
+	"github.com/codeuniversity/smag-mvp/utils"
+
+	dbUtils "github.com/codeuniversity/smag-mvp/db"
 	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/worker"
 
-	// necessary for "database/sql"
-	_ "github.com/lib/pq"
+	"github.com/jinzhu/gorm"
+	// necessary for gorm :pointup:
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -22,7 +25,7 @@ type InstaCommentInserter struct {
 
 	commentsQReader *kafka.Reader
 
-	db *sql.DB
+	db *gorm.DB
 }
 
 // New returns an initialized InstaCommentInserter
@@ -35,11 +38,10 @@ func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader) *
 		connectionString += " " + "password=" + postgresPassword
 	}
 
-	db, err := sql.Open("postgres", connectionString)
-	if err != nil {
-		panic(err)
-	}
-	i.db = db
+	db, err := gorm.Open("postgres", connectionString)
+	utils.PanicIfNotNil(err)
+	db.AutoMigrate(&models.Comment{}, &models.Post{})
+	i.db = db.Debug()
 
 	b := worker.Builder{}.WithName("insta_comments_inserter").
 		WithWorkStep(i.runStep).
@@ -73,63 +75,87 @@ func (i *InstaCommentInserter) runStep() error {
 }
 
 func (i *InstaCommentInserter) findOrCreateUser(username string) (userID int, err error) {
-	err = i.db.QueryRow("Select id from users where user_name = $1", username).Scan(&userID)
+	/*
+		err = i.db.QueryRow("Select id from users where user_name = $1", username).Scan(&userID)
 
-	if err != nil {
-		if err != sql.ErrNoRows {
-			return 0, err
-		}
-
-		var insertedUserID int
-		err := i.db.QueryRow(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, username).Scan(&insertedUserID)
 		if err != nil {
-			return 0, err
-		}
+			if err != sql.ErrNoRows {
+				return 0, err
+			}
 
-		userID = int(insertedUserID)
+			var insertedUserID int
+			err := i.db.QueryRow(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, username).Scan(&insertedUserID)
+			if err != nil {
+				return 0, err
+			}
+
+			userID = int(insertedUserID)
+		}
+	*/
+
+	result := models.User{}
+	filter := &models.User{UserName: username}
+	user := &models.User{UserName: username}
+
+	err = dbUtils.FindOrCreate(i.db, &result, filter, user)
+	if err != nil {
+		return 0, err
 	}
 
+	userID = int(result.ID)
 	return userID, nil
 }
 
 func (i *InstaCommentInserter) findOrCreatePost(externalPostID string) (postID int, err error) {
-	err = i.db.QueryRow("Select id from posts where post_id = $1", externalPostID).Scan(&postID)
+	/*
+		err = i.db.QueryRow("Select id from posts where post_id = $1", externalPostID).Scan(&postID)
 
-	if err != nil {
-		if err != sql.ErrNoRows {
-			return 0, err
-		}
-
-		var insertedUserID int
-		err := i.db.QueryRow(`INSERT INTO posts(post_id) VALUES($1) RETURNING id`, externalPostID).Scan(&insertedUserID)
 		if err != nil {
-			return 0, err
-		}
+			if err != sql.ErrNoRows {
+				return 0, err
+			}
 
-		postID = int(insertedUserID)
+			var insertedUserID int
+			err := i.db.QueryRow(`INSERT INTO posts(post_id) VALUES($1) RETURNING id`, externalPostID).Scan(&insertedUserID)
+			if err != nil {
+				return 0, err
+			}
+
+			postID = int(insertedUserID)
+		}
+	*/
+
+	result := models.Post{}
+	filter := &models.Post{PostID: externalPostID}
+	post := &models.Post{PostID: externalPostID}
+
+	err = dbUtils.FindOrCreate(i.db, &result, filter, post)
+	if err != nil {
+		return 0, err
 	}
 
+	postID = int(result.ID)
 	return postID, nil
 }
 
 func (i *InstaCommentInserter) insertComment(p *models.InstaComment) error {
 
 	ownerUserID, err := i.findOrCreateUser(p.OwnerUsername)
-
 	if err != nil {
 		return err
 	}
+
 	postID, err := i.findOrCreatePost(p.PostID)
-
 	if err != nil {
 		return err
 	}
 
-	_, err = i.db.Exec(`INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.ID, p.Text, ownerUserID)
+	result := models.Comment{}
+	filter := &models.Comment{CommentID: p.ID}
+	comment := models.Comment{PostID: postID, CommentID: p.ID, CommentText: p.Text, OwnerUserID: ownerUserID}
 
-	if err != nil {
-		return err
-	}
+	//_, err = i.db.Exec(`INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.ID, p.Text, ownerUserID)
+	err = dbUtils.CreateOrUpdate(i.db, &result, filter, comment)
 
 	return nil
 }
