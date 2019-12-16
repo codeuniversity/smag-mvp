@@ -16,7 +16,7 @@ type UserFollowInfo struct {
 // User is the struct containing all user fields, used for saving users to the database
 type User struct {
 	gorm.Model
-	UserName  string `gorm:"unique;primary_key"`
+	UserName  string `gorm:"unique"`
 	RealName  string
 	AvatarURL string `gorm:"column:avatar_url"`
 	Bio       string
