@@ -40,8 +40,8 @@ func New(postgresHost, postgresPassword string, commentsQReader *kafka.Reader) *
 
 	db, err := gorm.Open("postgres", connectionString)
 	utils.PanicIfNotNil(err)
-	db.AutoMigrate(&models.Comment{}, &models.Post{})
-	i.db = db.Debug()
+	db.AutoMigrate(&models.Comment{})
+	i.db = db
 
 	b := worker.Builder{}.WithName("insta_comments_inserter").
 		WithWorkStep(i.runStep).
@@ -74,25 +74,7 @@ func (i *InstaCommentInserter) runStep() error {
 	return i.commentsQReader.CommitMessages(context.Background(), m)
 }
 
-func (i *InstaCommentInserter) findOrCreateUser(username string) (userID int, err error) {
-	/*
-		err = i.db.QueryRow("Select id from users where user_name = $1", username).Scan(&userID)
-
-		if err != nil {
-			if err != sql.ErrNoRows {
-				return 0, err
-			}
-
-			var insertedUserID int
-			err := i.db.QueryRow(`INSERT INTO users(user_name) VALUES($1) RETURNING id`, username).Scan(&insertedUserID)
-			if err != nil {
-				return 0, err
-			}
-
-			userID = int(insertedUserID)
-		}
-	*/
-
+func (i *InstaCommentInserter) findOrCreateUser(username string) (userID uint, err error) {
 	result := models.User{}
 	filter := &models.User{UserName: username}
 	user := &models.User{UserName: username}
@@ -102,29 +84,11 @@ func (i *InstaCommentInserter) findOrCreateUser(username string) (userID int, er
 		return 0, err
 	}
 
-	userID = int(result.ID)
+	userID = result.ID
 	return userID, nil
 }
 
-func (i *InstaCommentInserter) findOrCreatePost(externalPostID string) (postID int, err error) {
-	/*
-		err = i.db.QueryRow("Select id from posts where post_id = $1", externalPostID).Scan(&postID)
-
-		if err != nil {
-			if err != sql.ErrNoRows {
-				return 0, err
-			}
-
-			var insertedUserID int
-			err := i.db.QueryRow(`INSERT INTO posts(post_id) VALUES($1) RETURNING id`, externalPostID).Scan(&insertedUserID)
-			if err != nil {
-				return 0, err
-			}
-
-			postID = int(insertedUserID)
-		}
-	*/
-
+func (i *InstaCommentInserter) findOrCreatePost(externalPostID string) (postID uint, err error) {
 	result := models.Post{}
 	filter := &models.Post{PostID: externalPostID}
 	post := &models.Post{PostID: externalPostID}
@@ -134,7 +98,7 @@ func (i *InstaCommentInserter) findOrCreatePost(externalPostID string) (postID i
 		return 0, err
 	}
 
-	postID = int(result.ID)
+	postID = result.ID
 	return postID, nil
 }
 
@@ -150,11 +114,13 @@ func (i *InstaCommentInserter) insertComment(p *models.InstaComment) error {
 		return err
 	}
 
+	fmt.Printf("comment: %+v\n", p)
+
 	result := models.Comment{}
 	filter := &models.Comment{CommentID: p.ID}
 	comment := models.Comment{PostID: postID, CommentID: p.ID, CommentText: p.Text, OwnerUserID: ownerUserID}
 
-	//_, err = i.db.Exec(`INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.ID, p.Text, ownerUserID)
+	//INSERT INTO comments(post_id, comment_id, comment_text, owner_user_id) VALUES($1,$2,$3,$4) ON CONFLICT(comment_id) DO UPDATE SET comment_text=$3`, postID, p.ID, p.Text, ownerUserID)
 	err = dbUtils.CreateOrUpdate(i.db, &result, filter, comment)
 
 	return nil

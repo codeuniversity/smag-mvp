@@ -55,11 +55,11 @@ type InstaComment struct {
 
 // Comment is the database model used for creating and updating comments in postgres
 type Comment struct {
-	gorm.Model
-	PostID      int
-	CommentID   string
-	CommentText string `gorm:"type:text"`
-	OwnerUserID int    `gorm:"column:owner_user_id"`
+	ID          uint   `gorm:"primary_key"`
+	PostID      uint   `gorm:"column:id_post"`
+	CommentID   string `gorm:"column:external_id"`
+	CommentText string
+	OwnerUserID uint `gorm:"column:id_owner_user"`
 }
 
 type InstaLike struct {
@@ -72,7 +72,6 @@ type InstaLike struct {
 
 // InstagramPost is a Post on instagram
 type InstagramPost struct {
-	gorm.Model
 	PostID      string   `json:"post_id"`
 	ShortCode   string   `json:"short_code"`
 	UserName    string   `json:"user_name"`
@@ -84,7 +83,7 @@ type InstagramPost struct {
 
 // Post is the database model used for creating and updating posts in postgres
 type Post struct {
-	gorm.Model
+	ID                 uint `gorm:"primary_key"`
 	UserID             int
 	PostID             string
 	ShortCode          string
