@@ -72,7 +72,7 @@ func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reac
 		networkInterfaceId = *ec2Address.NetworkInterfaceId
 		err = r.disassociateAddress(*ec2Address.PublicIp)
 		if err != nil {
-			log.Println("disassociateAddress Error: ", err)
+			log.Println("Error DisassociateAddress: ", err)
 			return nil, err
 		}
 
