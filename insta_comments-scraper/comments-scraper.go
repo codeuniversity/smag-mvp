@@ -20,6 +20,8 @@ const (
 	instaCommentURL     = "https://www.instagram.com/graphql/query/?query_hash=97b41c52301f77ce508f55e66d17620e&variables=%s"
 )
 
+const instaCommentCount = 12
+
 // PostCommentScraper scrapes the comments under post
 type PostCommentScraper struct {
 	*worker.Worker
@@ -106,7 +108,7 @@ func (s *PostCommentScraper) runStep() error {
 
 			nextPage = postComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.HasNextPage
 			endcursor = postsComments.Data.ShortcodeMedia.EdgeMediaToParentComment.PageInfo.EndCursor
-			commentCounter += 12
+			commentCounter += instaCommentCount
 		}
 	}
 	if err != nil {
@@ -240,7 +242,7 @@ func (s *PostCommentScraper) sendCommentsRequest(shortCode string, cursor string
 		After     string `json:"after"`
 	}
 
-	variable := &Variables{shortCode, 12, cursor}
+	variable := &Variables{shortCode, instaCommentCount, cursor}
 
 	variableJSON, err := json.Marshal(variable)
 	if err != nil {
