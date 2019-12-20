@@ -43,8 +43,6 @@ func (r *RenewingAddressGrpcServer) Listen() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	log.Println("Start RenewingAddressGrpcServer Server")
-
 	grpcServer := grpc.NewServer()
 	pb.RegisterElasticIpServiceServer(grpcServer, r)
 
@@ -72,7 +70,7 @@ func (r *RenewingAddressGrpcServer) RenewElasticIp(context context.Context, reac
 		networkInterfaceId = *ec2Address.NetworkInterfaceId
 		err = r.disassociateAddress(*ec2Address.PublicIp)
 		if err != nil {
-			log.Println("disassociateAddress Error: ", err)
+			log.Println("Error DisassociateAddress: ", err)
 			return nil, err
 		}
 

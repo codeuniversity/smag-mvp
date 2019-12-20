@@ -72,16 +72,16 @@ func (a *Analyzer) matchSingleTermForUser(userID int, term string) (bool, error)
 type nest map[string]interface{}
 
 func newSearch(userID int, term string) io.Reader {
-	searchBody := nest{
-		"query": nest{
-			"bool": nest{
-				"must": []nest{
-					nest{"term": nest{"user_id": userID}},
+	searchBody := map[string]interface{}{
+		"query": map[string]interface{}{
+			"bool": map[string]interface{}{
+				"must": []map[string]interface{}{
+					{"term": map[string]interface{}{"user_id": userID}},
 				},
-				"should": []nest{
-					nest{"match": nest{"caption": term}},
-					nest{"match": nest{"comment": term}},
-					nest{"match": nest{"bio": term}},
+				"should": []map[string]interface{}{
+					{"match": map[string]interface{}{"caption": term}},
+					{"match": map[string]interface{}{"comment": term}},
+					{"match": map[string]interface{}{"bio": term}},
 				}}},
 	}
 
