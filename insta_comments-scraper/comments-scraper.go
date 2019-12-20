@@ -62,7 +62,6 @@ func New(config *client.ScraperConfig, awsServiceAddress string, postIDQReader *
 func (s *PostCommentScraper) runStep() error {
 	message, err := s.postIDQReader.FetchMessage(context.Background())
 
-	log.Println("New Message")
 	if err != nil {
 		return err
 	}
@@ -72,8 +71,6 @@ func (s *PostCommentScraper) runStep() error {
 	if err != nil {
 		return err
 	}
-
-	log.Println("ShortCode: ", post.ShortCode)
 
 	postsComments, err := s.scrapeCommentsInfo(post.ShortCode)
 	if err != nil {

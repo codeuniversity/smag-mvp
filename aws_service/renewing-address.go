@@ -43,8 +43,6 @@ func (r *RenewingAddressGrpcServer) Listen() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
-	log.Println("Start RenewingAddressGrpcServer Server")
-
 	grpcServer := grpc.NewServer()
 	pb.RegisterElasticIpServiceServer(grpcServer, r)
 

@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	pb "github.com/codeuniversity/smag-mvp/aws_service/proto"
@@ -168,12 +169,7 @@ func (h *HttpClient) checkIfIPReachedTheLimit(err error) (string, error) {
 		}
 		return elasticIp, nil
 	default:
-		log.Println("Default Error ", t)
-		elasticIp, err := h.sendRenewElasticIpRequestToAmazonService()
-		if err != nil {
-			return "", err
-		}
-		return elasticIp, nil
+		return "", fmt.Errorf("error checkIfIPReachedTheLimit: %s", err)
 	}
 }
 
@@ -181,8 +177,6 @@ func (h *HttpClient) sendRenewElasticIpRequestToAmazonService() (string, error) 
 
 	renewIp := pb.RenewingElasticIp{
 		InstanceId: h.instanceId,
-		Node:       "",
-		Pod:        "",
 		PodIp:      h.localIp,
 	}
 
