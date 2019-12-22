@@ -1,5 +1,10 @@
 # Social Record
 
+<p align="center">
+    <a href="https://travis-ci.com/codeuniversity/smag-mvp"><img src="https://img.shields.io/travis/codeuniversity/smag-mvp.svg" /></a>
+    <a href="https://cloud.drone.io/codeuniversity/smag-mvp"><img src="https://cloud.drone.io/api/badges/codeuniversity/smag-mvp/status.svg?ref=refs/heads/alpine" /></a>
+</p>
+
 > Distributed scraping and analysis pipeline for a range of social media platforms
 
 **Table of content**
