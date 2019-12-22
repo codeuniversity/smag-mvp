@@ -1,7 +1,11 @@
-after_script:
-  - docker images
+services: docker
 
 sudo: required
+
+env:
+  DOCKER_COMPOSE_VERSION: 1.25.0
+
+language: bash
 
 before_install:
   - sudo rm -f /usr/local/bin/docker-slim
@@ -22,22 +26,15 @@ before_install:
   - docker-compose --version
   - docker ps
 
-before_script:
-  - IMAGE="x0rzkov/smag-mvp:latest"
-
-env:
-  DOCKER_COMPOSE_VERSION: 1.25.0
-
-language: bash
-
 script:
   - docker-slim version
-  - docker build --squash -t "$IMAGE" .
-  - sudo docker-slim build "$IMAGE"
-  - docker-compose pull
-  - docker-compose build
+  - make run-instagram
+  - docker-compose stop
+  - make run-twitter
+  - docker-compose -f twitter-compose.yml stop
   - docker images
-  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push "$IMAGE"
 
-services: docker
+after_script:
+  - docker images

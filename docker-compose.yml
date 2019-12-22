@@ -5,13 +5,14 @@ services:
   zookeeper:
     image: "wurstmeister/zookeeper"
     ports:
-      - "2181:2181"
+    - "2181:2181"
+
   my-kafka:
     image: "wurstmeister/kafka:0.10.2.0"
     ports:
-      - "9092:9092"
+    - "9092:9092"
     depends_on:
-      - "zookeeper"
+    - "zookeeper"
     environment:
       KAFKA_CREATE_TOPICS: >
         user_names:4:1,user_follow_infos:4:1,user_scrape_errors:1:1,
@@ -21,33 +22,35 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://:9092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://my-kafka:9092
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+    - /var/run/docker.sock:/var/run/docker.sock
 
   # POSTGRES
   postgres:
     image: "debezium/postgres:11"
     ports:
-      - "5432:5432"
+    - "5432:5432"
     environment:
       POSTGRES_USER: "postgres"
       POSTGRES_PASSWORD: "12345678"
       POSTGRES_DB: "instascraper"
+
   connect:
     image: "debezium/connect:0.10"
     ports:
-      - "8083:8083"
+    - "8083:8083"
     environment:
       BOOTSTRAP_SERVERS: "my-kafka:9092"
       GROUP_ID: "1"
       CONFIG_STORAGE_TOPIC: "my_connect_configs"
       OFFSET_STORAGE_TOPIC: "my_connect_offsets"
       STATUS_STORAGE_TOPIC: "my_connect_statuses"
+
   migrate-postgres:
     build:
       context: "."
       dockerfile: "debezium/Dockerfile"
     depends_on:
-      - "postgres"
+    - "postgres"
     environment:
       POSTGRES_DB: "instascraper"
 
@@ -58,31 +61,33 @@ services:
       dockerfile: "insta_user-scraper/Dockerfile"
     image: "smag-insta_user-scraper"
     depends_on:
-      - "my-kafka"
+    - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_user_scraper"
       KAFKA_NAME_TOPIC: "user_names"
       KAFKA_INFO_TOPIC: "user_follow_infos"
       KAFKA_ERR_TOPIC: "insta_user_scaper_err"
+
   insta_posts-scraper:
     build:
       context: "."
       dockerfile: "insta_posts-scraper/Dockerfile"
     depends_on:
-      - "my-kafka"
+    - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_posts_scraper"
       KAFKA_NAME_TOPIC: "user_names"
       KAFKA_INSTA_POSTS_TOPIC: "insta_posts"
       KAFKA_ERR_TOPIC: "insta_post_scrape_errors"
+
   insta_comments-scraper:
     build:
       context: "."
       dockerfile: "insta_comments-scraper/Dockerfile"
     depends_on:
-      - "my-kafka"
+    - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_comments_scraper"
@@ -95,7 +100,7 @@ services:
       context: "."
       dockerfile: "insta_likes-scraper/Dockerfile"
     depends_on:
-      - "my-kafka"
+    - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_likes_scraper"
@@ -110,60 +115,64 @@ services:
       dockerfile: "insta_postgres-inserter/Dockerfile"
     image: "smag-insta_postgres-inserter"
     depends_on:
-      - "my-kafka"
+    - "my-kafka"
     environment:
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_user_inserter"
       KAFKA_INFO_TOPIC: "user_follow_infos"
+
   insta_posts-inserter:
     build:
       context: "."
       dockerfile: "insta_posts-inserter/Dockerfile"
     depends_on:
-      - "my-kafka"
-      - "postgres"
+    - "my-kafka"
+    - "postgres"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_posts_inserter"
       KAFKA_INSTA_POSTS_TOPIC: "insta_posts"
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
+
   insta_comments-inserter:
     build:
       context: "."
       dockerfile: "insta_comments-inserter/Dockerfile"
     depends_on:
-      - "my-kafka"
-      - "postgres"
+    - "my-kafka"
+    - "postgres"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_comments_inserter"
       KAFKA_INFO_TOPIC: "insta_comments"
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
+
   insta_likes-inserter:
     build:
       context: "."
       dockerfile: "insta_likes-inserter/Dockerfile"
     depends_on:
-      - "my-kafka"
-      - "postgres"
+    - "my-kafka"
+    - "postgres"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_likes_inserter"
       KAFKA_INFO_TOPIC: "insta_likes"
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
+
   # DOWNLOADER
   insta_pics-downloader:
     build:
       context: "."
       dockerfile: "insta_pics-downloader/Dockerfile"
     depends_on:
-      - "my-kafka"
-      - "postgres"
+    - "my-kafka"
+    - "postgres"
     environment:
       POSTGRES_HOST: "postgres"
       POSTGRES_PASSWORD: "12345678"
@@ -183,40 +192,43 @@ services:
       context: "."
       dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
     depends_on:
-      - "postgres"
-      - "connect"
+    - "postgres"
+    - "connect"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_user_names-filter"
+
   insta-post-picture-filter:
     build:
       context: "."
       dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
     depends_on:
-      - "postgres"
-      - "connect"
+    - "postgres"
+    - "connect"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_post_pictures-filter"
+
   insta_post-pictures-filter:
     build:
       context: "."
       dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
     depends_on:
-      - "my-kafka"
-      - "postgres"
+    - "my-kafka"
+    - "postgres"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_post-pictures-filter"
       KAFKA_CHANGE_TOPIC: "postgres.public.posts"
       KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
+
   insta_user_names-filter:
     build:
       context: "."
       dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
     depends_on:
-      - "my-kafka"
-      - "postgres"
+    - "my-kafka"
+    - "postgres"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_user_names-filter"
@@ -228,9 +240,10 @@ services:
       context: "."
       dockerfile: "./api/envoy-proxy/Dockerfile"
     depends_on:
-      - "grpc-server"
+    - "grpc-server"
     ports:
-      - "4000:8080"
+    - "4000:8080"
+
   grpc-server:
     build:
       context: "."
@@ -250,14 +263,14 @@ services:
       S3_SECRET_ACCESS_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
       S3_USE_SSL: "false"
     ports:
-      - "10000:10000"
+    - "10000:10000"
 
   # NEO4J
   neo4j:
     image: "neo4j:3.5.12"
     ports:
-      - "7474:7474"
-      - "7687:7687"
+    - "7474:7474"
+    - "7687:7687"
     environment:
       NEO4J_AUTH: none
 
@@ -267,30 +280,32 @@ services:
       context: "."
       dockerfile: "neo4j-inserter/insta_posts-inserter/Dockerfile"
     depends_on:
-      - "neo4j"
-      - "my-kafka"
+    - "neo4j"
+    - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "neo4j-posts-inserter"
       KAFKA_INFO_TOPIC: "postgres.public.posts"
+
   neo4j-tagged-users-inserter:
     build:
       context: "."
       dockerfile: "neo4j-inserter/tagged_users-inserter/Dockerfile"
     depends_on:
-      - "neo4j"
-      - "my-kafka"
+    - "neo4j"
+    - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "neo4j-tagged-users-inserter"
       KAFKA_INFO_TOPIC: "postgres.public.tagged_users"
+
   neo4j-followings-inserter:
     build:
       context: "."
       dockerfile: "neo4j-inserter/insta_user-inserter/Dockerfile"
     depends_on:
-      - "neo4j"
-      - "my-kafka"
+    - "neo4j"
+    - "my-kafka"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "neo4j-followings-inserter"
@@ -301,15 +316,16 @@ services:
   minio:
     image: minio/minio
     ports:
-      - 9000:9000
+    - 9000:9000
     environment:
       MINIO_ACCESS_KEY: "AKIAIOSFODNN7EXAMPLE"
       MINIO_SECRET_KEY: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
     command: "server /data"
+
   imgproxy:
     image: darthsim/imgproxy
     ports:
-      - 8080:8080
+    - 8080:8080
     environment:
       IMGPROXY_KEY: 5800c215e5cd5110365c390e83752526fa40758efa4dcc406e3a4fdd6e22877c
       IMGPROXY_SALT: 520f986b998545b4785e0defbc4f3c1203f22de2374a3d53cb7a7fe9fea309c5
@@ -319,11 +335,12 @@ services:
       AWS_REGION: "eu-central-1"
       IMGPROXY_S3_ENDPOINT: "http://minio:9000"
       IMGPROXY_USE_S3: "true"
+
   face_recognizer:
     build: "./faces"
     ports:
-      - "6666:6666"
-      - "6690:6690"
+    - "6666:6666"
+    - "6690:6690"
     environment:
       GRPC_PORT: "6666"
       METRICS_PORT: "6690"
@@ -334,14 +351,15 @@ services:
     environment:
       "discovery.type": "single-node"
     ports:
-      - "9200:9200"
-      - "9300:9300"
+    - "9200:9200"
+    - "9300:9300"
+
   kibana:
     image: kibana:7.1.0
     ports:
-      - 5601:5601
+    - 5601:5601
     environment:
-      - ELASTICSEARCH_HOSTS=["http://es-with-plugin:9200"]
+    - ELASTICSEARCH_HOSTS=["http://es-with-plugin:9200"]
 
   # ELASTICSEARCH INDEXER
   insta_face-indexer:
