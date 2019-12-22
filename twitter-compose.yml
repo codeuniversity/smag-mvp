@@ -49,7 +49,7 @@ services:
 
   # TWITTER SCRAPER
   twitter_scraper_users:
-    image: x0rzkov/smag-mvp:twitter_scraper_users
+    image: ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_users
     build: "twitter/scraper/"
     image: "smag-twitter_scraper"
     command: ["-m", "twitterscraper.users_scraper"]
@@ -61,7 +61,7 @@ services:
       KAFKA_INSERT_TOPIC: "twitter.scraped.users"
 
   twitter_scraper_followers:
-    image: x0rzkov/smag-mvp:twitter_scraper_followers
+    image: ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_followers
     build: "twitter/scraper/"
     image: "smag-twitter_scraper"
     command: ["-m", "twitterscraper.followers_scraper"]
@@ -73,7 +73,7 @@ services:
       KAFKA_INSERT_TOPIC: "twitter.scraped.users"
 
   twitter_scraper_following:
-    image: x0rzkov/smag-mvp:twitter_scraper_following
+    image: ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_following
     build: "twitter/scraper/"
     image: "smag-twitter_scraper"
     command: ["-m", "twitterscraper.following_scraper"]
@@ -85,7 +85,7 @@ services:
       KAFKA_INSERT_TOPIC: "twitter.scraped.users"
 
   twitter_scraper_posts:
-    image: x0rzkov/smag-mvp:twitter_scraper_posts
+    image: ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_posts
     build: "twitter/scraper/"
     image: "smag-twitter_scraper"
     command: ["-m", "twitterscraper.posts_scraper"]
@@ -98,7 +98,7 @@ services:
 
   # TWITTER INSERTER
   twitter_inserter_users:
-    image: x0rzkov/smag-mvp:twitter_inserter_users
+    image: ${DOCKER_USERNAME}/smag-mvp:twitter_inserter_users
     build:
       context: "."
       dockerfile: "twitter/inserter/users/Dockerfile"
@@ -113,7 +113,7 @@ services:
       KAFKA_NAME_TOPIC: "twitter.scraped.user_names"
 
   twitter_inserter_posts:
-    image: x0rzkov/smag-mvp:twitter_inserter_posts
+    image: ${DOCKER_USERNAME}/smag-mvp:twitter_inserter_posts
     build:
       context: "."
       dockerfile: "twitter/inserter/posts/Dockerfile"
@@ -129,7 +129,7 @@ services:
 
   # TWITTER FILTER
   twitter_filter_user_names:
-    image: x0rzkov/smag-mvp:twitter_filter_user_names
+    image: ${DOCKER_USERNAME}/smag-mvp:twitter_filter_user_names
     build:
       context: "."
       dockerfile: "twitter/filter/user_names/Dockerfile"
