@@ -29,10 +29,10 @@ before_install:
 
 script:
   - docker-slim version
-  - make run-instagram
-  - docker-compose stop
-  - make run-twitter
-  - docker-compose -f twitter-compose.yml stop
+  - docker-compose build -f docker-compose.yml
+  - docker-compose up -d
+  - docker-compose build -f twitter-compose.yml
+  - docker-compose up -d
   - docker images
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
   - docker push ${DOCKER_USERNAME}/smag-mvp:migrate-postgres
