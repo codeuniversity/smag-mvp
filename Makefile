@@ -18,7 +18,7 @@ run-instagram:
 	sleep 5
 	docker-compose up --build migrate-postgres
 	docker-compose up -d --build
-	docker-compose logs -f
+	# docker-compose logs -f
 
 
 # TWITTER
@@ -29,4 +29,4 @@ run-twitter:
 	docker-compose -f $(TWITTER_COMPOSE_FILE) up -d my-kafka postgres connect
 	sleep 5
 	docker-compose -f $(TWITTER_COMPOSE_FILE) up -d --build
-	docker-compose -f $(TWITTER_COMPOSE_FILE) logs -f
+	# docker-compose -f $(TWITTER_COMPOSE_FILE) logs -f
