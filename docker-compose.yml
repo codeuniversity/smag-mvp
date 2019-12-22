@@ -46,6 +46,7 @@ services:
       STATUS_STORAGE_TOPIC: "my_connect_statuses"
 
   migrate-postgres:
+    image: x0rzkov/smag-mvp:migrate-postgres
     build:
       context: "."
       dockerfile: "debezium/Dockerfile"
@@ -56,6 +57,7 @@ services:
 
   # INSTA SCRAPER
   insta_user-scraper:
+    image: x0rzkov/smag-mvp:insta_user-scraper
     build:
       context: "."
       dockerfile: "insta_user-scraper/Dockerfile"
@@ -70,6 +72,7 @@ services:
       KAFKA_ERR_TOPIC: "insta_user_scaper_err"
 
   insta_posts-scraper:
+    image: x0rzkov/smag-mvp:insta_posts-scraper
     build:
       context: "."
       dockerfile: "insta_posts-scraper/Dockerfile"
@@ -83,6 +86,7 @@ services:
       KAFKA_ERR_TOPIC: "insta_post_scrape_errors"
 
   insta_comments-scraper:
+    image: x0rzkov/smag-mvp:insta_comments-scraper
     build:
       context: "."
       dockerfile: "insta_comments-scraper/Dockerfile"
@@ -96,6 +100,7 @@ services:
       KAFKA_ERR_TOPIC: "insta_comment_scrape_errors"
 
   insta_likes-scraper:
+    image: x0rzkov/smag-mvp:insta_likes-scraper
     build:
       context: "."
       dockerfile: "insta_likes-scraper/Dockerfile"
@@ -110,6 +115,7 @@ services:
 
   # INSTA INSERTER
   insta_user-inserter:
+    image: x0rzkov/smag-mvp:insta_user-inserter
     build:
       context: "."
       dockerfile: "insta_postgres-inserter/Dockerfile"
@@ -124,6 +130,7 @@ services:
       KAFKA_INFO_TOPIC: "user_follow_infos"
 
   insta_posts-inserter:
+    image: x0rzkov/smag-mvp:insta_posts-inserter
     build:
       context: "."
       dockerfile: "insta_posts-inserter/Dockerfile"
@@ -138,6 +145,7 @@ services:
       POSTGRES_PASSWORD: "12345678"
 
   insta_comments-inserter:
+    image: x0rzkov/smag-mvp:insta_comments-inserter
     build:
       context: "."
       dockerfile: "insta_comments-inserter/Dockerfile"
@@ -152,6 +160,7 @@ services:
       POSTGRES_PASSWORD: "12345678"
 
   insta_likes-inserter:
+    image: x0rzkov/smag-mvp:insta_likes-inserter
     build:
       context: "."
       dockerfile: "insta_likes-inserter/Dockerfile"
@@ -167,6 +176,7 @@ services:
 
   # DOWNLOADER
   insta_pics-downloader:
+    image: x0rzkov/smag-mvp:insta_pics-downloader
     build:
       context: "."
       dockerfile: "insta_pics-downloader/Dockerfile"
@@ -188,6 +198,7 @@ services:
 
   # FILTER
   insta-user-filter:
+    image: x0rzkov/smag-mvp:insta-user-filter
     build:
       context: "."
       dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
@@ -199,6 +210,7 @@ services:
       KAFKA_GROUPID: "insta_user_names-filter"
 
   insta-post-picture-filter:
+    image: x0rzkov/smag-mvp:insta-post-picture-filter
     build:
       context: "."
       dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
@@ -210,6 +222,7 @@ services:
       KAFKA_GROUPID: "insta_post_pictures-filter"
 
   insta_post-pictures-filter:
+    image: x0rzkov/smag-mvp:insta_post-pictures-filter
     build:
       context: "."
       dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
@@ -223,6 +236,7 @@ services:
       KAFKA_PICTURE_DOWNLOADS_TOPIC: "insta_pic_download_jobs"
 
   insta_user_names-filter:
+    image: x0rzkov/smag-mvp:insta_user_names-filter
     build:
       context: "."
       dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
@@ -236,6 +250,7 @@ services:
 
   # API
   envoy-proxy:
+    image: x0rzkov/smag-mvp:envoy-proxy
     build:
       context: "."
       dockerfile: "./api/envoy-proxy/Dockerfile"
@@ -245,6 +260,7 @@ services:
     - "4000:8080"
 
   grpc-server:
+    image: x0rzkov/smag-mvp:grpc-server
     build:
       context: "."
       dockerfile: "./api/grpcserver/Dockerfile"
@@ -276,6 +292,7 @@ services:
 
   # NEO4J INSERTER
   neo4j-posts-inserter:
+    image: x0rzkov/smag-mvp:neo4j-posts-inserter
     build:
       context: "."
       dockerfile: "neo4j-inserter/insta_posts-inserter/Dockerfile"
@@ -288,6 +305,7 @@ services:
       KAFKA_INFO_TOPIC: "postgres.public.posts"
 
   neo4j-tagged-users-inserter:
+    image: x0rzkov/smag-mvp:neo4j-tagged-users-inserter
     build:
       context: "."
       dockerfile: "neo4j-inserter/tagged_users-inserter/Dockerfile"
@@ -300,6 +318,7 @@ services:
       KAFKA_INFO_TOPIC: "postgres.public.tagged_users"
 
   neo4j-followings-inserter:
+    image: x0rzkov/smag-mvp:neo4j-followings-inserter
     build:
       context: "."
       dockerfile: "neo4j-inserter/insta_user-inserter/Dockerfile"
@@ -337,6 +356,7 @@ services:
       IMGPROXY_USE_S3: "true"
 
   face_recognizer:
+    image: x0rzkov/smag-mvp:face_recognizer
     build: "./faces"
     ports:
     - "6666:6666"
@@ -347,6 +367,7 @@ services:
 
   # ELASTICSEARCH
   es-with-plugin:
+    image: x0rzkov/smag-mvp:es-with-plugin
     build: "./elasticsearch-build"
     environment:
       "discovery.type": "single-node"
@@ -363,6 +384,7 @@ services:
 
   # ELASTICSEARCH INDEXER
   insta_face-indexer:
+    image: x0rzkov/smag-mvp:insta_face-indexer
     build:
       context: "."
       dockerfile: "elastic/indexer/insta_faces/Dockerfile"
@@ -373,6 +395,7 @@ services:
       ES_HOSTS: "http://es-with-plugin:9200"
 
   insta_comments-indexer:
+    image: x0rzkov/smag-mvp:insta_comments-indexer
     build:
       context: "."
       dockerfile: "elastic/indexer/insta_comments/Dockerfile"
@@ -383,6 +406,7 @@ services:
       ES_HOSTS: "http://es-with-plugin:9200"
 
   insta_posts-indexer:
+    image: x0rzkov/smag-mvp:insta_posts-indexer
     build:
       context: "."
       dockerfile: "elastic/indexer/insta_posts/Dockerfile"
@@ -393,6 +417,7 @@ services:
       ES_HOSTS: "http://es-with-plugin:9200"
 
   insta_users-indexer:
+    image: x0rzkov/smag-mvp:insta_users-indexer
     build:
       context: "."
       dockerfile: "elastic/indexer/insta_users/Dockerfile"
