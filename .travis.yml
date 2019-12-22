@@ -4,6 +4,7 @@ sudo: required
 
 env:
   DOCKER_COMPOSE_VERSION: 1.25.0
+  DOCKER_USERNAME: x0rzkov
 
 language: bash
 
@@ -20,7 +21,7 @@ before_install:
   - sudo service docker restart
   - docker-compose --version
   - sudo rm /usr/local/bin/docker-compose
-  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/1.25.0/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - docker-compose --version
@@ -34,7 +35,38 @@ script:
   - docker-compose -f twitter-compose.yml stop
   - docker images
   - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-  - docker push "$IMAGE"
+  - docker push ${DOCKER_USERNAME}/smag-mvp:migrate-postgres
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_user-scraper
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_posts-scraper
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_comments-scraper
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_likes-scraper
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_user-inserter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_posts-inserter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_comments-inserter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_likes-inserter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_pics-downloader
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta-user-filter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta-post-picture-filter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_post-pictures-filter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_user_names-filter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:envoy-proxy
+  - docker push ${DOCKER_USERNAME}/smag-mvp:grpc-server
+  - docker push ${DOCKER_USERNAME}/smag-mvp:neo4j-posts-inserter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:neo4j-tagged-users-inserter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:neo4j-followings-inserter
+  - docker push ${DOCKER_USERNAME}/smag-mvp:face_recognizer
+  - docker push ${DOCKER_USERNAME}/smag-mvp:es-with-plugin
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_face-indexer
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_comments-indexer
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_posts-indexer
+  - docker push ${DOCKER_USERNAME}/smag-mvp:insta_users-indexer
+  - docker push ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_users
+  - docker push ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_followers
+  - docker push ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_following
+  - docker push ${DOCKER_USERNAME}/smag-mvp:twitter_scraper_posts
+  - docker push ${DOCKER_USERNAME}/smag-mvp:twitter_inserter_users
+  - docker push ${DOCKER_USERNAME}/smag-mvp:twitter_inserter_posts
+  - docker push ${DOCKER_USERNAME}/smag-mvp:twitter_filter_user_names
 
 after_script:
   - docker images
