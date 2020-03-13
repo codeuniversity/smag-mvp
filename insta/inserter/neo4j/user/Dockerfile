@@ -14,7 +14,8 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY . .
-RUN GOOS=linux go build --tags seabolt_static -o neo4j_user-inserter neo4j-inserter/tagged_users-inserter/main.go
+RUN GOOS=linux go build --tags seabolt_static -o neo4j_user-inserter insta/inserter/neo4j/user/main.go
+
 
 FROM alpine
 RUN apk --no-cache add ca-certificates

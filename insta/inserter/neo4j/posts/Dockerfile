@@ -14,13 +14,12 @@ COPY go.mod .
 COPY go.sum .
 RUN go mod download
 COPY . .
-RUN GOOS=linux go build --tags seabolt_static -o neo4j_user-inserter neo4j-inserter/insta_user-inserter/main.go
-
+RUN GOOS=linux go build --tags seabolt_static -o neo4j_posts-inserter insta/inserter/neo4j/posts/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
 RUN mkdir /app
 COPY useragents.json /app
-COPY --from=builder /app/neo4j_user-inserter /app
+COPY --from=builder /app/neo4j_posts-inserter /app
 WORKDIR /app
-CMD ["./neo4j_user-inserter"]
+CMD ["./neo4j_posts-inserter"]
