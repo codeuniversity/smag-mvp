@@ -12,13 +12,14 @@ gen-faces:
 
 # INSTAGRAM
 
+INSTAGRAM_COMPOSE_FILE:=insta-compose.yml
+
 run-instagram:
-	docker-compose up -d zookeeper my-kafka postgres connect minio neo4j
-	docker-compose up -d --build es-with-plugin
+	docker-compose -f $(INSTAGRAM_COMPOSE_FILE) up -d --build es-with-plugin zookeeper my-kafka postgres connect minio neo4j
 	sleep 5
-	docker-compose up --build migrate-postgres
-	docker-compose up -d --build
-	docker-compose logs -f
+	docker-compose -f $(INSTAGRAM_COMPOSE_FILE) up --build migrate-postgres
+	docker-compose -f $(INSTAGRAM_COMPOSE_FILE) up -d --build
+	docker-compose -f $(INSTAGRAM_COMPOSE_FILE) logs -f
 
 
 # TWITTER
