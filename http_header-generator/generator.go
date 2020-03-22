@@ -16,7 +16,7 @@ type HTTPHeaderGenerator struct {
 // New returns an initialized HTTPHeaderGenerator
 func New() *HTTPHeaderGenerator {
 	generator := &HTTPHeaderGenerator{}
-	data, err := ioutil.ReadFile("useragents.json")
+	data, err := ioutil.ReadFile("http_header-generator/useragents.json")
 	if err != nil {
 		panic(err)
 	}

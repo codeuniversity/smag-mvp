@@ -19,7 +19,7 @@ RUN GOOS=linux go build --tags seabolt_static -o neo4j_posts-inserter insta/inse
 FROM alpine
 RUN apk --no-cache add ca-certificates
 RUN mkdir /app
-COPY useragents.json /app
+COPY http_header-generator/useragents.json /app
 COPY --from=builder /app/neo4j_posts-inserter /app
 WORKDIR /app
 CMD ["./neo4j_posts-inserter"]

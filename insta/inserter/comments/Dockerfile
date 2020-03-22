@@ -9,7 +9,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o insta_comments_inser
 FROM alpine
 RUN apk --no-cache add ca-certificates
 RUN mkdir /app
-COPY useragents.json /app
+COPY http_header-generator/useragents.json /app
 COPY --from=builder /app/insta_comments_inserter /app
 WORKDIR /app
 CMD ["./insta_comments_inserter"]
