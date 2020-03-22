@@ -81,7 +81,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh debezium/kubernetes/Dockerfile codesmag/postgres-setup
+          command: ./build_and_upload_image.sh insta/db/kubernetes/Dockerfile codesmag/postgres-setup
   # TWITTER
   twitter_inserter_users:
     executor: job-runner
@@ -123,7 +123,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh kafka/changestream/insta_user_names-filter/Dockerfile codesmag/insta_user_names_filter
+          command: ./build_and_upload_image.sh insta/filter/user_names/Dockerfile codesmag/insta_user_names_filter
 
   insta_post_pictures-filter:
     executor: job-runner
@@ -132,7 +132,7 @@ jobs:
       - setup_remote_docker
       - run:
           name: Build and Publish Docker Image to Docker Hub
-          command: ./build_and_upload_image.sh kafka/changestream/insta_post_pictures-filter/Dockerfile codesmag/insta_post_pictures_filter
+          command: ./build_and_upload_image.sh insta/filter/post_pictures/Dockerfile codesmag/insta_post_pictures_filter
   insta_pics_downloader:
     executor: job-runner
     steps:
@@ -201,7 +201,7 @@ jobs:
           name: Build and Publish Docker Image to Docker Hub
           command: |
             ./build_and_upload_image.sh insta/scraper/likes/Dockerfile codesmag/insta_likes-scraper
-            ./build_and_upload_image.sh kafka/changestream/insta_post_face-recon-filter/Dockerfile codesmag/face-recon-filter
+            ./build_and_upload_image.sh insta/filter/post_face-recon/Dockerfile codesmag/face-recon-filter
             ./build_and_upload_image.sh insta/posts_face-detection/worker.Dockerfile codesmag/face-detection-prefilter
 
   neo4j_insta_posts-inserter:
@@ -221,7 +221,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh neo4j-inserter/insta_user-inserter/Dockerfile codesmag/neo4j_insta_user-inserter
+            ./build_and_upload_image.sh insta/inserter/neo4j/user/Dockerfile codesmag/neo4j_insta_user-inserter
   neo4j_insta_tagged_users-inserter:
     executor: job-runner
     steps:
@@ -230,7 +230,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh neo4j-inserter/tagged_users-inserter/Dockerfile codesmag/neo4j_insta_tagged_users-inserter
+            ./build_and_upload_image.sh insta/inserter/neo4j/tagged_users/Dockerfile codesmag/neo4j_insta_tagged_users-inserter
 
   face_recognition:
     executor: job-runner
@@ -251,7 +251,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh elasticsearch-build/Dockerfile codesmag/elasticsearch elasticsearch-build
+            ./build_and_upload_image.sh elastic/build/Dockerfile codesmag/elasticsearch elasticsearch-build
 
   elastic_indexer_faces:
     executor: job-runner
@@ -261,7 +261,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh elastic/indexer/insta_faces/Dockerfile codesmag/elastic_indexer_faces
+            ./build_and_upload_image.sh insta/indexer/faces/Dockerfile codesmag/elastic_indexer_faces
 
   elastic_indexer_posts:
     executor: job-runner
@@ -271,7 +271,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh elastic/indexer/insta_posts/Dockerfile codesmag/elastic_indexer_posts
+            ./build_and_upload_image.sh insta/indexer/posts/Dockerfile codesmag/elastic_indexer_posts
 
   elastic_indexer_users:
     executor: job-runner
@@ -281,7 +281,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh elastic/indexer/insta_users/Dockerfile codesmag/elastic_indexer_users
+            ./build_and_upload_image.sh insta/indexer/users/Dockerfile codesmag/elastic_indexer_users
 
   elastic_indexer_comments:
     executor: job-runner
@@ -291,7 +291,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh elastic/indexer/insta_comments/Dockerfile codesmag/elastic_indexer_comments
+            ./build_and_upload_image.sh insta/indexer/comments/Dockerfile codesmag/elastic_indexer_comments
 
   insta_posts_faces_inserter:
     executor: job-runner
@@ -311,7 +311,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh neo4j-create-import-user-json/Dockerfile codesmag/neo4j-create-import-user-json
+            ./build_and_upload_image.sh neo4j/create-import-user-json/Dockerfile codesmag/neo4j-create-import-user-json
 
 workflows:
   version: 2
