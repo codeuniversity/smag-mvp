@@ -45,7 +45,7 @@ services:
   migrate-postgres:
     build:
       context: "."
-      dockerfile: "debezium/Dockerfile"
+      dockerfile: "insta/db/Dockerfile"
     depends_on:
       - "postgres"
     environment:
@@ -55,7 +55,7 @@ services:
   insta_user-scraper:
     build:
       context: "."
-      dockerfile: "insta_user-scraper/Dockerfile"
+      dockerfile: "insta/scraper/user/Dockerfile"
     image: "smag-insta_user-scraper"
     depends_on:
       - "my-kafka"
@@ -68,7 +68,7 @@ services:
   insta_posts-scraper:
     build:
       context: "."
-      dockerfile: "insta_posts-scraper/Dockerfile"
+      dockerfile: "insta/scraper/posts/Dockerfile"
     depends_on:
       - "my-kafka"
     environment:
@@ -80,7 +80,7 @@ services:
   insta_comments-scraper:
     build:
       context: "."
-      dockerfile: "insta_comments-scraper/Dockerfile"
+      dockerfile: "insta/scraper/comments/Dockerfile"
     depends_on:
       - "my-kafka"
     environment:
@@ -93,7 +93,7 @@ services:
   insta_likes-scraper:
     build:
       context: "."
-      dockerfile: "insta_likes-scraper/Dockerfile"
+      dockerfile: "insta/scraper/likes/Dockerfile"
     depends_on:
       - "my-kafka"
     environment:
@@ -107,7 +107,7 @@ services:
   insta_user-inserter:
     build:
       context: "."
-      dockerfile: "insta_postgres-inserter/Dockerfile"
+      dockerfile: "insta/inserter/postgres/Dockerfile"
     image: "smag-insta_postgres-inserter"
     depends_on:
       - "my-kafka"
@@ -120,7 +120,7 @@ services:
   insta_posts-inserter:
     build:
       context: "."
-      dockerfile: "insta_posts-inserter/Dockerfile"
+      dockerfile: "insta/inserter/posts/Dockerfile"
     depends_on:
       - "my-kafka"
       - "postgres"
@@ -133,7 +133,7 @@ services:
   insta_comments-inserter:
     build:
       context: "."
-      dockerfile: "insta_comments-inserter/Dockerfile"
+      dockerfile: "insta/inserter/comments/Dockerfile"
     depends_on:
       - "my-kafka"
       - "postgres"
@@ -146,7 +146,7 @@ services:
   insta_likes-inserter:
     build:
       context: "."
-      dockerfile: "insta_likes-inserter/Dockerfile"
+      dockerfile: "insta/inserter/likes/Dockerfile"
     depends_on:
       - "my-kafka"
       - "postgres"
@@ -160,7 +160,7 @@ services:
   insta_pics-downloader:
     build:
       context: "."
-      dockerfile: "insta_pics-downloader/Dockerfile"
+      dockerfile: "insta/pics-downloader/Dockerfile"
     depends_on:
       - "my-kafka"
       - "postgres"
@@ -178,30 +178,21 @@ services:
       S3_USE_SSL: "false"
 
   # FILTER
-  insta-user-filter:
+  insta_post_face-recon-filter:
     build:
       context: "."
-      dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
+      dockerfile: "insta/filter/user_names/Dockerfile"
     depends_on:
+      - "my-kafka"
       - "postgres"
-      - "connect"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "insta_user_names-filter"
-  insta-post-picture-filter:
-    build:
-      context: "."
-      dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
-    depends_on:
-      - "postgres"
-      - "connect"
-    environment:
-      KAFKA_ADDRESS: "my-kafka:9092"
-      KAFKA_GROUPID: "insta_post_pictures-filter"
+      KAFKA_CHANGE_TOPIC: "postgres.public.users"
   insta_post-pictures-filter:
     build:
       context: "."
-      dockerfile: "kafka/changestream/insta_post_pictures-filter/Dockerfile"
+      dockerfile: "insta/filter/post_pictures/Dockerfile"
     depends_on:
       - "my-kafka"
       - "postgres"
@@ -213,7 +204,7 @@ services:
   insta_user_names-filter:
     build:
       context: "."
-      dockerfile: "kafka/changestream/insta_user_names-filter/Dockerfile"
+      dockerfile: "insta/filter/user_names/Dockerfile"
     depends_on:
       - "my-kafka"
       - "postgres"
@@ -265,7 +256,7 @@ services:
   neo4j-posts-inserter:
     build:
       context: "."
-      dockerfile: "neo4j-inserter/insta_posts-inserter/Dockerfile"
+      dockerfile: "insta/inserter/neo4j/posts/Dockerfile"
     depends_on:
       - "neo4j"
       - "my-kafka"
@@ -276,7 +267,7 @@ services:
   neo4j-tagged-users-inserter:
     build:
       context: "."
-      dockerfile: "neo4j-inserter/tagged_users-inserter/Dockerfile"
+      dockerfile: "insta/inserter/neo4j/tagged_users/Dockerfile"
     depends_on:
       - "neo4j"
       - "my-kafka"
@@ -287,7 +278,7 @@ services:
   neo4j-followings-inserter:
     build:
       context: "."
-      dockerfile: "neo4j-inserter/insta_user-inserter/Dockerfile"
+      dockerfile: "insta/inserter/neo4j/user/Dockerfile"
     depends_on:
       - "neo4j"
       - "my-kafka"
@@ -330,7 +321,7 @@ services:
 
   # ELASTICSEARCH
   es-with-plugin:
-    build: "./elasticsearch-build"
+    build: "./elastic/build"
     environment:
       "discovery.type": "single-node"
     ports:
@@ -347,7 +338,7 @@ services:
   insta_face-indexer:
     build:
       context: "."
-      dockerfile: "elastic/indexer/insta_faces/Dockerfile"
+      dockerfile: "insta/indexer/faces/Dockerfile"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "es-face-indexer2"
@@ -357,7 +348,7 @@ services:
   insta_comments-indexer:
     build:
       context: "."
-      dockerfile: "elastic/indexer/insta_comments/Dockerfile"
+      dockerfile: "insta/indexer/comments/Dockerfile"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "es-comments-indexer"
@@ -367,7 +358,7 @@ services:
   insta_posts-indexer:
     build:
       context: "."
-      dockerfile: "elastic/indexer/insta_posts/Dockerfile"
+      dockerfile: "insta/indexer/posts/Dockerfile"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "es-posts-indexer"
@@ -377,7 +368,7 @@ services:
   insta_users-indexer:
     build:
       context: "."
-      dockerfile: "elastic/indexer/insta_users/Dockerfile"
+      dockerfile: "insta/indexer/users/Dockerfile"
     environment:
       KAFKA_ADDRESS: "my-kafka:9092"
       KAFKA_GROUPID: "es-users-indexer"
