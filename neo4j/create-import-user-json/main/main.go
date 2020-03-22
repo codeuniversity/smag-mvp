@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/codeuniversity/smag-mvp/neo4j-create-import-user-json"
+	neo4j_import "github.com/codeuniversity/smag-mvp/neo4j/create-import-user-json"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )
