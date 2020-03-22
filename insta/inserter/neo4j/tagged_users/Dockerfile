@@ -1,5 +1,5 @@
 FROM golang:1.13-alpine as builder
-RUN apk add --no-cache ca-certificates cmake make g++ openssl-dev git curl pkgconfig
+RUN apk add --no-cache ca-certificates cmake make g++ openssl-dev openssl-libs-static git curl pkgconfig
 # clone seabolt-1.7.0 source code
 RUN git clone -b v1.7.4 https://github.com/neo4j-drivers/seabolt.git /seabolt
 # invoke cmake build and install artifacts - default location is /usr/local
