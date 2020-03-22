@@ -212,7 +212,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh insta/inserter/neo4j/posts/neo4j-inserter/insta_posts-inserter/Dockerfile codesmag/neo4j_insta_posts-inserter
+            ./build_and_upload_image.sh insta/inserter/neo4j/posts/Dockerfile codesmag/neo4j_insta_posts-inserter
   neo4j_insta_user-inserter:
     executor: job-runner
     steps:
