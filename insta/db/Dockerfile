@@ -5,8 +5,7 @@ RUN apk add --no-cache --upgrade \
     curl
 
 WORKDIR /src
-COPY db/migrations/ db/migrations/
-COPY debezium/ debezium/
+COPY insta/db/ db/
 
 ENTRYPOINT [ "bash" ]
-CMD [ "debezium/start-postgres.sh" ]
+CMD [ "db/start-postgres.sh" ]
