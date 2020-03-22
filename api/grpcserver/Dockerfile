@@ -8,6 +8,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o grpc_server api/grpc
 FROM alpine
 RUN apk --no-cache add ca-certificates
 WORKDIR /app
-COPY cities.json .
+COPY nlp/frequency-analyzer/cities.json .
 COPY --from=builder /app/grpc_server .
 CMD ["./grpc_server"]

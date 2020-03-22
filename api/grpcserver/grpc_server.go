@@ -60,7 +60,7 @@ func NewGrpcServer(grpcPort string, userNamesWriter *kafka.Writer, s3Config *con
 	s := &GrpcServer{}
 
 	// TODO: load cities.json
-	jsonFile, err := os.Open("cities.json")
+	jsonFile, err := os.Open("nlp/frequency-analyzer/cities.json")
 	defer jsonFile.Close()
 	if err != nil {
 		log.Fatalln(err)
