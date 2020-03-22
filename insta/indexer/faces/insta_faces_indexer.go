@@ -7,8 +7,8 @@ import (
 	"github.com/codeuniversity/smag-mvp/elastic"
 	"github.com/codeuniversity/smag-mvp/elastic/indexer"
 	esModels "github.com/codeuniversity/smag-mvp/elastic/models"
+	"github.com/codeuniversity/smag-mvp/insta/models"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
 )

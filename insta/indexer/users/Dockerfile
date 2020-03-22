@@ -6,7 +6,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build \
     -installsuffix cgo \
     -o insta_users_indexer \
-    elastic/indexer/insta_users/insta_users_indexer.go
+    insta/indexer/users/insta_users_indexer.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates
