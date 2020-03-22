@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"math"
 
-	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/insta/models"
 )
 
 // FaceDoc is the type that is used to store a face in elasticsearch
