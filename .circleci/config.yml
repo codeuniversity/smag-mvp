@@ -411,21 +411,21 @@ workflows:
       - neo4j_insta_posts-inserter:
           requires:
             - tests
-          # filters:
-          #   branches:
-          #     only: master
+          filters:
+            branches:
+              only: master
       - neo4j_insta_user-inserter:
           requires:
             - tests
-          # filters:
-          #   branches:
-          #     only: master
+          filters:
+            branches:
+              only: master
       - neo4j_insta_tagged_users-inserter:
           requires:
             - tests
-          # filters:
-          #   branches:
-          #     only: master
+          filters:
+            branches:
+              only: master
       - grpc-server:
           requires:
             - tests
