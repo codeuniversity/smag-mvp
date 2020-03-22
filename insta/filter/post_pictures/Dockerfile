@@ -3,7 +3,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o filter kafka/changestream/insta_post_face-recon-filter/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -installsuffix cgo -o filter insta/filter/post_pictures/main.go
 
 FROM alpine
 RUN apk --no-cache add ca-certificates

@@ -3,18 +3,19 @@ package main
 import (
 	"encoding/json"
 
+	"github.com/codeuniversity/smag-mvp/insta/models"
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
-	"github.com/codeuniversity/smag-mvp/models"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
+
 	"github.com/segmentio/kafka-go"
 )
 
 func main() {
-	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "127.0.0.1:9092")
+	kafkaAddress := utils.GetStringFromEnvWithDefault("KAFKA_ADDRESS", "my-kafka:9092")
 	groupID := utils.MustGetStringFromEnv("KAFKA_GROUPID")
 	changesTopic := utils.GetStringFromEnvWithDefault("KAFKA_CHANGE_TOPIC", "postgres.public.posts")
-	downloadTopic := utils.GetStringFromEnvWithDefault("KAFKA_PICTURE_FACE_RECON_TOPIC", "insta_post_face_recon_jobs")
+	downloadTopic := utils.GetStringFromEnvWithDefault("KAFKA_PICTURE_DOWNLOADS_TOPIC", "insta_post_picture_download_jobs")
 
 	f := changestream.NewFilter(kafkaAddress, groupID, changesTopic, downloadTopic, filterChange)
 
@@ -25,8 +26,8 @@ func main() {
 }
 
 type post struct {
-	ID                 int    `json:"id"`
-	InternalPictureURL string `json:"internal_picture_url"`
+	ID         int    `json:"id"`
+	PictureURL string `json:"picture_url"`
 }
 
 func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
@@ -40,6 +41,10 @@ func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
 		return nil, err
 	}
 
+	if currentVersion.PictureURL == "" {
+		return nil, nil
+	}
+
 	if m.Payload.Op == "c" {
 		return constructDownloadJobMessage(currentVersion)
 	}
@@ -50,7 +55,7 @@ func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
 		return nil, err
 	}
 
-	if currentVersion.InternalPictureURL != previousVersion.InternalPictureURL {
+	if currentVersion.PictureURL != previousVersion.PictureURL {
 		return constructDownloadJobMessage(currentVersion)
 	}
 
@@ -58,13 +63,9 @@ func filterChange(m *changestream.ChangeMessage) ([]kafka.Message, error) {
 }
 
 func constructDownloadJobMessage(p *post) ([]kafka.Message, error) {
-	if p.InternalPictureURL == "" {
-		return nil, nil
-	}
-
 	job := &models.PostDownloadJob{
 		PostID:     p.ID,
-		PictureURL: p.InternalPictureURL,
+		PictureURL: p.PictureURL,
 	}
 	b, err := json.Marshal(job)
 	if err != nil {

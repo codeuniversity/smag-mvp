@@ -6,6 +6,7 @@ import (
 	"github.com/codeuniversity/smag-mvp/kafka/changestream"
 	"github.com/codeuniversity/smag-mvp/service"
 	"github.com/codeuniversity/smag-mvp/utils"
+
 	"github.com/segmentio/kafka-go"
 )
 
