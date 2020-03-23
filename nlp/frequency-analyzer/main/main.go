@@ -24,7 +24,7 @@ func main() {
 	log.Printf("a=%+v", a)
 
 	// TODO: load cities.json
-	jsonFile, err := os.Open("cities.json")
+	jsonFile, err := os.Open("nlp/frequency-analyzer/cities.json")
 	defer jsonFile.Close()
 	if err != nil {
 		log.Fatalln(err)

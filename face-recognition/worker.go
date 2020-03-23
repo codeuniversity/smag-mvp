@@ -11,7 +11,7 @@ import (
 
 	"github.com/codeuniversity/smag-mvp/faces/proto"
 	"github.com/codeuniversity/smag-mvp/imgproxy"
-	"github.com/codeuniversity/smag-mvp/models"
+	"github.com/codeuniversity/smag-mvp/insta/models"
 	"github.com/codeuniversity/smag-mvp/worker"
 	"github.com/segmentio/kafka-go"
 	"google.golang.org/grpc"
