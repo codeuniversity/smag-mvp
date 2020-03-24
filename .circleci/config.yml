@@ -251,7 +251,7 @@ jobs:
       - run:
           name: Build and Publish Docker Image to Docker Hub
           command: |
-            ./build_and_upload_image.sh elastic/build/Dockerfile codesmag/elasticsearch elasticsearch-build
+            ./build_and_upload_image.sh elastic/build/Dockerfile codesmag/elasticsearch
 
   elastic_indexer_faces:
     executor: job-runner
